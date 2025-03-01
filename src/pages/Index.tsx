@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StatusChart } from "@/components/dashboard/StatusChart";
 import { CustomButton } from "@/components/ui/custom-button";
 import {
-  Tool,
+  Wrench,
   Package,
   FolderKanban,
   FileText,
@@ -14,7 +13,6 @@ import {
   Users
 } from "lucide-react";
 
-// Mock data for demonstration
 const statusChartData = [
   { name: "En attente", value: 12, color: "#FBBF24" },  // amber-400
   { name: "En cours", value: 18, color: "#3B82F6" },    // blue-500
@@ -30,11 +28,9 @@ const recentInterventions = [
 ];
 
 const Index = () => {
-  // Simulated loading state
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    // Simulate data loading
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 800);
@@ -84,7 +80,7 @@ const Index = () => {
             <DashboardCard
               title="Interventions en cours"
               value="18"
-              icon={<Tool size={20} />}
+              icon={<Wrench size={20} />}
               description="3 en attente aujourd'hui"
               trend={{ value: 12, isPositive: true }}
             />

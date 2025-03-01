@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
-  Tool, 
+  Wrench, 
   Package, 
   FolderKanban, 
   Receipt, 
@@ -24,7 +24,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { label: "Tableau de bord", icon: <LayoutDashboard size={20} />, href: "/" },
-  { label: "Interventions", icon: <Tool size={20} />, href: "/interventions" },
+  { label: "Interventions", icon: <Wrench size={20} />, href: "/interventions" },
   { label: "Inventaire", icon: <Package size={20} />, href: "/inventory" },
   { label: "Projets", icon: <FolderKanban size={20} />, href: "/projects" },
   { label: "Devis/Factures", icon: <Receipt size={20} />, href: "/invoices" },

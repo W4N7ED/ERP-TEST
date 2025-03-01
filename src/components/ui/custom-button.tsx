@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
-interface CustomButtonProps extends ButtonProps {
+interface CustomButtonProps extends Omit<ButtonProps, 'variant'> {
   isLoading?: boolean;
   icon?: React.ReactNode;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "primary" | "success";
@@ -14,13 +14,15 @@ const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
   ({ className, variant = "default", size, isLoading, icon, children, ...props }, ref) => {
     // Map custom variants to built-in variants or apply specific classes
     let variantClass;
+    let baseVariant = variant;
+    
     switch (variant) {
       case "primary":
-        variant = "default";
+        baseVariant = "default";
         variantClass = "bg-primary hover:bg-primary/90 text-white";
         break;
       case "success":
-        variant = "default";
+        baseVariant = "default";
         variantClass = "bg-green-500 hover:bg-green-600 text-white";
         break;
       default:
@@ -30,7 +32,7 @@ const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
     return (
       <Button
         ref={ref}
-        variant={variant as any}
+        variant={baseVariant as ButtonProps['variant']}
         size={size}
         className={cn(
           "font-medium rounded-lg transition-all duration-200 transform hover:translate-y-[-1px]",

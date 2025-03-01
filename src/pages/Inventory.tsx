@@ -13,7 +13,8 @@ import {
   HardDrive,
   Cpu,
   Router,
-  AlertCircle
+  AlertCircle,
+  Wrench
 } from "lucide-react";
 
 // Mock data for inventory items

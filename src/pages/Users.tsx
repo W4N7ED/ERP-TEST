@@ -12,7 +12,7 @@ import {
   Phone,
   Shield,
   Settings,
-  Tool,
+  Wrench,
   BarChart,
   FileText
 } from "lucide-react";
@@ -84,7 +84,7 @@ const usersMock = [
 // Role icons mapping
 const roleIcons: Record<string, React.ReactNode> = {
   "Administrateur": <Shield size={16} />,
-  "Technicien": <Tool size={16} />,
+  "Technicien": <Wrench size={16} />,
   "Opérateur": <Settings size={16} />,
   "Gestionnaire de projet": <BarChart size={16} />,
   "Commercial": <FileText size={16} />
