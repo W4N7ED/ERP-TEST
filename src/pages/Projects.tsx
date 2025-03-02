@@ -13,87 +13,33 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  Users
+  Users,
+  FileText,
+  DollarSign,
+  BarChart3
 } from "lucide-react";
-
-// Mock data for projects
-const projectsMock = [
-  {
-    id: 1,
-    name: "Migration serveurs",
-    client: "Entreprise ABC",
-    status: "En cours",
-    progress: 65,
-    startDate: "2023-09-01",
-    endDate: "2023-10-15",
-    manager: "Jean Dupont",
-    assignedTeam: ["Jean Dupont", "Marie Lambert", "Alex Thibault"],
-    interventions: 8,
-    interventionsCompleted: 5
-  },
-  {
-    id: 2,
-    name: "Déploiement postes de travail",
-    client: "Société XYZ",
-    status: "En cours",
-    progress: 30,
-    startDate: "2023-09-05",
-    endDate: "2023-09-30",
-    manager: "Marie Lambert",
-    assignedTeam: ["Marie Lambert", "Claire Petit"],
-    interventions: 15,
-    interventionsCompleted: 4
-  },
-  {
-    id: 3,
-    name: "Installation réseau",
-    client: "Boutique DEF",
-    status: "Terminé",
-    progress: 100,
-    startDate: "2023-08-15",
-    endDate: "2023-09-10",
-    manager: "Alex Thibault",
-    assignedTeam: ["Alex Thibault", "Jean Dupont"],
-    interventions: 6,
-    interventionsCompleted: 6
-  },
-  {
-    id: 4,
-    name: "Mise à niveau infrastructure",
-    client: "Cabinet GHI",
-    status: "En attente",
-    progress: 0,
-    startDate: "2023-09-20",
-    endDate: "2023-11-15",
-    manager: "Claire Petit",
-    assignedTeam: ["Claire Petit", "Alex Thibault", "Jean Dupont", "Marie Lambert"],
-    interventions: 12,
-    interventionsCompleted: 0
-  }
-];
+import { useProjectsState } from "@/hooks/useProjectsState";
+import { ProjectStatus } from "@/types/project";
+import { ProjectDetail } from "@/components/projects/ProjectDetail";
+import { AddProjectDialog } from "@/components/projects/AddProjectDialog";
 
 const Projects = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredProjects, setFilteredProjects] = useState(projectsMock);
-  
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    
-    if (term.trim() === "") {
-      setFilteredProjects(projectsMock);
-    } else {
-      const filtered = projectsMock.filter(
-        project => 
-          project.name.toLowerCase().includes(term.toLowerCase()) ||
-          project.client.toLowerCase().includes(term.toLowerCase()) ||
-          project.manager.toLowerCase().includes(term.toLowerCase())
-      );
-      setFilteredProjects(filtered);
-    }
-  };
-  
-  const getStatusIcon = (status: string) => {
+  const {
+    searchTerm,
+    filteredProjects,
+    currentProject,
+    isAddProjectDialogOpen,
+    stats,
+    handleSearch,
+    handleViewProject,
+    handleAddProject,
+    handleEditProject,
+    handleDeleteProject,
+    setIsAddProjectDialogOpen,
+    setCurrentProject
+  } = useProjectsState();
+
+  const getStatusIcon = (status: ProjectStatus) => {
     switch(status) {
       case "En attente": 
         return <Clock size={16} className="text-amber-500" />;
@@ -101,16 +47,19 @@ const Projects = () => {
         return <AlertCircle size={16} className="text-blue-500" />;
       case "Terminé":
         return <CheckCircle2 size={16} className="text-green-500" />;
+      case "Annulé":
+        return <AlertCircle size={16} className="text-red-500" />;
       default:
         return null;
     }
   };
   
-  const getStatusClass = (status: string) => {
+  const getStatusClass = (status: ProjectStatus) => {
     switch(status) {
-      case "En attente": return "status-pending";
-      case "En cours": return "status-in-progress";
-      case "Terminé": return "status-completed";
+      case "En attente": return "bg-amber-50 text-amber-700";
+      case "En cours": return "bg-blue-50 text-blue-700";
+      case "Terminé": return "bg-green-50 text-green-700";
+      case "Annulé": return "bg-red-50 text-red-700";
       default: return "";
     }
   };
@@ -118,6 +67,10 @@ const Projects = () => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR');
   };
+
+  if (currentProject) {
+    return <ProjectDetail project={currentProject} onBack={() => setCurrentProject(null)} />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -134,17 +87,18 @@ const Projects = () => {
             <CustomButton 
               variant="primary" 
               icon={<Plus size={16} />}
+              onClick={handleAddProject}
             >
               Nouveau projet
             </CustomButton>
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="card-glass rounded-xl p-5">
             <h3 className="text-lg font-semibold mb-2">Projets en cours</h3>
             <div className="flex items-end justify-between">
-              <div className="text-3xl font-bold">{filteredProjects.filter(p => p.status === "En cours").length}</div>
+              <div className="text-3xl font-bold">{stats.inProgress}</div>
               <div className="text-primary bg-primary/10 p-2 rounded-full">
                 <AlertCircle size={20} />
               </div>
@@ -154,7 +108,7 @@ const Projects = () => {
           <div className="card-glass rounded-xl p-5">
             <h3 className="text-lg font-semibold mb-2">Projets terminés</h3>
             <div className="flex items-end justify-between">
-              <div className="text-3xl font-bold">{filteredProjects.filter(p => p.status === "Terminé").length}</div>
+              <div className="text-3xl font-bold">{stats.completed}</div>
               <div className="text-green-500 bg-green-50 p-2 rounded-full">
                 <CheckCircle2 size={20} />
               </div>
@@ -162,13 +116,21 @@ const Projects = () => {
           </div>
           
           <div className="card-glass rounded-xl p-5">
-            <h3 className="text-lg font-semibold mb-2">Interventions liées</h3>
+            <h3 className="text-lg font-semibold mb-2">Tâches totales</h3>
             <div className="flex items-end justify-between">
-              <div className="text-3xl font-bold">
-                {filteredProjects.reduce((sum, p) => sum + p.interventions, 0)}
-              </div>
+              <div className="text-3xl font-bold">{stats.totalTasks}</div>
               <div className="text-amber-500 bg-amber-50 p-2 rounded-full">
-                <Clock size={20} />
+                <FileText size={20} />
+              </div>
+            </div>
+          </div>
+
+          <div className="card-glass rounded-xl p-5">
+            <h3 className="text-lg font-semibold mb-2">Budget total</h3>
+            <div className="flex items-end justify-between">
+              <div className="text-3xl font-bold">{stats.totalBudget.toLocaleString('fr-FR')} €</div>
+              <div className="text-blue-500 bg-blue-50 p-2 rounded-full">
+                <DollarSign size={20} />
               </div>
             </div>
           </div>
@@ -191,8 +153,8 @@ const Projects = () => {
                 <CustomButton variant="outline" icon={<Filter size={16} />}>
                   Filtrer
                 </CustomButton>
-                <CustomButton variant="outline" icon={<Calendar size={16} />}>
-                  Date
+                <CustomButton variant="outline" icon={<BarChart3 size={16} />}>
+                  Rapports
                 </CustomButton>
               </div>
             </div>
@@ -202,14 +164,19 @@ const Projects = () => {
             {filteredProjects.map(project => (
               <div key={project.id} className="bg-white border border-gray-100 rounded-xl p-6 hover:shadow-card transition-all duration-300">
                 <div className="flex justify-between mb-4">
-                  <h3 className="text-xl font-semibold">{project.name}</h3>
+                  <div>
+                    <h3 className="text-xl font-semibold">{project.name}</h3>
+                    <span className="text-sm text-muted-foreground">{project.reference}</span>
+                  </div>
                   <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusClass(project.status)}`}>
                     {getStatusIcon(project.status)}
                     <span className="ml-1">{project.status}</span>
                   </div>
                 </div>
                 
-                <p className="text-muted-foreground mb-4">Client: {project.client}</p>
+                <p className="text-muted-foreground mb-4">
+                  Client: {project.client || "N/A"} | Location: {project.location}
+                </p>
                 
                 <div className="mb-6">
                   <div className="flex justify-between text-sm mb-2">
@@ -233,21 +200,24 @@ const Projects = () => {
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Chef de projet</p>
-                    <p className="text-sm font-medium">{project.manager}</p>
+                    <p className="text-sm font-medium">
+                      {project.team.find(member => member.role.includes("Chef"))?.name || project.team[0]?.name || "Non assigné"}
+                    </p>
                   </div>
                   
                   <div className="flex -space-x-2">
-                    {project.assignedTeam.slice(0, 3).map((member, idx) => (
+                    {project.team.slice(0, 3).map((member, idx) => (
                       <div 
                         key={idx}
                         className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white text-primary text-xs font-medium"
+                        title={`${member.name} (${member.role})`}
                       >
-                        {member.split(' ').map(n => n[0]).join('')}
+                        {member.name.split(' ').map(n => n[0]).join('')}
                       </div>
                     ))}
-                    {project.assignedTeam.length > 3 && (
+                    {project.team.length > 3 && (
                       <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center border-2 border-white text-xs font-medium">
-                        +{project.assignedTeam.length - 3}
+                        +{project.team.length - 3}
                       </div>
                     )}
                   </div>
@@ -255,15 +225,23 @@ const Projects = () => {
                 
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-2">
-                    <Users size={16} className="text-muted-foreground" />
+                    <FileText size={16} className="text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      {project.interventionsCompleted}/{project.interventions} interventions
+                      {project.phases.reduce((total, phase) => total + phase.tasks.filter(task => task.status === "Terminée").length, 0)}/
+                      {project.phases.reduce((total, phase) => total + phase.tasks.length, 0)} tâches
                     </span>
                   </div>
                   
-                  <CustomButton variant="ghost" size="sm" className="h-8 px-3 text-primary">
-                    Détails <ChevronRight size={16} className="ml-1" />
-                  </CustomButton>
+                  <div className="flex space-x-2">
+                    <CustomButton 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 px-3 text-primary"
+                      onClick={() => handleViewProject(project)}
+                    >
+                      Détails <ChevronRight size={16} className="ml-1" />
+                    </CustomButton>
+                  </div>
                 </div>
               </div>
             ))}
@@ -276,6 +254,11 @@ const Projects = () => {
           )}
         </div>
       </main>
+
+      <AddProjectDialog 
+        open={isAddProjectDialogOpen} 
+        onOpenChange={setIsAddProjectDialogOpen} 
+      />
     </div>
   );
 };
