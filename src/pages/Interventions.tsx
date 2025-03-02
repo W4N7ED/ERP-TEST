@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { CustomButton } from "@/components/ui/custom-button";
@@ -147,125 +146,126 @@ const Interventions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navbar />
-      
-      <main className="container mx-auto px-4 pt-24 pb-12 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Interventions</h1>
-            <p className="text-muted-foreground mt-1">Gestion des interventions techniques</p>
+      <div className="pt-16 md:pl-64">
+        <div className="p-4 md:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold">Interventions</h1>
+              <p className="text-muted-foreground mt-1">Gestion des interventions techniques</p>
+            </div>
+            
+            <div className="mt-4 sm:mt-0">
+              <CustomButton 
+                variant="primary" 
+                icon={<Plus size={16} />}
+              >
+                Nouvelle intervention
+              </CustomButton>
+            </div>
           </div>
           
-          <div className="mt-4 sm:mt-0">
-            <CustomButton 
-              variant="primary" 
-              icon={<Plus size={16} />}
-            >
-              Nouvelle intervention
-            </CustomButton>
-          </div>
-        </div>
-        
-        <div className="card-glass rounded-xl mb-8">
-          <div className="p-5 border-b border-gray-100">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-grow">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
-                <Input
-                  placeholder="Rechercher une intervention..."
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  className="pl-10"
-                />
+          <div className="card-glass rounded-xl mb-8">
+            <div className="p-5 border-b border-gray-100">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-grow">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+                  <Input
+                    placeholder="Rechercher une intervention..."
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    className="pl-10"
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <CustomButton variant="outline" icon={<Filter size={16} />}>
+                    Filtrer
+                  </CustomButton>
+                  <CustomButton variant="outline" icon={<SortAsc size={16} />}>
+                    Trier
+                  </CustomButton>
+                  <CustomButton variant="outline" icon={<Calendar size={16} />}>
+                    Date
+                  </CustomButton>
+                </div>
               </div>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-muted/50">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Titre</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Client</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Technicien</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Statut</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Priorité</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date limite</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {filteredInterventions.map((intervention) => (
+                    <tr key={intervention.id} className="hover:bg-muted/20 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        #{intervention.id.toString().padStart(4, '0')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium">{intervention.title}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm">{intervention.client}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm">{intervention.technician}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusClass(intervention.status)}`}>
+                          {getStatusIcon(intervention.status)}
+                          <span className="ml-1">{intervention.status}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getPriorityClass(intervention.priority)}`}>
+                          {intervention.priority}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {new Date(intervention.deadline).toLocaleDateString('fr-FR')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        <CustomButton variant="ghost" className="h-8 px-2 text-primary">Modifier</CustomButton>
+                        <CustomButton variant="ghost" className="h-8 px-2 text-muted-foreground">Détails</CustomButton>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {filteredInterventions.length === 0 && (
+              <div className="p-8 text-center">
+                <p className="text-muted-foreground">Aucune intervention trouvée</p>
+              </div>
+            )}
+            
+            <div className="p-4 border-t border-gray-100 flex justify-between items-center">
+              <p className="text-sm text-muted-foreground">
+                Affichage de <span className="font-medium">{filteredInterventions.length}</span> interventions
+              </p>
               
               <div className="flex gap-2">
-                <CustomButton variant="outline" icon={<Filter size={16} />}>
-                  Filtrer
-                </CustomButton>
-                <CustomButton variant="outline" icon={<SortAsc size={16} />}>
-                  Trier
-                </CustomButton>
-                <CustomButton variant="outline" icon={<Calendar size={16} />}>
-                  Date
-                </CustomButton>
+                <CustomButton variant="outline" size="sm" disabled>Précédent</CustomButton>
+                <CustomButton variant="outline" size="sm" className="bg-primary/5">1</CustomButton>
+                <CustomButton variant="outline" size="sm">Suivant</CustomButton>
               </div>
             </div>
           </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-muted/50">
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Titre</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Client</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Technicien</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Statut</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Priorité</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date limite</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {filteredInterventions.map((intervention) => (
-                  <tr key={intervention.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      #{intervention.id.toString().padStart(4, '0')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium">{intervention.title}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm">{intervention.client}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm">{intervention.technician}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusClass(intervention.status)}`}>
-                        {getStatusIcon(intervention.status)}
-                        <span className="ml-1">{intervention.status}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getPriorityClass(intervention.priority)}`}>
-                        {intervention.priority}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {new Date(intervention.deadline).toLocaleDateString('fr-FR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      <CustomButton variant="ghost" className="h-8 px-2 text-primary">Modifier</CustomButton>
-                      <CustomButton variant="ghost" className="h-8 px-2 text-muted-foreground">Détails</CustomButton>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          {filteredInterventions.length === 0 && (
-            <div className="p-8 text-center">
-              <p className="text-muted-foreground">Aucune intervention trouvée</p>
-            </div>
-          )}
-          
-          <div className="p-4 border-t border-gray-100 flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              Affichage de <span className="font-medium">{filteredInterventions.length}</span> interventions
-            </p>
-            
-            <div className="flex gap-2">
-              <CustomButton variant="outline" size="sm" disabled>Précédent</CustomButton>
-              <CustomButton variant="outline" size="sm" className="bg-primary/5">1</CustomButton>
-              <CustomButton variant="outline" size="sm">Suivant</CustomButton>
-            </div>
-          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
