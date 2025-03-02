@@ -24,6 +24,23 @@
   display: none;  /* Chrome, Safari, Opera */
 }
 
+/* Widget size classes */
+.widget-size-small {
+  grid-column: span 1;
+}
+
+.widget-size-medium {
+  grid-column: span 2;
+}
+
+.widget-size-large {
+  grid-column: span 3;
+}
+
+.widget-size-full {
+  grid-column: span 4;
+}
+
 /* Animations and other styles */
 @keyframes logo-spin {
   from {
