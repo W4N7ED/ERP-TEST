@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "@/components/ui/separator";
+import { usePermissions } from "@/hooks/usePermissions";
+import { Switch } from "@/components/ui/switch";
 
 const Configuration = () => {
   const [appName, setAppName] = useState("");
@@ -17,8 +20,16 @@ const Configuration = () => {
   const [database, setDatabase] = useState("");
   const [isConfigured, setIsConfigured] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+  
+  // Admin account configuration
+  const [adminName, setAdminName] = useState("Administrateur");
+  const [adminEmail, setAdminEmail] = useState("admin@example.com");
+  const [adminPassword, setAdminPassword] = useState("admin123");
+  const [createAdmin, setCreateAdmin] = useState(true);
+  
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { addUser } = usePermissions();
 
   useEffect(() => {
     // Check if app is already configured
@@ -32,6 +43,14 @@ const Configuration = () => {
       setPassword(parsedConfig.password || "");
       setDatabase(parsedConfig.database || "");
       setIsConfigured(parsedConfig.isConfigured || false);
+      
+      // Admin settings
+      if (parsedConfig.adminConfig) {
+        setAdminName(parsedConfig.adminConfig.name || "Administrateur");
+        setAdminEmail(parsedConfig.adminConfig.email || "admin@example.com");
+        setAdminPassword(parsedConfig.adminConfig.password || "admin123");
+        setCreateAdmin(parsedConfig.adminConfig.createAdmin !== false);
+      }
     }
   }, []);
 
@@ -57,6 +76,54 @@ const Configuration = () => {
       return;
     }
 
+    // Create default admin account if selected
+    if (createAdmin) {
+      if (!adminName || !adminEmail || !adminPassword) {
+        toast({
+          variant: "destructive",
+          title: "Erreur de configuration",
+          description: "Tous les champs pour le compte administrateur sont requis",
+        });
+        return;
+      }
+      
+      try {
+        // Add admin user
+        addUser({
+          name: adminName,
+          role: "Administrateur",
+          permissions: [
+            'inventory.view', 'inventory.add', 'inventory.edit', 'inventory.delete', 'inventory.export', 'inventory.import',
+            'suppliers.view', 'suppliers.add', 'suppliers.edit', 'suppliers.delete',
+            'movements.view', 'movements.add', 'movements.approve',
+            'projects.view', 'projects.add', 'projects.edit', 'projects.delete', 'projects.archive',
+            'interventions.view', 'interventions.add', 'interventions.edit', 'interventions.delete', 'interventions.archive',
+            'users.view', 'users.add', 'users.edit', 'users.delete',
+            'quotes.view', 'quotes.add', 'quotes.edit', 'quotes.delete', 'quotes.approve',
+            'clients.view', 'clients.add', 'clients.edit', 'clients.delete'
+          ]
+        });
+        
+        // Store admin login credentials in localStorage for login page
+        localStorage.setItem("admin_credentials", JSON.stringify({
+          email: adminEmail,
+          password: adminPassword
+        }));
+        
+        toast({
+          title: "Compte administrateur créé",
+          description: `Administrateur '${adminName}' créé avec succès`
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Erreur de création",
+          description: "Impossible de créer le compte administrateur"
+        });
+        return;
+      }
+    }
+
     // Save configuration
     const configData = {
       appName,
@@ -67,6 +134,12 @@ const Configuration = () => {
       database,
       isConfigured: true,
       configuredAt: new Date().toISOString(),
+      adminConfig: {
+        name: adminName,
+        email: adminEmail,
+        password: adminPassword,
+        createAdmin: createAdmin
+      }
     };
 
     localStorage.setItem("app_config", JSON.stringify(configData));
@@ -210,6 +283,64 @@ const Configuration = () => {
                     {isTesting ? "Test en cours..." : "Tester la connexion"}
                   </Button>
                 </div>
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Compte administrateur par défaut</h3>
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="createAdmin" 
+                      checked={createAdmin} 
+                      onCheckedChange={setCreateAdmin} 
+                    />
+                    <Label htmlFor="createAdmin">Créer un administrateur</Label>
+                  </div>
+                </div>
+                
+                {createAdmin && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="adminName">Nom de l'administrateur</Label>
+                      <Input
+                        id="adminName"
+                        value={adminName}
+                        onChange={(e) => setAdminName(e.target.value)}
+                        placeholder="Administrateur"
+                        required={createAdmin}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="adminEmail">Email</Label>
+                      <Input
+                        id="adminEmail"
+                        type="email"
+                        value={adminEmail}
+                        onChange={(e) => setAdminEmail(e.target.value)}
+                        placeholder="admin@example.com"
+                        required={createAdmin}
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="adminPassword">Mot de passe</Label>
+                      <Input
+                        id="adminPassword"
+                        type="password"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        placeholder="••••••••"
+                        required={createAdmin}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Ce compte aura tous les droits administrateurs dans l'application
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
