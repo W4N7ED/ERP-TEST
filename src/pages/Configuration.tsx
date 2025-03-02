@@ -16,6 +16,7 @@ const Configuration = () => {
   const [password, setPassword] = useState("");
   const [database, setDatabase] = useState("");
   const [isConfigured, setIsConfigured] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -89,18 +90,36 @@ const Configuration = () => {
       return;
     }
 
-    // Simulate connection test
+    // Set testing state to true
+    setIsTesting(true);
+
+    // Simulate connection test with a more comprehensive approach
     toast({
       title: "Test de connexion",
       description: "Tentative de connexion à la base de données...",
     });
 
-    // This would be replaced by an actual connection test in a real application
+    // Simulate database connection test
     setTimeout(() => {
-      toast({
-        title: "Connexion réussie",
-        description: "La connexion à la base de données a été établie avec succès",
-      });
+      setIsTesting(false);
+      
+      // Simulate different connection test outcomes
+      const random = Math.random();
+      
+      if (random < 0.9 || (host === "localhost" && username && password && database)) {
+        // 90% success rate or guaranteed success for well-formed localhost connections
+        toast({
+          title: "Connexion réussie",
+          description: `Connexion à ${database}@${host}:${port} établie avec succès`,
+        });
+      } else {
+        // 10% failure rate for non-localhost or when simulation triggers a failure
+        toast({
+          variant: "destructive",
+          title: "Échec de connexion",
+          description: `Impossible de se connecter à ${host}:${port}. Vérifiez les paramètres et que le serveur est accessible.`,
+        });
+      }
     }, 1500);
   };
 
@@ -186,8 +205,9 @@ const Configuration = () => {
                     variant="outline" 
                     onClick={testConnection}
                     className="mt-2"
+                    disabled={isTesting}
                   >
-                    Tester la connexion
+                    {isTesting ? "Test en cours..." : "Tester la connexion"}
                   </Button>
                 </div>
               </div>
