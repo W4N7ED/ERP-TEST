@@ -44,7 +44,8 @@ const ConfiguredRoute = ({ element }: { element: React.ReactNode }) => {
       const parsedConfig = JSON.parse(config);
       setIsConfigured(parsedConfig.isConfigured);
     } else {
-      setIsConfigured(false);
+      // Marquer comme configuré par défaut pour donner priorité à la connexion
+      setIsConfigured(true);
     }
   }, []);
   
@@ -60,18 +61,18 @@ function App() {
   return (
     <>
       <Routes>
+        <Route path="/login" element={<Login />} />
         <Route path="/configure" element={<Configuration />} />
-        <Route path="/login" element={<ConfiguredRoute element={<Login />} />} />
-        <Route path="/" element={<ConfiguredRoute element={<PrivateRoute element={<Index />} />} />} />
-        <Route path="/projects" element={<ConfiguredRoute element={<PrivateRoute element={<Projects />} />} />} />
-        <Route path="/inventory" element={<ConfiguredRoute element={<PrivateRoute element={<Inventory />} />} />} />
-        <Route path="/interventions" element={<ConfiguredRoute element={<PrivateRoute element={<Interventions />} />} />} />
-        <Route path="/quotes" element={<ConfiguredRoute element={<PrivateRoute element={<Quotes />} />} />} />
-        <Route path="/suppliers" element={<ConfiguredRoute element={<PrivateRoute element={<Suppliers />} />} />} />
-        <Route path="/users" element={<ConfiguredRoute element={<AdminRoute element={<Users />} />} />} />
-        <Route path="/settings" element={<ConfiguredRoute element={<AdminRoute element={<Settings />} />} />} />
-        <Route path="/profile" element={<ConfiguredRoute element={<PrivateRoute element={<Profile />} />} />} />
-        <Route path="/profile/notifications" element={<ConfiguredRoute element={<PrivateRoute element={<Profile />} />} />} />
+        <Route path="/" element={<PrivateRoute element={<Index />} />} />
+        <Route path="/projects" element={<PrivateRoute element={<Projects />} />} />
+        <Route path="/inventory" element={<PrivateRoute element={<Inventory />} />} />
+        <Route path="/interventions" element={<PrivateRoute element={<Interventions />} />} />
+        <Route path="/quotes" element={<PrivateRoute element={<Quotes />} />} />
+        <Route path="/suppliers" element={<PrivateRoute element={<Suppliers />} />} />
+        <Route path="/users" element={<AdminRoute element={<Users />} />} />
+        <Route path="/settings" element={<AdminRoute element={<Settings />} />} />
+        <Route path="/profile" element={<PrivateRoute element={<Profile />} />} />
+        <Route path="/profile/notifications" element={<PrivateRoute element={<Profile />} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />

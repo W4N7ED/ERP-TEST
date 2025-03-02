@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/usePermissions';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [appName, setAppName] = useState('EDR Solution');
@@ -33,7 +33,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const success = await loginUser(email, password);
+      const success = await loginUser(username, password);
       
       if (success) {
         toast({
@@ -45,7 +45,7 @@ const Login = () => {
         toast({
           variant: "destructive",
           title: "Erreur de connexion",
-          description: "Email ou mot de passe incorrect",
+          description: "Nom d'utilisateur ou mot de passe incorrect",
         });
       }
     } catch (error) {
@@ -72,13 +72,12 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="username">Nom d'utilisateur</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="username"
+                  placeholder="admin"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                 />
               </div>
@@ -100,7 +99,7 @@ const Login = () => {
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">
-              Compte administrateur par défaut: admin@example.com / admin123
+              Compte administrateur par défaut: admin / admin123
             </p>
           </CardFooter>
         </Card>

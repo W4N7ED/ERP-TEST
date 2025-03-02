@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Permission, User, UserRole } from '@/types/permissions';
 import mockUsers, { defaultUser } from '@/data/mockUsers';
@@ -106,13 +105,28 @@ export const usePermissions = () => {
     );
   };
 
-  // Login user with email and password
-  const loginUser = async (email: string, password: string): Promise<boolean> => {
+  // Login user with username and password
+  const loginUser = async (username: string, password: string): Promise<boolean> => {
     // Simulation d'un délai de connexion
     await new Promise(resolve => setTimeout(resolve, 800));
     
-    // Admin par défaut
-    if (email === 'admin@example.com' && password === 'admin123') {
+    // Check admin credentials from localStorage if available
+    const adminCredentials = localStorage.getItem("admin_credentials");
+    if (adminCredentials) {
+      const credentials = JSON.parse(adminCredentials);
+      // Si le nom d'utilisateur correspond à la première partie de l'email (avant @)
+      const adminUsername = credentials.email.split('@')[0];
+      if ((username === adminUsername || username === credentials.email) && password === credentials.password) {
+        const adminUser = allUsers.find(u => u.role === 'Administrateur');
+        if (adminUser) {
+          setCurrentUser({ ...adminUser, isAuthenticated: true });
+          return true;
+        }
+      }
+    }
+    
+    // Pour les comptes créés dans la page de configuration avec un nom d'utilisateur
+    if (username === 'admin' && password === 'admin123') {
       const adminUser = allUsers.find(u => u.role === 'Administrateur');
       if (adminUser) {
         setCurrentUser({ ...adminUser, isAuthenticated: true });
@@ -120,10 +134,11 @@ export const usePermissions = () => {
       }
     }
     
-    // Pour des fins de démonstration, on accepte n'importe quel email qui existe dans mockUsers
+    // Pour des fins de démonstration, on accepte n'importe quel nom qui existe dans mockUsers
     // et le mot de passe "password123"
-    const user = allUsers.find(u => u.name.toLowerCase() === email.toLowerCase() || 
-                                  `${u.name.toLowerCase()}@example.com` === email.toLowerCase());
+    const user = allUsers.find(u => 
+      u.name.toLowerCase() === username.toLowerCase()
+    );
     
     if (user && password === 'password123') {
       setCurrentUser({ ...user, isAuthenticated: true });
