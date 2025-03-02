@@ -9,6 +9,7 @@ export const useProjectsState = () => {
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "Tous">("Tous");
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [isAddProjectDialogOpen, setIsAddProjectDialogOpen] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
@@ -38,6 +39,37 @@ export const useProjectsState = () => {
       );
     }
     
+    if (!showArchived) {
+      filtered = filtered.filter(project => !project.archived);
+    }
+    
+    setFilteredProjects(filtered);
+  };
+
+  const toggleArchivedView = () => {
+    const newShowArchived = !showArchived;
+    setShowArchived(newShowArchived);
+    
+    let filtered = [...projects];
+    
+    if (statusFilter !== "Tous") {
+      filtered = filtered.filter(project => project.status === statusFilter);
+    }
+    
+    if (searchTerm.trim() !== "") {
+      filtered = filtered.filter(
+        project => 
+          project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          project.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (project.client && project.client.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          project.location.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    if (!newShowArchived) {
+      filtered = filtered.filter(project => !project.archived);
+    }
+    
     setFilteredProjects(filtered);
   };
 
@@ -52,6 +84,36 @@ export const useProjectsState = () => {
   const handleEditProject = (project: Project) => {
     toast.info(`Édition du projet: ${project.name}`);
     // Implement edit functionality
+  };
+
+  const handleArchiveProject = (projectId: number) => {
+    if (window.confirm("Êtes-vous sûr de vouloir archiver ce projet ?")) {
+      const projectIndex = projects.findIndex(p => p.id === projectId);
+      if (projectIndex !== -1) {
+        const updatedProject = { ...projects[projectIndex], archived: true };
+        const updatedProjects = [...projects];
+        updatedProjects[projectIndex] = updatedProject;
+        
+        setProjects(updatedProjects);
+        
+        if (!showArchived) {
+          setFilteredProjects(filteredProjects.filter(p => p.id !== projectId));
+        } else {
+          const filteredIndex = filteredProjects.findIndex(p => p.id === projectId);
+          if (filteredIndex !== -1) {
+            const updatedFiltered = [...filteredProjects];
+            updatedFiltered[filteredIndex] = updatedProject;
+            setFilteredProjects(updatedFiltered);
+          }
+        }
+        
+        if (currentProject && currentProject.id === projectId) {
+          setCurrentProject(null);
+        }
+        
+        toast.success(`Le projet "${updatedProject.name}" a été archivé`);
+      }
+    }
   };
 
   const handleDeleteProject = (project: Project) => {
@@ -376,6 +438,7 @@ export const useProjectsState = () => {
     statusFilter,
     currentProject,
     isAddProjectDialogOpen,
+    showArchived,
     stats: calculateProjectStats(),
     handleSearch,
     filterByStatus,
@@ -383,6 +446,8 @@ export const useProjectsState = () => {
     handleAddProject,
     handleEditProject,
     handleDeleteProject,
+    handleArchiveProject,
+    toggleArchivedView,
     addNewProject,
     addPhaseToProject,
     addTaskToPhase,

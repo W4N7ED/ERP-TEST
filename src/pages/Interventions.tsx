@@ -39,12 +39,16 @@ import {
   Users,
   Bell,
   Receipt,
-  Settings
+  Settings,
+  Archive,
+  Edit,
+  Eye,
+  Link,
 } from "lucide-react";
 
 // Types pour les interventions
 type Priority = "Critique" | "Haute" | "Moyenne" | "Basse";
-type Status = "À planifier" | "Planifiée" | "En cours" | "En attente" | "Terminée" | "Annulée";
+type Status = "À planifier" | "Planifiée" | "En cours" | "En attente" | "Terminée" | "Annulée" | "Archivée";
 type InterventionType = "Panne" | "Installation" | "Maintenance" | "Mise à jour" | "Autre";
 type CreationMode = "Manuelle" | "Automatique" | "Ticket client";
 
@@ -66,6 +70,7 @@ interface Intervention {
   notes?: string[];
   attachments?: string[];
   relatedTicket?: number;
+  archived?: boolean;
 }
 
 // Mock data pour les interventions
@@ -209,6 +214,8 @@ const Interventions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredInterventions, setFilteredInterventions] = useState<Intervention[]>(interventionsMock);
   const [isNewInterventionDialogOpen, setIsNewInterventionDialogOpen] = useState(false);
+  const [isEditInterventionDialogOpen, setIsEditInterventionDialogOpen] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [currentIntervention, setCurrentIntervention] = useState<Partial<Intervention>>({
     priority: "Moyenne",
     status: "À planifier",
@@ -223,17 +230,29 @@ const Interventions = () => {
     setSearchTerm(term);
     
     if (term.trim() === "") {
-      setFilteredInterventions(interventionsMock);
+      setFilteredInterventions(showArchived ? interventionsMock : interventionsMock.filter(i => i.status !== "Archivée"));
     } else {
       const filtered = interventionsMock.filter(
         intervention => 
-          intervention.title.toLowerCase().includes(term.toLowerCase()) ||
+          (showArchived || intervention.status !== "Archivée") &&
+          (intervention.title.toLowerCase().includes(term.toLowerCase()) ||
           intervention.client.toLowerCase().includes(term.toLowerCase()) ||
           intervention.technician.toLowerCase().includes(term.toLowerCase()) ||
           intervention.material?.toLowerCase().includes(term.toLowerCase()) ||
-          intervention.description?.toLowerCase().includes(term.toLowerCase())
+          intervention.description?.toLowerCase().includes(term.toLowerCase()))
       );
       setFilteredInterventions(filtered);
+    }
+  };
+  
+  const toggleArchivedView = () => {
+    setShowArchived(!showArchived);
+    if (!showArchived) {
+      // Afficher toutes les interventions, y compris les archivées
+      setFilteredInterventions(interventionsMock);
+    } else {
+      // Masquer les interventions archivées
+      setFilteredInterventions(interventionsMock.filter(i => i.status !== "Archivée"));
     }
   };
   
@@ -251,6 +270,8 @@ const Interventions = () => {
         return <CheckCircle2 size={16} className="text-green-500" />;
       case "Annulée":
         return <XCircle size={16} className="text-red-500" />;
+      case "Archivée":
+        return <Archive size={16} className="text-gray-500" />;
       default:
         return null;
     }
@@ -264,6 +285,7 @@ const Interventions = () => {
       case "En cours": return "bg-blue-100 text-blue-800";
       case "Terminée": return "bg-green-100 text-green-800";
       case "Annulée": return "bg-red-100 text-red-800";
+      case "Archivée": return "bg-gray-100 text-gray-800";
       default: return "";
     }
   };
@@ -308,7 +330,7 @@ const Interventions = () => {
 
     // Ajouter l'intervention (dans une version réelle, appel API ici)
     interventionsMock.push(newIntervention);
-    setFilteredInterventions([...interventionsMock]);
+    setFilteredInterventions(showArchived ? [...interventionsMock] : interventionsMock.filter(i => i.status !== "Archivée"));
     setCurrentIntervention({
       priority: "Moyenne",
       status: "À planifier",
@@ -323,6 +345,248 @@ const Interventions = () => {
     });
   };
 
+  const handleEditIntervention = (intervention: Intervention) => {
+    setCurrentIntervention({ ...intervention });
+    setIsEditInterventionDialogOpen(true);
+  };
+
+  const handleUpdateIntervention = () => {
+    // Vérification des champs obligatoires
+    if (!currentIntervention.title || !currentIntervention.client || !currentIntervention.technician) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Trouver l'index de l'intervention dans la liste
+    const index = interventionsMock.findIndex(i => i.id === currentIntervention.id);
+    if (index === -1) {
+      toast({
+        title: "Erreur",
+        description: "Intervention non trouvée",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Mettre à jour l'intervention
+    interventionsMock[index] = { ...interventionsMock[index], ...currentIntervention as Intervention };
+    
+    // Mettre à jour l'affichage
+    setFilteredInterventions(showArchived ? [...interventionsMock] : interventionsMock.filter(i => i.status !== "Archivée"));
+    setIsEditInterventionDialogOpen(false);
+
+    toast({
+      title: "Intervention mise à jour",
+      description: `L'intervention #${currentIntervention.id} a été mise à jour`,
+    });
+  };
+
+  const handleArchiveIntervention = (intervention: Intervention) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir archiver l'intervention "${intervention.title}" ?`)) {
+      const index = interventionsMock.findIndex(i => i.id === intervention.id);
+      if (index !== -1) {
+        interventionsMock[index].status = "Archivée";
+        interventionsMock[index].archived = true;
+        setFilteredInterventions(showArchived ? [...interventionsMock] : interventionsMock.filter(i => i.status !== "Archivée"));
+        
+        toast({
+          title: "Intervention archivée",
+          description: `L'intervention #${intervention.id} a été archivée`,
+        });
+      }
+    }
+  };
+
+  const linkToProject = (projectId: number) => {
+    // Dans une application réelle, ceci naviguerait vers la page du projet
+    toast({
+      title: "Navigation vers le projet",
+      description: `Redirection vers le projet #${projectId}`,
+    });
+  };
+
+  // Rendu du formulaire d'intervention (partagé entre création et édition)
+  const renderInterventionForm = () => (
+    <div className="grid gap-4 py-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="title">Titre de l'intervention *</Label>
+          <Input
+            id="title"
+            name="title"
+            placeholder="Ex: Remplacement disque SSD"
+            value={currentIntervention.title || ''}
+            onChange={handleInputChange}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="client">Client *</Label>
+          <Select
+            onValueChange={(value) => handleSelectChange("client", value)}
+            value={currentIntervention.client}
+          >
+            <SelectTrigger id="client">
+              <SelectValue placeholder="Sélectionner un client" />
+            </SelectTrigger>
+            <SelectContent>
+              {clientsList.map((client) => (
+                <SelectItem key={client} value={client}>
+                  {client}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="technician">Technicien *</Label>
+          <Select
+            onValueChange={(value) => handleSelectChange("technician", value)}
+            value={currentIntervention.technician}
+          >
+            <SelectTrigger id="technician">
+              <SelectValue placeholder="Sélectionner un technicien" />
+            </SelectTrigger>
+            <SelectContent>
+              {techniciansList.map((tech) => (
+                <SelectItem key={tech} value={tech}>
+                  {tech}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="material">Matériel concerné</Label>
+          <Input
+            id="material"
+            name="material"
+            placeholder="Ex: PC Portable Dell XPS"
+            value={currentIntervention.material || ''}
+            onChange={handleInputChange}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="type">Type</Label>
+          <Select
+            onValueChange={(value) => handleSelectChange("type", value)}
+            value={currentIntervention.type}
+          >
+            <SelectTrigger id="type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Panne">Panne</SelectItem>
+              <SelectItem value="Installation">Installation</SelectItem>
+              <SelectItem value="Maintenance">Maintenance</SelectItem>
+              <SelectItem value="Mise à jour">Mise à jour</SelectItem>
+              <SelectItem value="Autre">Autre</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="priority">Priorité</Label>
+          <Select
+            onValueChange={(value) => handleSelectChange("priority", value)}
+            value={currentIntervention.priority}
+          >
+            <SelectTrigger id="priority">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Basse">Basse</SelectItem>
+              <SelectItem value="Moyenne">Moyenne</SelectItem>
+              <SelectItem value="Haute">Haute</SelectItem>
+              <SelectItem value="Critique">Critique</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="status">Statut</Label>
+          <Select
+            onValueChange={(value) => handleSelectChange("status", value)}
+            value={currentIntervention.status}
+          >
+            <SelectTrigger id="status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="À planifier">À planifier</SelectItem>
+              <SelectItem value="Planifiée">Planifiée</SelectItem>
+              <SelectItem value="En cours">En cours</SelectItem>
+              <SelectItem value="En attente">En attente</SelectItem>
+              <SelectItem value="Terminée">Terminée</SelectItem>
+              <SelectItem value="Annulée">Annulée</SelectItem>
+              <SelectItem value="Archivée">Archivée</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="scheduledDate">Date planifiée</Label>
+          <Input
+            id="scheduledDate"
+            name="scheduledDate"
+            type="date"
+            value={currentIntervention.scheduledDate || ''}
+            onChange={handleInputChange}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="deadline">Date limite *</Label>
+          <Input
+            id="deadline"
+            name="deadline"
+            type="date"
+            required
+            value={currentIntervention.deadline || ''}
+            onChange={handleInputChange}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          name="description"
+          placeholder="Décrivez le problème ou l'intervention à réaliser..."
+          rows={3}
+          value={currentIntervention.description || ''}
+          onChange={handleInputChange}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="projectId">Projet associé (optionnel)</Label>
+        <Input
+          id="projectId"
+          name="projectId"
+          type="number"
+          placeholder="ID du projet associé"
+          value={currentIntervention.projectId || ''}
+          onChange={handleInputChange}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -334,7 +598,15 @@ const Interventions = () => {
               <p className="text-muted-foreground mt-1">Gestion des interventions techniques</p>
             </div>
             
-            <div className="mt-4 sm:mt-0">
+            <div className="mt-4 sm:mt-0 flex space-x-2">
+              <CustomButton 
+                variant="outline" 
+                icon={<Archive size={16} />}
+                onClick={toggleArchivedView}
+              >
+                {showArchived ? "Masquer les archives" : "Afficher les archives"}
+              </CustomButton>
+              
               <Dialog open={isNewInterventionDialogOpen} onOpenChange={setIsNewInterventionDialogOpen}>
                 <DialogTrigger asChild>
                   <CustomButton 
@@ -351,167 +623,7 @@ const Interventions = () => {
                       Complétez les informations nécessaires pour créer une intervention.
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="title">Titre de l'intervention *</Label>
-                        <Input
-                          id="title"
-                          name="title"
-                          placeholder="Ex: Remplacement disque SSD"
-                          value={currentIntervention.title || ''}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="client">Client *</Label>
-                        <Select
-                          onValueChange={(value) => handleSelectChange("client", value)}
-                          value={currentIntervention.client}
-                        >
-                          <SelectTrigger id="client">
-                            <SelectValue placeholder="Sélectionner un client" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {clientsList.map((client) => (
-                              <SelectItem key={client} value={client}>
-                                {client}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="technician">Technicien *</Label>
-                        <Select
-                          onValueChange={(value) => handleSelectChange("technician", value)}
-                          value={currentIntervention.technician}
-                        >
-                          <SelectTrigger id="technician">
-                            <SelectValue placeholder="Sélectionner un technicien" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {techniciansList.map((tech) => (
-                              <SelectItem key={tech} value={tech}>
-                                {tech}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="material">Matériel concerné</Label>
-                        <Input
-                          id="material"
-                          name="material"
-                          placeholder="Ex: PC Portable Dell XPS"
-                          value={currentIntervention.material || ''}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="type">Type</Label>
-                        <Select
-                          onValueChange={(value) => handleSelectChange("type", value)}
-                          defaultValue={currentIntervention.type}
-                        >
-                          <SelectTrigger id="type">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Panne">Panne</SelectItem>
-                            <SelectItem value="Installation">Installation</SelectItem>
-                            <SelectItem value="Maintenance">Maintenance</SelectItem>
-                            <SelectItem value="Mise à jour">Mise à jour</SelectItem>
-                            <SelectItem value="Autre">Autre</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="priority">Priorité</Label>
-                        <Select
-                          onValueChange={(value) => handleSelectChange("priority", value)}
-                          defaultValue={currentIntervention.priority}
-                        >
-                          <SelectTrigger id="priority">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Basse">Basse</SelectItem>
-                            <SelectItem value="Moyenne">Moyenne</SelectItem>
-                            <SelectItem value="Haute">Haute</SelectItem>
-                            <SelectItem value="Critique">Critique</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="status">Statut</Label>
-                        <Select
-                          onValueChange={(value) => handleSelectChange("status", value)}
-                          defaultValue={currentIntervention.status}
-                        >
-                          <SelectTrigger id="status">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="À planifier">À planifier</SelectItem>
-                            <SelectItem value="Planifiée">Planifiée</SelectItem>
-                            <SelectItem value="En cours">En cours</SelectItem>
-                            <SelectItem value="En attente">En attente</SelectItem>
-                            <SelectItem value="Terminée">Terminée</SelectItem>
-                            <SelectItem value="Annulée">Annulée</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="scheduledDate">Date planifiée</Label>
-                        <Input
-                          id="scheduledDate"
-                          name="scheduledDate"
-                          type="date"
-                          value={currentIntervention.scheduledDate || ''}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="deadline">Date limite *</Label>
-                        <Input
-                          id="deadline"
-                          name="deadline"
-                          type="date"
-                          required
-                          value={currentIntervention.deadline || ''}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        name="description"
-                        placeholder="Décrivez le problème ou l'intervention à réaliser..."
-                        rows={3}
-                        value={currentIntervention.description || ''}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                  </div>
+                  {renderInterventionForm()}
                   <DialogFooter>
                     <CustomButton variant="outline" onClick={() => setIsNewInterventionDialogOpen(false)}>
                       Annuler
@@ -563,13 +675,13 @@ const Interventions = () => {
             </div>
             
             <div className="card-glass rounded-xl p-4 flex items-center">
-              <div className="bg-red-100 p-3 rounded-full mr-4">
-                <XCircle className="h-6 w-6 text-red-600" />
+              <div className="bg-gray-100 p-3 rounded-full mr-4">
+                <Archive className="h-6 w-6 text-gray-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Annulées</p>
+                <p className="text-sm text-muted-foreground">Archivées</p>
                 <h3 className="text-2xl font-bold">
-                  {interventionsMock.filter(i => i.status === "Annulée").length}
+                  {interventionsMock.filter(i => i.status === "Archivée").length}
                 </h3>
               </div>
             </div>
@@ -614,12 +726,13 @@ const Interventions = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Priorité</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date limite</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Projet</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
                   {filteredInterventions.map((intervention) => (
-                    <tr key={intervention.id} className="hover:bg-muted/20 transition-colors">
+                    <tr key={intervention.id} className={`hover:bg-muted/20 transition-colors ${intervention.status === "Archivée" ? "bg-gray-50" : ""}`}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         #{intervention.id.toString().padStart(4, '0')}
                       </td>
@@ -657,9 +770,39 @@ const Interventions = () => {
                           {intervention.type}
                         </div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {intervention.projectId ? (
+                          <CustomButton 
+                            variant="ghost" 
+                            className="h-8 px-2 text-blue-600 flex items-center"
+                            onClick={() => linkToProject(intervention.projectId!)}
+                          >
+                            <Link size={14} className="mr-1" />
+                            #{intervention.projectId}
+                          </CustomButton>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                        <CustomButton variant="ghost" className="h-8 px-2 text-primary">Modifier</CustomButton>
-                        <CustomButton variant="ghost" className="h-8 px-2 text-muted-foreground">Détails</CustomButton>
+                        <CustomButton 
+                          variant="ghost" 
+                          className="h-8 px-2 text-primary"
+                          onClick={() => handleEditIntervention(intervention)}
+                          disabled={intervention.status === "Archivée"}
+                        >
+                          <Edit size={14} className="mr-1" /> Modifier
+                        </CustomButton>
+                        
+                        {intervention.status !== "Archivée" && (
+                          <CustomButton 
+                            variant="ghost" 
+                            className="h-8 px-2 text-gray-600"
+                            onClick={() => handleArchiveIntervention(intervention)}
+                          >
+                            <Archive size={14} className="mr-1" /> Archiver
+                          </CustomButton>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -687,6 +830,27 @@ const Interventions = () => {
           </div>
         </div>
       </div>
+      
+      {/* Dialogue de modification d'intervention */}
+      <Dialog open={isEditInterventionDialogOpen} onOpenChange={setIsEditInterventionDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Modifier l'intervention</DialogTitle>
+            <DialogDescription>
+              Modifiez les informations de l'intervention #{currentIntervention.id}
+            </DialogDescription>
+          </DialogHeader>
+          {renderInterventionForm()}
+          <DialogFooter>
+            <CustomButton variant="outline" onClick={() => setIsEditInterventionDialogOpen(false)}>
+              Annuler
+            </CustomButton>
+            <CustomButton variant="primary" onClick={handleUpdateIntervention}>
+              Mettre à jour
+            </CustomButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 export type ProjectStatus = 'En attente' | 'En cours' | 'Terminé' | 'Annulé';
 export type TaskStatus = 'À faire' | 'En cours' | 'En attente' | 'Terminée';
 export type TaskPriority = 'Basse' | 'Moyenne' | 'Élevée' | 'Haute' | 'Urgente';
@@ -58,6 +59,7 @@ export interface Project {
   phases: ProjectPhase[];
   createdAt: string;
   updatedAt: string;
+  archived?: boolean; // Nouveau champ pour marquer un projet comme archivé
 }
 
 // Mock data for projects
