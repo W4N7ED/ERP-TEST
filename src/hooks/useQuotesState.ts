@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import { Quote, QuoteStatus, QuoteItem, quotesMock } from "@/types/quote";
@@ -208,6 +207,7 @@ export const useQuotesState = () => {
       address: string;
       email: string;
       phone: string;
+      vatNumber?: string;
     };
     expirationDate: string;
     projectId?: number;

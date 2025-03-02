@@ -58,6 +58,11 @@ export const ClientFormSection: React.FC<ClientFormSectionProps> = ({
           )}
         </div>
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="clientVatNumber">Numéro de TVA</Label>
+        <Input id="clientVatNumber" {...register("clientVatNumber")} placeholder="FR12345678900" />
+      </div>
     </div>
   );
 };

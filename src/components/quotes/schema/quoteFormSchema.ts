@@ -8,6 +8,7 @@ export const quoteFormSchema = z.object({
   clientAddress: z.string().min(5, "L'adresse doit contenir au moins 5 caractères"),
   clientEmail: z.string().email("Email invalide"),
   clientPhone: z.string().min(8, "Numéro de téléphone invalide"),
+  clientVatNumber: z.string().optional(),
   expirationDate: z.date(),
   projectId: z.number().optional(),
   interventionId: z.number().optional(),

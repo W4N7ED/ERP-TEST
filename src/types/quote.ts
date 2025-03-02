@@ -1,4 +1,3 @@
-
 import { Project } from "./project";
 
 export type QuoteStatus = 'Brouillon' | 'En attente' | 'Envoyé' | 'Validé' | 'Refusé' | 'Expiré';
@@ -22,6 +21,7 @@ export interface QuoteContact {
   address: string;
   email: string;
   phone: string;
+  vatNumber?: string;
 }
 
 export interface Quote {
