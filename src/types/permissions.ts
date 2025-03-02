@@ -57,4 +57,5 @@ export interface User {
   name: string;
   role: UserRole;
   permissions: Permission[];
+  isAuthenticated?: boolean;
 }

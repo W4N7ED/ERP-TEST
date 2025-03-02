@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
@@ -13,7 +13,7 @@ import {
   User,
   Bell,
   LogOut,
-  ChevronDown
+  LogIn
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -39,10 +39,12 @@ type NavItem = {
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { currentUser } = usePermissions();
+  const { currentUser, logoutUser } = usePermissions();
   
   const isAdmin = currentUser.role === "Administrateur";
+  const isAuthenticated = currentUser.isAuthenticated;
 
   const navItems: NavItem[] = [
     { label: "Tableau de bord", icon: <LayoutDashboard size={20} />, href: "/" },
@@ -55,10 +57,19 @@ const Navbar = () => {
   ];
 
   // Filtrer les éléments de navigation en fonction du rôle
-  const filteredNavItems = navItems.filter(item => !item.adminOnly || isAdmin);
+  const filteredNavItems = navItems.filter(item => (!item.adminOnly || isAdmin) && isAuthenticated);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    navigate('/login');
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
   };
 
   return (
@@ -69,7 +80,7 @@ const Navbar = () => {
         </Link>
         
         {/* Desktop Navigation */}
-        {!isMobile && (
+        {!isMobile && isAuthenticated && (
           <nav className="flex items-center space-x-1 overflow-x-auto hide-scrollbar">
             {filteredNavItems.map((item) => (
               <Link
@@ -90,7 +101,7 @@ const Navbar = () => {
         )}
         
         {/* Mobile Navigation - Hamburger menu toggle */}
-        {isMobile && (
+        {isMobile && isAuthenticated && (
           <>
             <button
               className="text-gray-600 hover:text-gray-800 focus:outline-none"
@@ -104,60 +115,70 @@ const Navbar = () => {
         )}
         
         <div className="ml-auto flex items-center space-x-4">
-          {/* User Profile Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src="/placeholder.svg" alt={currentUser.name} />
-                  <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{currentUser.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {currentUser.role}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <Link to="/profile" className="flex items-center w-full">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Mon profil</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link to="/profile/notifications" className="flex items-center w-full">
-                    <Bell className="mr-2 h-4 w-4" />
-                    <span>Notifications</span>
-                  </Link>
-                </DropdownMenuItem>
-                {isAdmin && (
+          {/* Login Button for not authenticated users */}
+          {!isAuthenticated && (
+            <Button onClick={handleLogin} className="flex items-center gap-2">
+              <LogIn size={16} />
+              <span>Se connecter</span>
+            </Button>
+          )}
+          
+          {/* User Profile Dropdown for authenticated users*/}
+          {isAuthenticated && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src="/placeholder.svg" alt={currentUser.name} />
+                    <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{currentUser.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {currentUser.role}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
                   <DropdownMenuItem>
-                    <Link to="/settings" className="flex items-center w-full">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Paramètres</span>
+                    <Link to="/profile" className="flex items-center w-full">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Mon profil</span>
                     </Link>
                   </DropdownMenuItem>
-                )}
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Déconnexion</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <DropdownMenuItem>
+                    <Link to="/profile/notifications" className="flex items-center w-full">
+                      <Bell className="mr-2 h-4 w-4" />
+                      <span>Notifications</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem>
+                      <Link to="/settings" className="flex items-center w-full">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Paramètres</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-red-600" onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Déconnexion</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
       
       {/* Mobile Menu */}
-      {isMobile && isMenuOpen && (
+      {isMobile && isAuthenticated && isMenuOpen && (
         <div className="bg-white border-b shadow-inner animate-fade-in">
           <nav className="flex flex-col px-4 py-2">
             {filteredNavItems.map((item) => (

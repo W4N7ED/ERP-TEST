@@ -1,14 +1,37 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Permission, User, UserRole } from '@/types/permissions';
 import mockUsers, { defaultUser } from '@/data/mockUsers';
 
+// Clé pour stocker l'utilisateur connecté dans localStorage
+const CURRENT_USER_KEY = 'edr-solution-current-user';
+
 export const usePermissions = () => {
-  const [currentUser, setCurrentUser] = useState<User>(defaultUser);
+  // Récupérer l'utilisateur du localStorage au démarrage
+  const getInitialUser = (): User => {
+    const savedUser = localStorage.getItem(CURRENT_USER_KEY);
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser) as User;
+      } catch (e) {
+        // En cas d'erreur de parsing, utiliser l'utilisateur par défaut mais non authentifié
+        return { ...defaultUser, isAuthenticated: false };
+      }
+    }
+    // Par défaut, l'utilisateur n'est pas authentifié
+    return { ...defaultUser, isAuthenticated: false };
+  };
+
+  const [currentUser, setCurrentUser] = useState<User & { isAuthenticated?: boolean }>(getInitialUser());
   const [allUsers, setAllUsers] = useState<User[]>(mockUsers);
   const [allRoles, setAllRoles] = useState<UserRole[]>(
     [...new Set(mockUsers.map(user => user.role))]
   );
+
+  // Sauvegarder l'utilisateur dans localStorage quand il change
+  useEffect(() => {
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+  }, [currentUser]);
 
   // Liste complète des permissions disponibles dans l'application
   const availablePermissions: Permission[] = [
@@ -60,11 +83,15 @@ export const usePermissions = () => {
 
   // Check if user has a specific permission
   const hasPermission = (permission: Permission): boolean => {
+    // Si l'utilisateur n'est pas authentifié, il n'a aucune permission
+    if (!currentUser.isAuthenticated) return false;
     return currentUser.permissions.includes(permission);
   };
 
   // Check if user has all of the specified permissions
   const hasAllPermissions = (permissions: Permission[]): boolean => {
+    // Si l'utilisateur n'est pas authentifié, il n'a aucune permission
+    if (!currentUser.isAuthenticated) return false;
     return permissions.every(permission => 
       currentUser.permissions.includes(permission)
     );
@@ -72,16 +99,51 @@ export const usePermissions = () => {
 
   // Check if user has any of the specified permissions
   const hasAnyPermission = (permissions: Permission[]): boolean => {
+    // Si l'utilisateur n'est pas authentifié, il n'a aucune permission
+    if (!currentUser.isAuthenticated) return false;
     return permissions.some(permission => 
       currentUser.permissions.includes(permission)
     );
+  };
+
+  // Login user with email and password
+  const loginUser = async (email: string, password: string): Promise<boolean> => {
+    // Simulation d'un délai de connexion
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Admin par défaut
+    if (email === 'admin@example.com' && password === 'admin123') {
+      const adminUser = allUsers.find(u => u.role === 'Administrateur');
+      if (adminUser) {
+        setCurrentUser({ ...adminUser, isAuthenticated: true });
+        return true;
+      }
+    }
+    
+    // Pour des fins de démonstration, on accepte n'importe quel email qui existe dans mockUsers
+    // et le mot de passe "password123"
+    const user = allUsers.find(u => u.name.toLowerCase() === email.toLowerCase() || 
+                                  `${u.name.toLowerCase()}@example.com` === email.toLowerCase());
+    
+    if (user && password === 'password123') {
+      setCurrentUser({ ...user, isAuthenticated: true });
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Logout user
+  const logoutUser = () => {
+    setCurrentUser({ ...defaultUser, isAuthenticated: false });
+    localStorage.removeItem(CURRENT_USER_KEY);
   };
 
   // Switch to a different user (for demonstration purposes)
   const switchUser = (userId: number) => {
     const user = allUsers.find(u => u.id === userId);
     if (user) {
-      setCurrentUser(user);
+      setCurrentUser({ ...user, isAuthenticated: true });
     }
   };
   
@@ -156,6 +218,8 @@ export const usePermissions = () => {
     hasAllPermissions,
     hasAnyPermission,
     switchUser,
+    loginUser,
+    logoutUser,
     availableUsers: allUsers,
     availableRoles: allRoles,
     availablePermissions,
