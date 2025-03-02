@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Download, Trash2, Link, Calendar, FileDownload, AlertCircle } from "lucide-react";
+import { Download, Trash2, Link, Calendar, AlertCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
@@ -175,7 +174,7 @@ const ProfileIntegrations: React.FC = () => {
           <div className="space-y-4">
             <div className="rounded-lg border p-4">
               <div className="flex items-start space-x-3">
-                <FileDownload className="h-5 w-5 text-muted-foreground" />
+                <Download className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <h4 className="text-sm font-medium">Exporter vos données personnelles</h4>
                   <p className="text-sm text-muted-foreground">
