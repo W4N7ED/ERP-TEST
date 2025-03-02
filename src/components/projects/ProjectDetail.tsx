@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Project, ProjectPhase, ProjectTask } from "@/types/project";
 import { Navbar } from "@/components/layout/Navbar";
@@ -20,8 +19,14 @@ import {
   Plus,
   Printer,
   Users,
-  DollarSign
+  DollarSign,
+  UserPlus,
+  ListPlus
 } from "lucide-react";
+import { AddPhaseDialog } from "./AddPhaseDialog";
+import { AddTaskDialog } from "./AddTaskDialog";
+import { AddMemberDialog } from "./AddMemberDialog";
+import { useProjectsState } from "@/hooks/useProjectsState";
 
 interface ProjectDetailProps {
   project: Project;
@@ -30,6 +35,13 @@ interface ProjectDetailProps {
 
 export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack }) => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [isAddPhaseDialogOpen, setIsAddPhaseDialogOpen] = useState(false);
+  const [isAddTaskDialogOpen, setIsAddTaskDialogOpen] = useState(false);
+  const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
+  const [selectedPhaseId, setSelectedPhaseId] = useState<number | null>(null);
+  const [selectedPhaseName, setSelectedPhaseName] = useState<string>("");
+  
+  const { addPhaseToProject, addTaskToPhase, addMemberToProject } = useProjectsState();
 
   const getStatusIcon = (status: string) => {
     switch(status) {
@@ -74,6 +86,12 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack })
       case "Urgente": return "bg-red-50 text-red-700";
       default: return "";
     }
+  };
+
+  const handleAddTaskClick = (phaseId: number, phaseName: string) => {
+    setSelectedPhaseId(phaseId);
+    setSelectedPhaseName(phaseName);
+    setIsAddTaskDialogOpen(true);
   };
 
   const renderPhaseCard = (phase: ProjectPhase) => (
@@ -125,43 +143,65 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack })
           </div>
         )}
 
-        {phase.tasks.length > 0 && (
-          <div>
-            <h4 className="font-medium text-sm mb-2 flex items-center">
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <h4 className="font-medium text-sm flex items-center">
               <FileText size={16} className="mr-2" /> Tâches ({phase.tasks.filter(t => t.status === "Terminée").length}/{phase.tasks.length})
             </h4>
-            <div className="space-y-2">
-              {phase.tasks.map(task => (
-                <div key={task.id} className="p-2 bg-gray-50 rounded-md">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="font-medium text-sm">{task.name}</div>
-                    <div className="flex space-x-2">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getTaskPriorityClass(task.priority)}`}>
-                        {task.priority}
-                      </span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusClass(task.status)}`}>
-                        {getStatusIcon(task.status)}
-                        <span className="ml-1">{task.status}</span>
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center">
-                      <Calendar size={12} className="mr-1" />
-                      <span>Deadline: {formatDate(task.deadline)}</span>
-                    </div>
-                    {task.interventions.length > 0 && (
-                      <div className="flex items-center">
-                        <PencilRuler size={12} className="mr-1" />
-                        <span>{task.interventions.length} intervention{task.interventions.length > 1 ? 's' : ''}</span>
-                      </div>
-                    )}
+            <CustomButton 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 px-2 text-primary"
+              onClick={() => handleAddTaskClick(phase.id, phase.name)}
+              icon={<ListPlus size={14} />}
+            >
+              Ajouter
+            </CustomButton>
+          </div>
+          
+          <div className="space-y-2">
+            {phase.tasks.map(task => (
+              <div key={task.id} className="p-2 bg-gray-50 rounded-md">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="font-medium text-sm">{task.name}</div>
+                  <div className="flex space-x-2">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getTaskPriorityClass(task.priority)}`}>
+                      {task.priority}
+                    </span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusClass(task.status)}`}>
+                      {getStatusIcon(task.status)}
+                      <span className="ml-1">{task.status}</span>
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center">
+                    <Calendar size={12} className="mr-1" />
+                    <span>Deadline: {formatDate(task.deadline)}</span>
+                  </div>
+                  {task.assignedTo && (
+                    <div className="flex items-center">
+                      <Users size={12} className="mr-1" />
+                      <span>{task.assignedTo.name}</span>
+                    </div>
+                  )}
+                  {task.interventions.length > 0 && (
+                    <div className="flex items-center">
+                      <PencilRuler size={12} className="mr-1" />
+                      <span>{task.interventions.length} intervention{task.interventions.length > 1 ? 's' : ''}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            
+            {phase.tasks.length === 0 && (
+              <div className="p-2 text-center text-sm text-muted-foreground">
+                Aucune tâche dans cette phase
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -334,10 +374,16 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack })
           <TabsContent value="phases">
             <div className="space-y-4">
               {project.phases.map(phase => renderPhaseCard(phase))}
+              
+              {project.phases.length === 0 && (
+                <div className="text-center p-8">
+                  <p className="text-muted-foreground mb-4">Aucune phase n'a encore été créée pour ce projet</p>
+                </div>
+              )}
             </div>
             
-            <div className="mt-4">
-              <CustomButton variant="outline" icon={<Plus size={16} />}>
+            <div className="mt-6">
+              <CustomButton variant="outline" icon={<Plus size={16} />} onClick={() => setIsAddPhaseDialogOpen(true)}>
                 Ajouter une phase
               </CustomButton>
             </div>
@@ -348,30 +394,39 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack })
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Équipe du projet</CardTitle>
-                  <CustomButton variant="outline" size="sm" icon={<Plus size={16} />}>
+                  <CustomButton variant="outline" size="sm" icon={<UserPlus size={16} />} onClick={() => setIsAddMemberDialogOpen(true)}>
                     Ajouter un membre
                   </CustomButton>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {project.team.map((member, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-medium mr-3">
-                          {member.name.split(' ').map(n => n[0]).join('')}
+                {project.team.length > 0 ? (
+                  <div className="space-y-4">
+                    {project.team.map((member, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-medium mr-3">
+                            {member.name.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div>
+                            <h3 className="font-medium">{member.name}</h3>
+                            <p className="text-sm text-muted-foreground">{member.role}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-medium">{member.name}</h3>
-                          <p className="text-sm text-muted-foreground">{member.role}</p>
-                        </div>
+                        <CustomButton variant="ghost" size="sm">
+                          <Edit size={16} />
+                        </CustomButton>
                       </div>
-                      <CustomButton variant="ghost" size="sm">
-                        <Edit size={16} />
-                      </CustomButton>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-8">
+                    <p className="text-muted-foreground mb-4">Aucun membre n'a encore été ajouté à ce projet</p>
+                    <CustomButton variant="outline" icon={<UserPlus size={16} />} onClick={() => setIsAddMemberDialogOpen(true)}>
+                      Ajouter un membre
+                    </CustomButton>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -448,6 +503,30 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack })
           </TabsContent>
         </Tabs>
       </main>
+      
+      <AddPhaseDialog 
+        open={isAddPhaseDialogOpen}
+        onOpenChange={setIsAddPhaseDialogOpen}
+        projectId={project.id}
+        onAddPhase={addPhaseToProject}
+      />
+      
+      <AddTaskDialog 
+        open={isAddTaskDialogOpen}
+        onOpenChange={setIsAddTaskDialogOpen}
+        projectId={project.id}
+        phaseId={selectedPhaseId || 0}
+        phaseName={selectedPhaseName}
+        teamMembers={project.team}
+        onAddTask={addTaskToPhase}
+      />
+      
+      <AddMemberDialog 
+        open={isAddMemberDialogOpen}
+        onOpenChange={setIsAddMemberDialogOpen}
+        projectId={project.id}
+        onAddMember={addMemberToProject}
+      />
     </div>
   );
 };
