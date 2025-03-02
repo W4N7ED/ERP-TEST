@@ -10,6 +10,7 @@ import Suppliers from './pages/Suppliers';
 import Quotes from './pages/Quotes';
 import Users from './pages/Users';
 import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
         <Route path="/suppliers" element={<Suppliers />} />
         <Route path="/users" element={<Users />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/notifications" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
