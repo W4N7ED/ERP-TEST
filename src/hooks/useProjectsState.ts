@@ -234,6 +234,60 @@ export const useProjectsState = () => {
     return newTask;
   };
 
+  const deleteTask = (projectId: number, phaseId: number, taskId: number) => {
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+    
+    if (projectIndex === -1) {
+      toast.error("Projet non trouvé");
+      return;
+    }
+    
+    const phaseIndex = projects[projectIndex].phases.findIndex(p => p.id === phaseId);
+    
+    if (phaseIndex === -1) {
+      toast.error("Phase non trouvée");
+      return;
+    }
+    
+    const taskIndex = projects[projectIndex].phases[phaseIndex].tasks.findIndex(t => t.id === taskId);
+    
+    if (taskIndex === -1) {
+      toast.error("Tâche non trouvée");
+      return;
+    }
+    
+    const taskName = projects[projectIndex].phases[phaseIndex].tasks[taskIndex].name;
+    
+    const updatedPhases = [...projects[projectIndex].phases];
+    updatedPhases[phaseIndex] = {
+      ...updatedPhases[phaseIndex],
+      tasks: updatedPhases[phaseIndex].tasks.filter(t => t.id !== taskId)
+    };
+    
+    const updatedProject = {
+      ...projects[projectIndex],
+      phases: updatedPhases,
+      updatedAt: new Date().toISOString()
+    };
+    
+    const updatedProjects = [...projects];
+    updatedProjects[projectIndex] = updatedProject;
+    setProjects(updatedProjects);
+    
+    const filteredIndex = filteredProjects.findIndex(p => p.id === projectId);
+    if (filteredIndex !== -1) {
+      const updatedFiltered = [...filteredProjects];
+      updatedFiltered[filteredIndex] = updatedProject;
+      setFilteredProjects(updatedFiltered);
+    }
+    
+    if (currentProject && currentProject.id === projectId) {
+      setCurrentProject(updatedProject);
+    }
+    
+    toast.success(`Tâche "${taskName}" supprimée avec succès`);
+  };
+
   const addMemberToProject = (projectId: number, memberData: {
     name: string;
     role: string;
@@ -332,6 +386,7 @@ export const useProjectsState = () => {
     addNewProject,
     addPhaseToProject,
     addTaskToPhase,
+    deleteTask,
     addMemberToProject,
     setIsAddProjectDialogOpen,
     setCurrentProject

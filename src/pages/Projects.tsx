@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { CustomButton } from "@/components/ui/custom-button";
@@ -15,7 +16,9 @@ import {
   Users,
   FileText,
   DollarSign,
-  BarChart3
+  BarChart3,
+  Trash2,
+  Edit
 } from "lucide-react";
 import { useProjectsState } from "@/hooks/useProjectsState";
 import { ProjectStatus } from "@/types/project";
@@ -233,6 +236,24 @@ const Projects = () => {
                   </div>
                   
                   <div className="flex space-x-2">
+                    <CustomButton 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => handleDeleteProject(project)}
+                      title="Supprimer le projet"
+                    >
+                      <Trash2 size={16} />
+                    </CustomButton>
+                    <CustomButton 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 px-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                      onClick={() => handleEditProject(project)}
+                      title="Modifier le projet"
+                    >
+                      <Edit size={16} />
+                    </CustomButton>
                     <CustomButton 
                       variant="ghost" 
                       size="sm" 

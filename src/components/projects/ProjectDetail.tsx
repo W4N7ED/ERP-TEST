@@ -21,7 +21,8 @@ import {
   Users,
   DollarSign,
   UserPlus,
-  ListPlus
+  ListPlus,
+  Trash2
 } from "lucide-react";
 import { AddPhaseDialog } from "./AddPhaseDialog";
 import { AddTaskDialog } from "./AddTaskDialog";
@@ -40,8 +41,8 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack })
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
   const [selectedPhaseId, setSelectedPhaseId] = useState<number | null>(null);
   const [selectedPhaseName, setSelectedPhaseName] = useState<string>("");
-  
-  const { addPhaseToProject, addTaskToPhase, addMemberToProject } = useProjectsState();
+
+  const { addPhaseToProject, addTaskToPhase, addMemberToProject, deleteTask } = useProjectsState();
 
   const getStatusIcon = (status: string) => {
     switch(status) {
@@ -92,6 +93,12 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack })
     setSelectedPhaseId(phaseId);
     setSelectedPhaseName(phaseName);
     setIsAddTaskDialogOpen(true);
+  };
+
+  const handleDeleteTask = (phaseId: number, taskId: number) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette tâche ?")) {
+      deleteTask(project.id, phaseId, taskId);
+    }
   };
 
   const renderPhaseCard = (phase: ProjectPhase) => (
@@ -164,7 +171,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack })
               <div key={task.id} className="p-2 bg-gray-50 rounded-md">
                 <div className="flex justify-between items-start mb-2">
                   <div className="font-medium text-sm">{task.name}</div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 items-start">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getTaskPriorityClass(task.priority)}`}>
                       {task.priority}
                     </span>
@@ -172,6 +179,13 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack })
                       {getStatusIcon(task.status)}
                       <span className="ml-1">{task.status}</span>
                     </span>
+                    <button 
+                      onClick={() => handleDeleteTask(phase.id, task.id)} 
+                      className="text-red-500 hover:text-red-700 p-0.5"
+                      title="Supprimer la tâche"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground">
