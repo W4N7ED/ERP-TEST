@@ -1,3 +1,4 @@
+<lov-code>
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { CustomButton } from "@/components/ui/custom-button";
@@ -721,4 +722,3 @@ const Inventory = () => {
                     <td className="px-4 py-3 text-sm">{movement.user}</td>
                     <td className="px-4 py-3 text-sm">{movement.reason}</td>
                     <td className="px-4 py-3 text-sm">
-                      {
