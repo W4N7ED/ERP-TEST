@@ -2,14 +2,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { usePermissions } from "@/hooks/usePermissions";
-import { Switch } from "@/components/ui/switch";
+import { AppInfoSection } from "@/components/configuration/AppInfoSection";
+import { DatabaseSection } from "@/components/configuration/DatabaseSection";
+import { AdminAccountSection } from "@/components/configuration/AdminAccountSection";
+import { NotesSection } from "@/components/configuration/NotesSection";
 
 const Configuration = () => {
   const [appName, setAppName] = useState("");
@@ -19,13 +19,15 @@ const Configuration = () => {
   const [password, setPassword] = useState("");
   const [database, setDatabase] = useState("");
   const [isConfigured, setIsConfigured] = useState(false);
-  const [isTesting, setIsTesting] = useState(false);
   
   // Admin account configuration
   const [adminName, setAdminName] = useState("Administrateur");
   const [adminEmail, setAdminEmail] = useState("admin@example.com");
   const [adminPassword, setAdminPassword] = useState("admin123");
   const [createAdmin, setCreateAdmin] = useState(true);
+  
+  // Notes section
+  const [notes, setNotes] = useState("");
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -50,6 +52,11 @@ const Configuration = () => {
         setAdminEmail(parsedConfig.adminConfig.email || "admin@example.com");
         setAdminPassword(parsedConfig.adminConfig.password || "admin123");
         setCreateAdmin(parsedConfig.adminConfig.createAdmin !== false);
+      }
+      
+      // Notes
+      if (parsedConfig.notes) {
+        setNotes(parsedConfig.notes);
       }
     }
   }, []);
@@ -139,7 +146,8 @@ const Configuration = () => {
         email: adminEmail,
         password: adminPassword,
         createAdmin: createAdmin
-      }
+      },
+      notes
     };
 
     localStorage.setItem("app_config", JSON.stringify(configData));
@@ -151,49 +159,6 @@ const Configuration = () => {
 
     // Redirect to login page
     navigate("/login");
-  };
-
-  const testConnection = () => {
-    if (!host || !port || !username || !password || !database) {
-      toast({
-        variant: "destructive",
-        title: "Erreur de test",
-        description: "Tous les champs de connexion sont requis pour tester la connexion",
-      });
-      return;
-    }
-
-    // Set testing state to true
-    setIsTesting(true);
-
-    // Simulate connection test with a more comprehensive approach
-    toast({
-      title: "Test de connexion",
-      description: "Tentative de connexion à la base de données...",
-    });
-
-    // Simulate database connection test
-    setTimeout(() => {
-      setIsTesting(false);
-      
-      // Simulate different connection test outcomes
-      const random = Math.random();
-      
-      if (random < 0.9 || (host === "localhost" && username && password && database)) {
-        // 90% success rate or guaranteed success for well-formed localhost connections
-        toast({
-          title: "Connexion réussie",
-          description: `Connexion à ${database}@${host}:${port} établie avec succès`,
-        });
-      } else {
-        // 10% failure rate for non-localhost or when simulation triggers a failure
-        toast({
-          variant: "destructive",
-          title: "Échec de connexion",
-          description: `Impossible de se connecter à ${host}:${port}. Vérifiez les paramètres et que le serveur est accessible.`,
-        });
-      }
-    }, 1500);
   };
 
   return (
@@ -208,149 +173,35 @@ const Configuration = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Informations générales</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="appName">Nom de l'application</Label>
-                  <Input
-                    id="appName"
-                    value={appName}
-                    onChange={(e) => setAppName(e.target.value)}
-                    placeholder="EDR Solution"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Connexion à la base de données</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="host">Hôte</Label>
-                    <Input
-                      id="host"
-                      value={host}
-                      onChange={(e) => setHost(e.target.value)}
-                      placeholder="localhost ou adresse IP"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="port">Port</Label>
-                    <Input
-                      id="port"
-                      value={port}
-                      onChange={(e) => setPort(e.target.value)}
-                      placeholder="5432"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Nom d'utilisateur</Label>
-                    <Input
-                      id="username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Nom d'utilisateur de la base de données"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Mot de passe</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Mot de passe de la base de données"
-                    />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="database">Nom de la base de données</Label>
-                    <Input
-                      id="database"
-                      value={database}
-                      onChange={(e) => setDatabase(e.target.value)}
-                      placeholder="Nom de la base de données"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={testConnection}
-                    className="mt-2"
-                    disabled={isTesting}
-                  >
-                    {isTesting ? "Test en cours..." : "Tester la connexion"}
-                  </Button>
-                </div>
-              </div>
+              <AppInfoSection appName={appName} setAppName={setAppName} />
+              
+              <DatabaseSection 
+                host={host}
+                setHost={setHost}
+                port={port}
+                setPort={setPort}
+                username={username}
+                setUsername={setUsername}
+                password={password}
+                setPassword={setPassword}
+                database={database}
+                setDatabase={setDatabase}
+              />
               
               <Separator />
               
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Compte administrateur par défaut</h3>
-                  <div className="flex items-center space-x-2">
-                    <Switch 
-                      id="createAdmin" 
-                      checked={createAdmin} 
-                      onCheckedChange={setCreateAdmin} 
-                    />
-                    <Label htmlFor="createAdmin">Créer un administrateur</Label>
-                  </div>
-                </div>
-                
-                {createAdmin && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="adminName">Nom de l'administrateur</Label>
-                      <Input
-                        id="adminName"
-                        value={adminName}
-                        onChange={(e) => setAdminName(e.target.value)}
-                        placeholder="Administrateur"
-                        required={createAdmin}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="adminEmail">Email</Label>
-                      <Input
-                        id="adminEmail"
-                        type="email"
-                        value={adminEmail}
-                        onChange={(e) => setAdminEmail(e.target.value)}
-                        placeholder="admin@example.com"
-                        required={createAdmin}
-                      />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="adminPassword">Mot de passe</Label>
-                      <Input
-                        id="adminPassword"
-                        type="password"
-                        value={adminPassword}
-                        onChange={(e) => setAdminPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required={createAdmin}
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Ce compte aura tous les droits administrateurs dans l'application
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <AdminAccountSection 
+                createAdmin={createAdmin}
+                setCreateAdmin={setCreateAdmin}
+                adminName={adminName}
+                setAdminName={setAdminName}
+                adminEmail={adminEmail}
+                setAdminEmail={setAdminEmail}
+                adminPassword={adminPassword}
+                setAdminPassword={setAdminPassword}
+              />
 
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (optionnel)</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Notes ou informations supplémentaires concernant cette configuration"
-                  className="min-h-[100px]"
-                />
-              </div>
+              <NotesSection notes={notes} setNotes={setNotes} />
 
               <div className="flex gap-4 justify-end">
                 <Button type="submit" className="w-full md:w-auto">
