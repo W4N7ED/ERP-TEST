@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -51,8 +52,8 @@ const Index = () => {
   return (
     <>
       <Navbar />
-      <div className="pt-16">
-        <div className={`p-4 md:p-6 lg:p-8 overflow-auto`}>
+      <div className="w-full pt-16">
+        <div className="md:pl-64 p-4 md:p-6 lg:p-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold">Tableau de bord</h1>

@@ -1,5 +1,5 @@
 
-/* Remove default styles that might be causing layout issues */
+/* Reset default styles */
 #root {
   max-width: 100%;
   margin: 0;
@@ -7,10 +7,17 @@
   text-align: left;
 }
 
-/* Main content layout with proper sidebar space */
+/* Main content layout */
 .main-content {
+  min-height: calc(100vh - 4rem);
+  width: 100%;
   padding-top: 4rem; /* Space for the fixed navbar */
-  min-height: 100vh;
+}
+
+/* Content area with proper padding */
+.content-area {
+  padding: 1.5rem;
+  overflow-x: hidden;
 }
 
 /* Ensure content doesn't overlap with sidebar */
@@ -20,6 +27,7 @@
   }
 }
 
+/* Animations and other styles */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
