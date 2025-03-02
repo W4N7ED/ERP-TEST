@@ -30,15 +30,17 @@ import {
   Store,
   FileCheck
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("general");
+  const isMobile = useIsMobile();
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
-      <main className="flex-1 container mx-auto py-6 px-4 md:px-6">
+      <main className={`flex-1 container mx-auto py-6 px-4 md:px-6 mt-16 ${!isMobile ? 'ml-64' : ''}`}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
@@ -1110,3 +1112,4 @@ const Settings = () => {
 };
 
 export default Settings;
+
