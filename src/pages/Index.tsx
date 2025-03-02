@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/layout/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StatusChart } from "@/components/dashboard/StatusChart";
 import { CustomButton } from "@/components/ui/custom-button";

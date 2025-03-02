@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Project, ProjectPhase, ProjectTask } from "@/types/project";
-import { Navbar } from "@/components/layout/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import { CustomButton } from "@/components/ui/custom-button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

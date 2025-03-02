@@ -1,5 +1,5 @@
 
-import { Navbar } from "@/components/layout/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import AddItemDialog from "@/components/inventory/dialog/AddItemDialog";
 import CategoryCards from "@/components/inventory/CategoryCards";
 import InventoryList from "@/components/inventory/InventoryList";

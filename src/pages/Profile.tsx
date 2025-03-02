@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Navbar } from '@/components/layout/Navbar';
+import Navbar from '@/components/layout/Navbar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePermissions } from '@/hooks/usePermissions';
 import ProfilePersonalInfo from '@/components/profile/ProfilePersonalInfo';
