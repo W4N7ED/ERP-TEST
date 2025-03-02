@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
@@ -8,13 +7,12 @@ import {
   Package, 
   FolderKanban, 
   Receipt, 
-  Users, 
-  Settings,
+  Users,
+  ChevronLeft,
   Menu,
-  X
+  Settings
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useMediaQuery } from "@/hooks/use-mobile";
 
 type NavItem = {
   label: string;
@@ -32,102 +30,68 @@ const navItems: NavItem[] = [
   { label: "Paramètres", icon: <Settings size={20} />, href: "/settings" },
 ];
 
-export function Navbar() {
+export const Navbar = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
-  const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const isMobile = useMediaQuery(768);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    // Close mobile menu on route change
-    setIsOpen(false);
-  }, [location.pathname]);
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled 
-          ? "bg-white/90 backdrop-blur-md shadow-sm" 
-          : "bg-white"
-      )}
-    >
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Link 
-            to="/" 
-            className="flex items-center space-x-2"
-          >
-            <span className="font-bold text-xl text-primary">EDR</span>
-            <span className="font-medium">TechManager</span>
-          </Link>
-        </div>
-
+    <div className="border-b">
+      <div className="flex h-16 items-center px-4">
         {isMobile ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
+          <button
+            className="mr-4 text-gray-600 hover:text-gray-800 focus:outline-none"
+            onClick={toggleSidebar}
           >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
-        ) : (
-          <nav className="flex items-center space-x-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                  location.pathname === item.href
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                <span className="mr-2">{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </nav>
-        )}
+            <Menu className="h-6 w-6" />
+          </button>
+        ) : null}
+        <Link to="/" className="font-bold text-xl md:text-2xl">
+          EDR Solution
+        </Link>
+        <div className="ml-auto flex items-center space-x-4">
+          {/* <ModeToggle /> */}
+        </div>
       </div>
-
-      {/* Mobile menu */}
-      {isMobile && isOpen && (
-        <div className="fixed inset-0 z-40 bg-background pt-16 animate-fade-in">
-          <nav className="container mx-auto px-4 py-4 flex flex-col space-y-1">
+      {/* Sidebar */}
+      {(isSidebarOpen || !isMobile) && (
+        <div className="w-64 border-r bg-secondary text-secondary-foreground">
+          <div className="flex h-16 items-center px-4">
+            {isMobile ? (
+              <button
+                className="mr-4 text-gray-600 hover:text-gray-800 focus:outline-none"
+                onClick={toggleSidebar}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+            ) : null}
+            <Link to="/" className="font-bold">
+              EDR Solution
+            </Link>
+          </div>
+          <nav className="flex flex-col space-y-1 p-4">
             {navItems.map((item) => (
               <Link
-                key={item.href}
+                key={item.label}
                 to={item.href}
                 className={cn(
-                  "flex items-center px-4 py-3 rounded-lg text-base font-medium transition-colors",
+                  "group flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
                   location.pathname === item.href
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground"
                 )}
               >
-                <span className="mr-3">{item.icon}</span>
+                {item.icon}
                 <span>{item.label}</span>
               </Link>
             ))}
           </nav>
         </div>
       )}
-    </header>
+    </div>
   );
-}
+};
