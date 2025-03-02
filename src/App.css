@@ -11,13 +11,7 @@
 .main-content {
   min-height: 100vh;
   width: 100%;
-}
-
-/* Ensure content doesn't overlap with sidebar */
-@media (min-width: 768px) {
-  .main-content-with-sidebar {
-    margin-left: 16rem; /* 256px/16 = 16rem */
-  }
+  padding-top: 4rem; /* 64px for header height */
 }
 
 /* Animations and other styles */

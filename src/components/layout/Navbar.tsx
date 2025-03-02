@@ -10,7 +10,8 @@ import {
   Receipt, 
   Users,
   Menu,
-  Settings
+  Settings,
+  ChevronDown
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -31,61 +32,96 @@ const navItems: NavItem[] = [
 ];
 
 export const Navbar = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const isMobile = useIsMobile();
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
-    <>
-      {/* Top header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b">
-        <div className="flex h-16 items-center px-4">
-          {isMobile ? (
-            <button
-              className="mr-4 text-gray-600 hover:text-gray-800 focus:outline-none"
-              onClick={toggleSidebar}
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-          ) : null}
-          <Link to="/" className="font-bold text-xl md:text-2xl">
-            EDR Solution
-          </Link>
-          <div className="ml-auto flex items-center space-x-4">
-            {/* Additional header items can go here */}
-          </div>
-        </div>
-      </header>
-
-      {/* Sidebar */}
-      <aside 
-        className={cn(
-          "fixed top-16 h-[calc(100vh-4rem)] bg-secondary border-r shadow-sm transition-all duration-300 z-40",
-          (isSidebarOpen || !isMobile) ? "w-64 translate-x-0" : "w-0 -translate-x-full"
-        )}
-      >
-        <nav className="flex flex-col space-y-1 p-4">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              to={item.href}
-              className={cn(
-                "group flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                location.pathname === item.href
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground"
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b shadow-sm">
+      <div className="flex h-16 items-center px-4">
+        {isMobile ? (
+          <button
+            className="mr-4 text-gray-600 hover:text-gray-800 focus:outline-none"
+            onClick={toggleMenu}
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+        ) : null}
+        
+        <Link to="/" className="font-bold text-xl md:text-2xl">
+          EDR Solution
+        </Link>
+        
+        {/* Desktop Navigation */}
+        {!isMobile && (
+          <nav className="flex items-center ml-8">
+            <div className="relative group">
+              <button 
+                onClick={toggleMenu}
+                className="flex items-center space-x-1 text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                <span>Menu</span>
+                <ChevronDown className={cn("h-4 w-4 transition-transform", isMenuOpen ? "rotate-180" : "")} />
+              </button>
+              
+              {isMenuOpen && (
+                <div className="absolute left-0 mt-2 w-60 bg-white border rounded-md shadow-lg z-50 animate-fade-in">
+                  <div className="py-2">
+                    {navItems.map((item) => (
+                      <Link
+                        key={item.label}
+                        to={item.href}
+                        className={cn(
+                          "flex items-center space-x-2 px-4 py-3 text-sm hover:bg-gray-100",
+                          location.pathname === item.href
+                            ? "bg-gray-100 text-primary font-medium"
+                            : "text-gray-700"
+                        )}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <span className="text-gray-500">{item.icon}</span>
+                        <span>{item.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               )}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-      </aside>
-    </>
+            </div>
+          </nav>
+        )}
+        
+        <div className="ml-auto flex items-center space-x-4">
+          {/* Additional header items can go here */}
+        </div>
+      </div>
+      
+      {/* Mobile Menu */}
+      {isMobile && isMenuOpen && (
+        <div className="bg-white border-b shadow-inner animate-fade-in">
+          <nav className="flex flex-col px-4 py-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                to={item.href}
+                className={cn(
+                  "flex items-center space-x-2 px-2 py-3 text-sm border-b border-gray-100 last:border-0",
+                  location.pathname === item.href
+                    ? "text-primary font-medium"
+                    : "text-gray-700"
+                )}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span className="text-gray-500">{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+      )}
+    </header>
   );
 };
