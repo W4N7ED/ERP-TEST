@@ -14,6 +14,16 @@
   padding-top: 4rem; /* 64px for header height */
 }
 
+/* Hide scrollbars but allow scrolling */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
+
 /* Animations and other styles */
 @keyframes logo-spin {
   from {
@@ -32,4 +42,13 @@
 
 .card {
   padding: 2em;
+}
+
+/* Ensure that the content takes full width without side padding for larger screens */
+@media (min-width: 768px) {
+  .content-container {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
