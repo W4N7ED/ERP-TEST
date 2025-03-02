@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { AppInfoSection } from "@/components/configuration/AppInfoSection";
 import { DatabaseSection } from "@/components/configuration/DatabaseSection";
 import { AdminAccountSection } from "@/components/configuration/AdminAccountSection";
 import { NotesSection } from "@/components/configuration/NotesSection";
+import { initDatabaseConnection } from "@/utils/databaseUtils";
 
 const Configuration = () => {
   const [appName, setAppName] = useState("");
@@ -19,6 +19,7 @@ const Configuration = () => {
   const [password, setPassword] = useState("");
   const [database, setDatabase] = useState("");
   const [isConfigured, setIsConfigured] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   
   // Admin account configuration
   const [adminName, setAdminName] = useState("Administrateur");
@@ -61,7 +62,7 @@ const Configuration = () => {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form
@@ -83,82 +84,107 @@ const Configuration = () => {
       return;
     }
 
-    // Create default admin account if selected
-    if (createAdmin) {
-      if (!adminName || !adminEmail || !adminPassword) {
-        toast({
-          variant: "destructive",
-          title: "Erreur de configuration",
-          description: "Tous les champs pour le compte administrateur sont requis",
-        });
-        return;
-      }
-      
-      try {
-        // Add admin user
-        addUser({
-          name: adminName,
-          role: "Administrateur",
-          permissions: [
-            'inventory.view', 'inventory.add', 'inventory.edit', 'inventory.delete', 'inventory.export', 'inventory.import',
-            'suppliers.view', 'suppliers.add', 'suppliers.edit', 'suppliers.delete',
-            'movements.view', 'movements.add', 'movements.approve',
-            'projects.view', 'projects.add', 'projects.edit', 'projects.delete', 'projects.archive',
-            'interventions.view', 'interventions.add', 'interventions.edit', 'interventions.delete', 'interventions.archive',
-            'users.view', 'users.add', 'users.edit', 'users.delete',
-            'quotes.view', 'quotes.add', 'quotes.edit', 'quotes.delete', 'quotes.approve',
-            'clients.view', 'clients.add', 'clients.edit', 'clients.delete'
-          ]
-        });
-        
-        // Store admin login credentials in localStorage for login page
-        localStorage.setItem("admin_credentials", JSON.stringify({
-          email: adminEmail,
-          password: adminPassword
-        }));
-        
-        toast({
-          title: "Compte administrateur créé",
-          description: `Administrateur '${adminName}' créé avec succès`
-        });
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Erreur de création",
-          description: "Impossible de créer le compte administrateur"
-        });
-        return;
-      }
-    }
-
-    // Save configuration
-    const configData = {
-      appName,
-      host,
-      port,
-      username,
-      password,
-      database,
-      isConfigured: true,
-      configuredAt: new Date().toISOString(),
-      adminConfig: {
-        name: adminName,
-        email: adminEmail,
-        password: adminPassword,
-        createAdmin: createAdmin
-      },
-      notes
-    };
-
-    localStorage.setItem("app_config", JSON.stringify(configData));
+    setIsInitializing(true);
     
-    toast({
-      title: "Configuration sauvegardée",
-      description: "La configuration de l'application a été enregistrée avec succès",
-    });
+    try {
+      // Initialiser la connexion à la base de données et créer les tables
+      const result = await initDatabaseConnection(host, port, username, password, database);
+      
+      if (!result.success) {
+        toast({
+          variant: "destructive",
+          title: "Erreur d'initialisation",
+          description: result.message,
+        });
+        setIsInitializing(false);
+        return;
+      }
 
-    // Redirect to login page
-    navigate("/login");
+      // Create default admin account if selected
+      if (createAdmin) {
+        if (!adminName || !adminEmail || !adminPassword) {
+          toast({
+            variant: "destructive",
+            title: "Erreur de configuration",
+            description: "Tous les champs pour le compte administrateur sont requis",
+          });
+          return;
+        }
+        
+        try {
+          // Add admin user
+          addUser({
+            name: adminName,
+            role: "Administrateur",
+            permissions: [
+              'inventory.view', 'inventory.add', 'inventory.edit', 'inventory.delete', 'inventory.export', 'inventory.import',
+              'suppliers.view', 'suppliers.add', 'suppliers.edit', 'suppliers.delete',
+              'movements.view', 'movements.add', 'movements.approve',
+              'projects.view', 'projects.add', 'projects.edit', 'projects.delete', 'projects.archive',
+              'interventions.view', 'interventions.add', 'interventions.edit', 'interventions.delete', 'interventions.archive',
+              'users.view', 'users.add', 'users.edit', 'users.delete',
+              'quotes.view', 'quotes.add', 'quotes.edit', 'quotes.delete', 'quotes.approve',
+              'clients.view', 'clients.add', 'clients.edit', 'clients.delete'
+            ]
+          });
+          
+          // Store admin login credentials in localStorage for login page
+          localStorage.setItem("admin_credentials", JSON.stringify({
+            email: adminEmail,
+            password: adminPassword
+          }));
+          
+          toast({
+            title: "Compte administrateur créé",
+            description: `Administrateur '${adminName}' créé avec succès`
+          });
+        } catch (error) {
+          toast({
+            variant: "destructive",
+            title: "Erreur de création",
+            description: "Impossible de créer le compte administrateur"
+          });
+          return;
+        }
+      }
+
+      // Save configuration
+      const configData = {
+        appName,
+        host,
+        port,
+        username,
+        password,
+        database,
+        isConfigured: true,
+        configuredAt: new Date().toISOString(),
+        adminConfig: {
+          name: adminName,
+          email: adminEmail,
+          password: adminPassword,
+          createAdmin: createAdmin
+        },
+        notes
+      };
+
+      localStorage.setItem("app_config", JSON.stringify(configData));
+      
+      toast({
+        title: "Configuration sauvegardée",
+        description: "La configuration de l'application a été enregistrée avec succès et les tables ont été créées.",
+      });
+
+      // Redirect to login page
+      navigate("/login");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erreur d'initialisation",
+        description: `Une erreur s'est produite lors de l'initialisation de la base de données: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+      });
+    } finally {
+      setIsInitializing(false);
+    }
   };
 
   return (
@@ -204,8 +230,8 @@ const Configuration = () => {
               <NotesSection notes={notes} setNotes={setNotes} />
 
               <div className="flex gap-4 justify-end">
-                <Button type="submit" className="w-full md:w-auto">
-                  Enregistrer la configuration
+                <Button type="submit" className="w-full md:w-auto" disabled={isInitializing}>
+                  {isInitializing ? "Initialisation en cours..." : "Enregistrer la configuration"}
                 </Button>
               </div>
             </form>

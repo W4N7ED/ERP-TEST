@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { initDatabaseConnection } from "@/utils/databaseUtils";
 
 interface DatabaseSectionProps {
   host: string;
@@ -33,7 +34,7 @@ export const DatabaseSection = ({
   const [isTesting, setIsTesting] = useState(false);
   const { toast } = useToast();
 
-  const testConnection = () => {
+  const testConnection = async () => {
     if (!host || !port || !username || !password || !database) {
       toast({
         variant: "destructive",
@@ -46,34 +47,36 @@ export const DatabaseSection = ({
     // Set testing state to true
     setIsTesting(true);
 
-    // Simulate connection test with a more comprehensive approach
     toast({
       title: "Test de connexion",
       description: "Tentative de connexion à la base de données...",
     });
 
-    // Simulate database connection test
-    setTimeout(() => {
-      setIsTesting(false);
+    try {
+      // Tentative réelle de connexion à la base de données et création des tables
+      const result = await initDatabaseConnection(host, port, username, password, database);
       
-      // Simulate different connection test outcomes
-      const random = Math.random();
-      
-      if (random < 0.9 || (host === "localhost" && username && password && database)) {
-        // 90% success rate or guaranteed success for well-formed localhost connections
+      if (result.success) {
         toast({
           title: "Connexion réussie",
-          description: `Connexion à ${database}@${host}:${port} établie avec succès`,
+          description: result.message,
         });
       } else {
-        // 10% failure rate for non-localhost or when simulation triggers a failure
         toast({
           variant: "destructive",
           title: "Échec de connexion",
-          description: `Impossible de se connecter à ${host}:${port}. Vérifiez les paramètres et que le serveur est accessible.`,
+          description: result.message,
         });
       }
-    }, 1500);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: `Une erreur s'est produite: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+      });
+    } finally {
+      setIsTesting(false);
+    }
   };
 
   return (
