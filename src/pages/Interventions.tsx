@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { CustomButton } from "@/components/ui/custom-button";
@@ -248,10 +247,8 @@ const Interventions = () => {
   const toggleArchivedView = () => {
     setShowArchived(!showArchived);
     if (!showArchived) {
-      // Afficher toutes les interventions, y compris les archivées
       setFilteredInterventions(interventionsMock);
     } else {
-      // Masquer les interventions archivées
       setFilteredInterventions(interventionsMock.filter(i => i.status !== "Archivée"));
     }
   };
@@ -310,7 +307,6 @@ const Interventions = () => {
   };
 
   const handleCreateIntervention = () => {
-    // Vérification des champs obligatoires
     if (!currentIntervention.title || !currentIntervention.client || !currentIntervention.technician) {
       toast({
         title: "Erreur",
@@ -320,7 +316,6 @@ const Interventions = () => {
       return;
     }
 
-    // Simulation de la création d'une intervention
     const newIntervention: Intervention = {
       ...(currentIntervention as Intervention),
       id: Math.max(...interventionsMock.map(i => i.id)) + 1,
@@ -328,7 +323,6 @@ const Interventions = () => {
       deadline: currentIntervention.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     };
 
-    // Ajouter l'intervention (dans une version réelle, appel API ici)
     interventionsMock.push(newIntervention);
     setFilteredInterventions(showArchived ? [...interventionsMock] : interventionsMock.filter(i => i.status !== "Archivée"));
     setCurrentIntervention({
@@ -351,7 +345,6 @@ const Interventions = () => {
   };
 
   const handleUpdateIntervention = () => {
-    // Vérification des champs obligatoires
     if (!currentIntervention.title || !currentIntervention.client || !currentIntervention.technician) {
       toast({
         title: "Erreur",
@@ -361,7 +354,6 @@ const Interventions = () => {
       return;
     }
 
-    // Trouver l'index de l'intervention dans la liste
     const index = interventionsMock.findIndex(i => i.id === currentIntervention.id);
     if (index === -1) {
       toast({
@@ -372,10 +364,8 @@ const Interventions = () => {
       return;
     }
 
-    // Mettre à jour l'intervention
     interventionsMock[index] = { ...interventionsMock[index], ...currentIntervention as Intervention };
     
-    // Mettre à jour l'affichage
     setFilteredInterventions(showArchived ? [...interventionsMock] : interventionsMock.filter(i => i.status !== "Archivée"));
     setIsEditInterventionDialogOpen(false);
 
@@ -402,14 +392,12 @@ const Interventions = () => {
   };
 
   const linkToProject = (projectId: number) => {
-    // Dans une application réelle, ceci naviguerait vers la page du projet
     toast({
       title: "Navigation vers le projet",
       description: `Redirection vers le projet #${projectId}`,
     });
   };
 
-  // Rendu du formulaire d'intervention (partagé entre création et édition)
   const renderInterventionForm = () => (
     <div className="grid gap-4 py-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -590,7 +578,7 @@ const Interventions = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className={`pt-16 ${!isMobile ? 'md:pl-64' : ''}`}>
+      <div className="pt-16">
         <div className="p-4 md:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
             <div>
@@ -831,7 +819,6 @@ const Interventions = () => {
         </div>
       </div>
       
-      {/* Dialogue de modification d'intervention */}
       <Dialog open={isEditInterventionDialogOpen} onOpenChange={setIsEditInterventionDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
