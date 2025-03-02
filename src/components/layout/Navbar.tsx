@@ -33,23 +33,29 @@ type NavItem = {
   label: string;
   icon: React.ReactNode;
   href: string;
+  adminOnly?: boolean;
 };
 
-const navItems: NavItem[] = [
-  { label: "Tableau de bord", icon: <LayoutDashboard size={20} />, href: "/" },
-  { label: "Interventions", icon: <Wrench size={20} />, href: "/interventions" },
-  { label: "Inventaire", icon: <Package size={20} />, href: "/inventory" },
-  { label: "Projets", icon: <FolderKanban size={20} />, href: "/projects" },
-  { label: "Devis", icon: <FileText size={20} />, href: "/quotes" },
-  { label: "Utilisateurs", icon: <Users size={20} />, href: "/users" },
-  { label: "Paramètres", icon: <Settings size={20} />, href: "/settings" },
-];
-
-export const Navbar = () => {
+const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const isMobile = useIsMobile();
   const { currentUser } = usePermissions();
+  
+  const isAdmin = currentUser.role === "Administrateur";
+
+  const navItems: NavItem[] = [
+    { label: "Tableau de bord", icon: <LayoutDashboard size={20} />, href: "/" },
+    { label: "Interventions", icon: <Wrench size={20} />, href: "/interventions" },
+    { label: "Inventaire", icon: <Package size={20} />, href: "/inventory" },
+    { label: "Projets", icon: <FolderKanban size={20} />, href: "/projects" },
+    { label: "Devis", icon: <FileText size={20} />, href: "/quotes" },
+    { label: "Utilisateurs", icon: <Users size={20} />, href: "/users", adminOnly: true },
+    { label: "Paramètres", icon: <Settings size={20} />, href: "/settings", adminOnly: true },
+  ];
+
+  // Filtrer les éléments de navigation en fonction du rôle
+  const filteredNavItems = navItems.filter(item => !item.adminOnly || isAdmin);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -65,7 +71,7 @@ export const Navbar = () => {
         {/* Desktop Navigation */}
         {!isMobile && (
           <nav className="flex items-center space-x-1 overflow-x-auto hide-scrollbar">
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <Link
                 key={item.label}
                 to={item.href}
@@ -131,12 +137,14 @@ export const Navbar = () => {
                     <span>Notifications</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link to="/settings" className="flex items-center w-full">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Paramètres</span>
-                  </Link>
-                </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem>
+                    <Link to="/settings" className="flex items-center w-full">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Paramètres</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-red-600">
@@ -152,7 +160,7 @@ export const Navbar = () => {
       {isMobile && isMenuOpen && (
         <div className="bg-white border-b shadow-inner animate-fade-in">
           <nav className="flex flex-col px-4 py-2">
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <Link
                 key={item.label}
                 to={item.href}
@@ -174,3 +182,5 @@ export const Navbar = () => {
     </header>
   );
 };
+
+export default Navbar;
