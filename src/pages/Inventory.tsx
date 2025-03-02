@@ -79,6 +79,30 @@ const Inventory = () => {
     setIsAddDialogOpen(true);
   };
 
+  const handleEditItem = (item: InventoryItem) => {
+    if (!hasPermission('inventory.edit')) {
+      toast.error(`${currentUser.name} n'a pas les droits pour modifier des articles.`);
+      return;
+    }
+    console.log("Editing item:", item);
+  };
+
+  const handleDeleteItem = (item: InventoryItem) => {
+    if (!hasPermission('inventory.delete')) {
+      toast.error(`${currentUser.name} n'a pas les droits pour supprimer des articles.`);
+      return;
+    }
+    console.log("Deleting item:", item);
+  };
+
+  const handleExportInventory = () => {
+    if (!hasPermission('inventory.export')) {
+      toast.error(`${currentUser.name} n'a pas les droits pour exporter l'inventaire.`);
+      return;
+    }
+    toast.success("Export de l'inventaire en cours...");
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setNewItem({ ...newItem, [name]: value });
@@ -129,6 +153,15 @@ const Inventory = () => {
               <Plus size={16} className="mr-2" />
               Nouvel article
             </CustomButton>
+            
+            {hasPermission('inventory.export') && (
+              <CustomButton 
+                variant="outline" 
+                onClick={handleExportInventory}
+              >
+                Exporter
+              </CustomButton>
+            )}
           </div>
         </div>
 
@@ -156,7 +189,11 @@ const Inventory = () => {
             />
             <InventoryList 
               inventory={filteredInventory} 
-              onViewDetail={handleViewDetail} 
+              onViewDetail={handleViewDetail}
+              canEdit={hasPermission('inventory.edit')}
+              canDelete={hasPermission('inventory.delete')}
+              onEditItem={handleEditItem}
+              onDeleteItem={handleDeleteItem}
             />
           </>
         )}
@@ -164,7 +201,9 @@ const Inventory = () => {
         {viewMode === "detail" && currentItem && (
           <InventoryDetail 
             item={currentItem} 
-            onBack={() => setViewMode("list")} 
+            onBack={() => setViewMode("list")}
+            canEdit={hasPermission('inventory.edit')}
+            onEditItem={() => handleEditItem(currentItem)}
           />
         )}
 
