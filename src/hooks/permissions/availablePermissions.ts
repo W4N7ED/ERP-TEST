@@ -1,5 +1,5 @@
 
-import { Permission } from '@/types/permissions';
+import { Permission } from './types';
 
 // Liste complète des permissions disponibles dans l'application
 export const availablePermissions: Permission[] = [
