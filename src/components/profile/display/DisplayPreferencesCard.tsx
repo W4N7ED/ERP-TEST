@@ -5,9 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Moon, Sun, Monitor } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import IntegrationsCard from '../integrations/IntegrationsCard';
+import { Loader2 } from "lucide-react";
+import LanguageSelector from './LanguageSelector';
+import ThemeSelector from './ThemeSelector';
+import DarkModeToggle from './DarkModeToggle';
 
 interface DisplayPreferencesCardProps {
   onSave?: () => void;
@@ -58,70 +59,11 @@ const DisplayPreferencesCard: React.FC<DisplayPreferencesCardProps> = ({ onSave 
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="language">Langue</Label>
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner une langue" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Español</SelectItem>
-                <SelectItem value="de">Deutsch</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <LanguageSelector language={language} setLanguage={setLanguage} />
           
-          <div className="space-y-2">
-            <Label htmlFor="theme">Thème</Label>
-            <div className="grid grid-cols-3 gap-2">
-              <Button 
-                type="button" 
-                variant={theme === "light" ? "default" : "outline"}
-                onClick={() => setTheme("light")}
-                className="w-full justify-start"
-              >
-                <Sun className="h-4 w-4 mr-2" />
-                Clair
-              </Button>
-              <Button 
-                type="button" 
-                variant={theme === "dark" ? "default" : "outline"}
-                onClick={() => setTheme("dark")}
-                className="w-full justify-start"
-              >
-                <Moon className="h-4 w-4 mr-2" />
-                Sombre
-              </Button>
-              <Button 
-                type="button" 
-                variant={theme === "system" ? "default" : "outline"}
-                onClick={() => setTheme("system")}
-                className="w-full justify-start"
-              >
-                <Monitor className="h-4 w-4 mr-2" />
-                Système
-              </Button>
-            </div>
-          </div>
+          <ThemeSelector theme={theme} setTheme={setTheme} />
           
-          <IntegrationsCard 
-            title="Mode sombre" 
-            description="Basculer entre les thèmes clair et sombre" 
-            className="border-dashed"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Sun className="h-5 w-5 text-amber-500" />
-                <Moon className="h-5 w-5 text-indigo-400" />
-              </div>
-              <Switch 
-                checked={darkMode} 
-                onCheckedChange={toggleDarkMode}
-              />
-            </div>
-          </IntegrationsCard>
+          <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
           
           <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
             <div className="space-y-0.5">
