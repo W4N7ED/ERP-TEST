@@ -6,15 +6,17 @@ interface IntegrationsCardProps {
   title: string;
   description: string;
   children: React.ReactNode;
+  className?: string;
 }
 
 const IntegrationsCard: React.FC<IntegrationsCardProps> = ({ 
   title, 
   description, 
-  children 
+  children,
+  className = ""
 }) => {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>

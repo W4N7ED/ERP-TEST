@@ -1,17 +1,20 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Moon, Sun, Bell } from "lucide-react";
+import { Loader2, Moon, Sun, Bell, Monitor } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import IntegrationsCard from './integrations/IntegrationsCard';
 
 const ProfileDisplay: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("fr");
   const [theme, setTheme] = useState<string>("system");
+  const [darkMode, setDarkMode] = useState<boolean>(false);
   const [compactMode, setCompactMode] = useState<boolean>(false);
   
   // Notification settings
@@ -22,6 +25,24 @@ const ProfileDisplay: React.FC = () => {
     tasks: true,
     quotes: true
   });
+  
+  // Check if dark mode is active initially
+  useEffect(() => {
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    setDarkMode(isDarkMode);
+  }, []);
+  
+  const toggleDarkMode = (enabled: boolean) => {
+    setDarkMode(enabled);
+    if (enabled) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+    toast.success(`Mode ${enabled ? 'sombre' : 'clair'} activé`);
+  };
   
   const handleSaveDisplaySettings = () => {
     setIsLoading(true);
@@ -101,15 +122,28 @@ const ProfileDisplay: React.FC = () => {
                   onClick={() => setTheme("system")}
                   className="w-full justify-start"
                 >
-                  <svg className="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                    <line x1="8" y1="21" x2="16" y2="21" />
-                    <line x1="12" y1="17" x2="12" y2="21" />
-                  </svg>
+                  <Monitor className="h-4 w-4 mr-2" />
                   Système
                 </Button>
               </div>
             </div>
+            
+            <IntegrationsCard 
+              title="Mode sombre" 
+              description="Basculer entre les thèmes clair et sombre" 
+              className="border-dashed"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Sun className="h-5 w-5 text-amber-500" />
+                  <Moon className="h-5 w-5 text-indigo-400" />
+                </div>
+                <Switch 
+                  checked={darkMode} 
+                  onCheckedChange={toggleDarkMode}
+                />
+              </div>
+            </IntegrationsCard>
             
             <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
               <div className="space-y-0.5">
