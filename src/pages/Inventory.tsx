@@ -38,7 +38,7 @@ const Inventory = () => {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
-      <div className="flex-1 p-6 container max-w-screen-2xl mx-auto">
+      <div className="flex-1 p-6 container max-w-screen-2xl mx-auto pt-20">
         <InventoryActions 
           onAddItem={handleAddItem}
           onExportInventory={handleExportInventory}
