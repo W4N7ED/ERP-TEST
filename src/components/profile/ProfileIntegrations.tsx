@@ -1,10 +1,10 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import IntegrationsCard from './integrations/IntegrationsCard';
+import ConnectedAccountsList from './integrations/ConnectedAccountsList';
+import CalendarSync from './integrations/CalendarSync';
+import AccountManagement from './integrations/AccountManagement';
 import { toast } from "sonner";
-import { Download, Trash2, Link, Calendar, AlertCircle } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 
 interface ConnectedAccount {
   id: string;
@@ -15,7 +15,6 @@ interface ConnectedAccount {
 }
 
 const ProfileIntegrations: React.FC = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [accounts, setAccounts] = useState<ConnectedAccount[]>([
     {
       id: '1',
@@ -59,162 +58,40 @@ const ProfileIntegrations: React.FC = () => {
     }));
   };
   
-  const handleDataExport = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Vos données ont été exportées. Le téléchargement va commencer.");
-    }, 1500);
-  };
-  
-  const handleAccountDeletion = () => {
-    toast("Cette action est irréversible. Êtes-vous sûr ?", {
-      action: {
-        label: "Confirmer",
-        onClick: () => toast.error("Requête de suppression de compte envoyée à l'administrateur")
-      },
-      cancel: {
-        label: "Annuler",
-        onClick: () => {}
-      }
-    });
-  };
+  // Check if Google account is connected
+  const isGoogleConnected = accounts.some(account => 
+    account.provider === 'Google' && account.connected
+  );
   
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Comptes connectés</CardTitle>
-          <CardDescription>
-            Gérez les services externes connectés à votre compte
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {accounts.map(account => (
-              <div key={account.id} className="flex items-center justify-between rounded-lg border p-4">
-                <div className="flex items-center space-x-3">
-                  {account.icon}
-                  <div>
-                    <h4 className="text-sm font-medium">{account.provider}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {account.email}
-                    </p>
-                  </div>
-                </div>
-                <Button 
-                  variant={account.connected ? "outline" : "default"} 
-                  size="sm" 
-                  onClick={() => toggleConnection(account.id)}
-                >
-                  {account.connected ? "Déconnecter" : "Connecter"}
-                </Button>
-              </div>
-            ))}
-            
-            <Button variant="outline" className="w-full">
-              <Link className="h-4 w-4 mr-2" />
-              Connecter un autre compte
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <IntegrationsCard 
+        title="Comptes connectés" 
+        description="Gérez les services externes connectés à votre compte"
+      >
+        <ConnectedAccountsList 
+          accounts={accounts} 
+          toggleConnection={toggleConnection} 
+        />
+      </IntegrationsCard>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Synchronisation du calendrier</CardTitle>
-          <CardDescription>
-            Synchronisez vos interventions et tâches avec votre calendrier
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
-              <div className="flex items-center space-x-3">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <Label htmlFor="calendar-sync">Synchronisation avec Google Calendar</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Vos interventions et tâches apparaîtront dans votre calendrier Google
-                  </p>
-                </div>
-              </div>
-              <Switch 
-                id="calendar-sync" 
-                checked={calendarSync} 
-                onCheckedChange={setCalendarSync} 
-              />
-            </div>
-            
-            {!accounts[0].connected && calendarSync && (
-              <div className="rounded-md bg-amber-50 p-4 border border-amber-200 text-amber-800">
-                <div className="flex">
-                  <AlertCircle className="h-5 w-5 mr-2 text-amber-800" />
-                  <div>
-                    <h4 className="text-sm font-medium">Connexion requise</h4>
-                    <p className="text-xs mt-1">
-                      Vous devez connecter votre compte Google pour activer la synchronisation du calendrier.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <IntegrationsCard 
+        title="Synchronisation du calendrier" 
+        description="Synchronisez vos interventions et tâches avec votre calendrier"
+      >
+        <CalendarSync 
+          calendarSync={calendarSync} 
+          setCalendarSync={setCalendarSync} 
+          googleConnected={isGoogleConnected}
+        />
+      </IntegrationsCard>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Exportation et suppression de compte</CardTitle>
-          <CardDescription>
-            Gérez vos données personnelles et votre compte
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="rounded-lg border p-4">
-              <div className="flex items-start space-x-3">
-                <Download className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <h4 className="text-sm font-medium">Exporter vos données personnelles</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Téléchargez une copie de vos données, y compris votre historique d'activité
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-2" 
-                    onClick={handleDataExport}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Préparation..." : "Exporter les données"}
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="rounded-lg border border-red-200 p-4">
-              <div className="flex items-start space-x-3">
-                <Trash2 className="h-5 w-5 text-red-500" />
-                <div>
-                  <h4 className="text-sm font-medium text-red-600">Supprimer votre compte</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Cette action est irréversible et supprimera toutes vos données personnelles
-                  </p>
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    className="mt-2" 
-                    onClick={handleAccountDeletion}
-                  >
-                    Demander la suppression du compte
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <IntegrationsCard 
+        title="Exportation et suppression de compte" 
+        description="Gérez vos données personnelles et votre compte"
+      >
+        <AccountManagement />
+      </IntegrationsCard>
     </div>
   );
 };
