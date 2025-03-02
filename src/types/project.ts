@@ -1,7 +1,6 @@
-
 export type ProjectStatus = 'En attente' | 'En cours' | 'Terminé' | 'Annulé';
 export type TaskStatus = 'À faire' | 'En cours' | 'En attente' | 'Terminée';
-export type TaskPriority = 'Basse' | 'Moyenne' | 'Élevée' | 'Urgente';
+export type TaskPriority = 'Basse' | 'Moyenne' | 'Élevée' | 'Haute' | 'Urgente';
 
 export interface ProjectMember {
   id: number;
