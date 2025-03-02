@@ -95,7 +95,6 @@ export const useQuoteItems = (
       subtotal: parseFloat(subtotal.toFixed(2)),
       taxTotal: parseFloat(taxTotal.toFixed(2)),
       total: parseFloat((subtotal + taxTotal).toFixed(2)),
-      updatedAt: new Date().toISOString(),
       history: [
         ...quote.history,
         {
