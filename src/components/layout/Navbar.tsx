@@ -12,7 +12,7 @@ import {
   Menu,
   Settings
 } from "lucide-react";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type NavItem = {
   label: string;
@@ -33,7 +33,7 @@ const navItems: NavItem[] = [
 export const Navbar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
-  const isMobile = useMediaQuery(768);
+  const isMobile = useIsMobile();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
