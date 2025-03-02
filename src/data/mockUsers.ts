@@ -23,7 +23,30 @@ const mockUsers: User[] = [
       // Movement permissions
       'movements.view',
       'movements.add',
-      'movements.approve'
+      'movements.approve',
+      // Project permissions
+      'projects.view',
+      'projects.add',
+      'projects.edit',
+      'projects.delete',
+      'projects.archive',
+      // Intervention permissions
+      'interventions.view',
+      'interventions.add',
+      'interventions.edit',
+      'interventions.delete',
+      'interventions.archive',
+      // User management permissions
+      'users.view',
+      'users.add',
+      'users.edit',
+      'users.delete',
+      // Quote permissions
+      'quotes.view',
+      'quotes.add',
+      'quotes.edit',
+      'quotes.delete',
+      'quotes.approve'
     ]
   },
   {
@@ -35,7 +58,12 @@ const mockUsers: User[] = [
       'inventory.add',
       'movements.view',
       'movements.add',
-      'suppliers.view'
+      'suppliers.view',
+      'projects.view',
+      'interventions.view',
+      'interventions.add',
+      'interventions.edit',
+      'quotes.view'
     ]
   },
   {
@@ -52,7 +80,17 @@ const mockUsers: User[] = [
       'suppliers.edit',
       'movements.view',
       'movements.add',
-      'movements.approve'
+      'movements.approve',
+      'projects.view',
+      'projects.add',
+      'projects.edit',
+      'interventions.view',
+      'interventions.add',
+      'interventions.edit',
+      'interventions.approve',
+      'quotes.view',
+      'quotes.add',
+      'quotes.edit'
     ]
   },
   {
@@ -62,7 +100,25 @@ const mockUsers: User[] = [
     permissions: [
       'inventory.view',
       'suppliers.view',
-      'movements.view'
+      'movements.view',
+      'projects.view',
+      'interventions.view',
+      'quotes.view'
+    ]
+  },
+  {
+    id: 5,
+    name: "Commercial",
+    role: "Commercial",
+    permissions: [
+      'inventory.view',
+      'suppliers.view',
+      'quotes.view',
+      'quotes.add',
+      'quotes.edit',
+      'clients.view',
+      'clients.add',
+      'clients.edit'
     ]
   }
 ];

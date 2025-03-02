@@ -16,6 +16,12 @@ import {
   BarChart,
   FileText
 } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // Mock data for users
 const usersMock = [
@@ -91,8 +97,16 @@ const roleIcons: Record<string, React.ReactNode> = {
 };
 
 const Users = () => {
+  const { availableUsers, availableRoles, addUser } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState(usersMock);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    role: "Technicien" as const
+  });
   
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
@@ -139,6 +153,46 @@ const Users = () => {
     }
   };
 
+  const handleCreateUser = () => {
+    // Validation simple
+    if (!newUser.name || !newUser.email || !newUser.role) {
+      toast.error("Veuillez remplir tous les champs obligatoires");
+      return;
+    }
+    
+    // Créer le nouvel utilisateur
+    const createdUser = addUser({
+      name: newUser.name,
+      role: newUser.role,
+      permissions: [], // Les permissions seront ajoutées en fonction du rôle
+    });
+    
+    // Réinitialiser le formulaire et fermer la boîte de dialogue
+    setNewUser({
+      name: "",
+      email: "",
+      phone: "",
+      role: "Technicien"
+    });
+    setOpenDialog(false);
+    
+    // Notification de succès
+    toast.success(`L'utilisateur ${createdUser.name} a été créé avec succès`);
+    
+    // Mettre à jour la liste des utilisateurs affichés
+    // Dans un environnement réel, nous rechargerions les données depuis le serveur
+    setFilteredUsers([...filteredUsers, {
+      id: createdUser.id,
+      name: createdUser.name,
+      email: newUser.email,
+      phone: newUser.phone,
+      role: createdUser.role,
+      status: "Actif",
+      lastActive: new Date().toISOString(),
+      avatarInitials: newUser.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    }]);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -151,12 +205,89 @@ const Users = () => {
           </div>
           
           <div className="mt-4 sm:mt-0">
-            <CustomButton 
-              variant="primary" 
-              icon={<Plus size={16} />}
-            >
-              Nouvel utilisateur
-            </CustomButton>
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+              <DialogTrigger asChild>
+                <CustomButton 
+                  variant="primary" 
+                  icon={<Plus size={16} />}
+                >
+                  Nouvel utilisateur
+                </CustomButton>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
+                  <DialogDescription>
+                    Créez un nouvel utilisateur et attribuez-lui un rôle avec les permissions associées.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nom complet</Label>
+                    <Input
+                      id="name"
+                      placeholder="Jean Dupont"
+                      value={newUser.name}
+                      onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="jean.dupont@example.com"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Téléphone</Label>
+                    <Input
+                      id="phone"
+                      placeholder="+33 6 12 34 56 78"
+                      value={newUser.phone}
+                      onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Rôle</Label>
+                    <Select 
+                      value={newUser.role} 
+                      onValueChange={(value) => setNewUser({...newUser, role: value as any})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez un rôle" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableRoles.map((role) => (
+                          <SelectItem key={role} value={role}>
+                            <div className="flex items-center">
+                              {roleIcons[role] && (
+                                <span className="mr-2">{roleIcons[role]}</span>
+                              )}
+                              {role}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Les permissions seront automatiquement attribuées en fonction du rôle sélectionné
+                    </p>
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setOpenDialog(false)}>Annuler</Button>
+                  <Button onClick={handleCreateUser}>Créer l'utilisateur</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         

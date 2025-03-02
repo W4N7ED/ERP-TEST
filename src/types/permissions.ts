@@ -18,10 +18,33 @@ export type Permission =
   // Movement permissions
   | 'movements.view'
   | 'movements.add'
-  | 'movements.approve';
+  | 'movements.approve'
+  // Project permissions
+  | 'projects.view'
+  | 'projects.add'
+  | 'projects.edit'
+  | 'projects.delete'
+  | 'projects.archive'
+  // Intervention permissions
+  | 'interventions.view'
+  | 'interventions.add'
+  | 'interventions.edit'
+  | 'interventions.delete'
+  | 'interventions.archive'
+  // User management permissions
+  | 'users.view'
+  | 'users.add'
+  | 'users.edit'
+  | 'users.delete'
+  // Quote permissions
+  | 'quotes.view'
+  | 'quotes.add'
+  | 'quotes.edit'
+  | 'quotes.delete'
+  | 'quotes.approve';
 
 // User role definition
-export type UserRole = 'Administrateur' | 'Gestionnaire' | 'Technicien' | 'Invité';
+export type UserRole = string;
 
 // User interface with permissions
 export interface User {
