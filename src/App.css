@@ -41,6 +41,15 @@
   grid-column: span 4;
 }
 
+/* Card glass effect */
+.card-glass {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(240, 240, 240, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 /* Animations and other styles */
 @keyframes logo-spin {
   from {
