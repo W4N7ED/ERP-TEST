@@ -1,7 +1,7 @@
 
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
-import { Index } from './pages/Index';
+import Index from './pages/Index';
 import Projects from './pages/Projects';
 import NotFound from './pages/NotFound';
 import Inventory from './pages/Inventory';

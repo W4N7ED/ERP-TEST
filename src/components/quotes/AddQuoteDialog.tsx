@@ -59,6 +59,7 @@ export const AddQuoteDialog: React.FC<AddQuoteDialogProps> = ({
     register,
     handleSubmit,
     setValue,
+    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<QuoteFormData>({
@@ -68,6 +69,9 @@ export const AddQuoteDialog: React.FC<AddQuoteDialogProps> = ({
       terms: "Ce devis est valable 30 jours. Paiement à 30 jours après acceptation.",
     },
   });
+
+  // Use watch to get the current value of expirationDate
+  const expirationDate = watch("expirationDate");
 
   const onSubmit = async (data: QuoteFormData) => {
     onAddQuote({
@@ -153,12 +157,12 @@ export const AddQuoteDialog: React.FC<AddQuoteDialogProps> = ({
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !register("expirationDate") && "text-muted-foreground"
+                      !expirationDate && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {register("expirationDate").value ? (
-                      format(new Date(register("expirationDate").value), "PPP", { locale: fr })
+                    {expirationDate ? (
+                      format(expirationDate, "PPP", { locale: fr })
                     ) : (
                       <span>Sélectionner une date</span>
                     )}
@@ -167,7 +171,7 @@ export const AddQuoteDialog: React.FC<AddQuoteDialogProps> = ({
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={register("expirationDate").value}
+                    selected={expirationDate}
                     onSelect={(date) => date && setValue("expirationDate", date)}
                     initialFocus
                     locale={fr}
