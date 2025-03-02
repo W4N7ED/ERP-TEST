@@ -1,4 +1,3 @@
-
 // Types for inventory management
 export type ProductStatus = "Neuf" | "Occasion" | "Défectueux" | "À réparer";
 export type StockLocation = "Magasin central" | "Entrepôt" | "Technicien";
@@ -10,6 +9,7 @@ export interface Supplier {
   email: string;
   phone: string;
   deliveryTime: number; // Average delivery time in days
+  notes?: string; // Optional notes about the supplier
 }
 
 export interface ProductMovement {
@@ -252,7 +252,7 @@ export const inventoryMock: InventoryItem[] = [
 
 // Suppliers mock data
 export const suppliersMock: Supplier[] = [
-  { id: 1, name: "TechDistribution", contact: "Jean Dupont", email: "contact@techdistrib.fr", phone: "01 23 45 67 89", deliveryTime: 3 },
+  { id: 1, name: "TechDistribution", contact: "Jean Dupont", email: "contact@techdistrib.fr", phone: "01 23 45 67 89", deliveryTime: 3, notes: "Fournisseur de qualité" },
   { id: 2, name: "HP Direct", contact: "Marie Laurent", email: "b2b@hp.fr", phone: "01 98 76 54 32", deliveryTime: 5 },
   { id: 3, name: "Lenovo Business", contact: "Thomas Martin", email: "pro@lenovo.fr", phone: "01 45 67 89 10", deliveryTime: 4 },
   { id: 4, name: "Cisco Systems", contact: "Sophie Dubois", email: "ventes@cisco.fr", phone: "01 34 56 78 90", deliveryTime: 7 },
