@@ -40,7 +40,7 @@ export const Navbar = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <>
       {/* Top header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b">
         <div className="flex h-16 items-center px-4">
@@ -61,41 +61,31 @@ export const Navbar = () => {
         </div>
       </header>
 
-      {/* Main content with sidebar */}
-      <div className="flex flex-1 pt-16">
-        {/* Sidebar */}
-        <aside 
-          className={cn(
-            "fixed top-16 h-[calc(100vh-4rem)] bg-secondary border-r shadow-sm transition-all duration-300 z-40",
-            (isSidebarOpen || !isMobile) ? "w-64 translate-x-0" : "w-0 -translate-x-full"
-          )}
-        >
-          <nav className="flex flex-col space-y-1 p-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className={cn(
-                  "group flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                  location.pathname === item.href
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground"
-                )}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </nav>
-        </aside>
-
-        {/* Main content area - no content here, just structure */}
-        <main className={cn(
-          "flex-1 transition-all duration-300",
-          (isSidebarOpen || !isMobile) ? "ml-64" : "ml-0"
-        )}>
-        </main>
-      </div>
-    </div>
+      {/* Sidebar */}
+      <aside 
+        className={cn(
+          "fixed top-16 h-[calc(100vh-4rem)] bg-secondary border-r shadow-sm transition-all duration-300 z-40",
+          (isSidebarOpen || !isMobile) ? "w-64 translate-x-0" : "w-0 -translate-x-full"
+        )}
+      >
+        <nav className="flex flex-col space-y-1 p-4">
+          {navItems.map((item) => (
+            <Link
+              key={item.label}
+              to={item.href}
+              className={cn(
+                "group flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                location.pathname === item.href
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground"
+              )}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 };

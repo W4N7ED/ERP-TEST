@@ -9,15 +9,8 @@
 
 /* Main content layout */
 .main-content {
-  min-height: calc(100vh - 4rem);
+  min-height: 100vh;
   width: 100%;
-  padding-top: 4rem; /* Space for the fixed navbar */
-}
-
-/* Content area with proper padding */
-.content-area {
-  padding: 1.5rem;
-  overflow-x: hidden;
 }
 
 /* Ensure content doesn't overlap with sidebar */
