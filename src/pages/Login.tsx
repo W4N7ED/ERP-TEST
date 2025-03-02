@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,9 +12,21 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [appName, setAppName] = useState('EDR Solution');
   const { toast } = useToast();
   const navigate = useNavigate();
   const { loginUser } = usePermissions();
+
+  useEffect(() => {
+    // Get application name from configuration
+    const config = localStorage.getItem("app_config");
+    if (config) {
+      const parsedConfig = JSON.parse(config);
+      if (parsedConfig.appName) {
+        setAppName(parsedConfig.appName);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +64,7 @@ const Login = () => {
       <div className="w-full max-w-md">
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">EDR Solution</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">{appName}</CardTitle>
             <CardDescription className="text-center">
               Entrez vos identifiants pour vous connecter
             </CardDescription>
