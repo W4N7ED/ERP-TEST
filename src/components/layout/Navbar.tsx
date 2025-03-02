@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -40,58 +41,70 @@ export const Navbar = () => {
   };
 
   return (
-    <div className="border-b">
-      <div className="flex h-16 items-center px-4">
-        {isMobile ? (
-          <button
-            className="mr-4 text-gray-600 hover:text-gray-800 focus:outline-none"
-            onClick={toggleSidebar}
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-        ) : null}
-        <Link to="/" className="font-bold text-xl md:text-2xl">
-          EDR Solution
-        </Link>
-        <div className="ml-auto flex items-center space-x-4">
-          {/* <ModeToggle /> */}
+    <div className="flex flex-col md:flex-row min-h-screen">
+      {/* Top Header */}
+      <div className="w-full border-b">
+        <div className="flex h-16 items-center px-4">
+          {isMobile ? (
+            <button
+              className="mr-4 text-gray-600 hover:text-gray-800 focus:outline-none"
+              onClick={toggleSidebar}
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+          ) : null}
+          <Link to="/" className="font-bold text-xl md:text-2xl">
+            EDR Solution
+          </Link>
+          <div className="ml-auto flex items-center space-x-4">
+            {/* <ModeToggle /> */}
+          </div>
         </div>
       </div>
-      {/* Sidebar */}
-      {(isSidebarOpen || !isMobile) && (
-        <div className="w-64 border-r bg-secondary text-secondary-foreground">
-          <div className="flex h-16 items-center px-4">
-            {isMobile ? (
-              <button
-                className="mr-4 text-gray-600 hover:text-gray-800 focus:outline-none"
-                onClick={toggleSidebar}
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-            ) : null}
-            <Link to="/" className="font-bold">
-              EDR Solution
-            </Link>
-          </div>
-          <nav className="flex flex-col space-y-1 p-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className={cn(
-                  "group flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                  location.pathname === item.href
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground"
-                )}
-              >
-                {item.icon}
-                <span>{item.label}</span>
+
+      {/* Sidebar and Content Container */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        {(isSidebarOpen || !isMobile) && (
+          <div className="w-64 border-r bg-secondary text-secondary-foreground h-[calc(100vh-4rem)]">
+            <div className="flex h-16 items-center px-4">
+              {isMobile ? (
+                <button
+                  className="mr-4 text-gray-600 hover:text-gray-800 focus:outline-none"
+                  onClick={toggleSidebar}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+              ) : null}
+              <Link to="/" className="font-bold">
+                EDR Solution
               </Link>
-            ))}
-          </nav>
+            </div>
+            <nav className="flex flex-col space-y-1 p-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className={cn(
+                    "group flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                    location.pathname === item.href
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
+
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-auto">
+          {/* Content will be rendered here by the router */}
         </div>
-      )}
+      </div>
     </div>
   );
 };
