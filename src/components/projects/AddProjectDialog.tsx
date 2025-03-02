@@ -10,11 +10,22 @@ import { toast } from "sonner";
 interface AddProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAddProject: (projectData: {
+    name: string;
+    reference: string;
+    client?: string;
+    location: string;
+    startDate: string;
+    endDate: string;
+    description?: string;
+    estimatedBudget?: number;
+  }) => void;
 }
 
 export const AddProjectDialog: React.FC<AddProjectDialogProps> = ({
   open,
-  onOpenChange
+  onOpenChange,
+  onAddProject
 }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -36,13 +47,29 @@ export const AddProjectDialog: React.FC<AddProjectDialogProps> = ({
     e.preventDefault();
     
     // Validation simple
-    if (!formData.name || !formData.reference || !formData.startDate || !formData.endDate) {
+    if (!formData.name || !formData.reference || !formData.startDate || !formData.endDate || !formData.location) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
     
-    // Ici, nous simulerions l'ajout du projet à la base de données
-    console.log("Données du nouveau projet:", formData);
+    // Vérifier que la date de fin est après la date de début
+    if (new Date(formData.endDate) <= new Date(formData.startDate)) {
+      toast.error("La date de fin doit être postérieure à la date de début");
+      return;
+    }
+    
+    // Appeler la fonction pour ajouter le projet
+    onAddProject({
+      name: formData.name,
+      reference: formData.reference,
+      client: formData.client || undefined,
+      location: formData.location,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      description: formData.description || undefined,
+      estimatedBudget: formData.estimatedBudget ? Number(formData.estimatedBudget) : undefined
+    });
+    
     toast.success(`Projet "${formData.name}" créé avec succès`);
     
     // Réinitialiser le formulaire et fermer la boîte de dialogue

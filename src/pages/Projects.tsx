@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { CustomButton } from "@/components/ui/custom-button";
@@ -35,6 +34,7 @@ const Projects = () => {
     handleAddProject,
     handleEditProject,
     handleDeleteProject,
+    addNewProject,
     setIsAddProjectDialogOpen,
     setCurrentProject
   } = useProjectsState();
@@ -257,7 +257,8 @@ const Projects = () => {
 
       <AddProjectDialog 
         open={isAddProjectDialogOpen} 
-        onOpenChange={setIsAddProjectDialogOpen} 
+        onOpenChange={setIsAddProjectDialogOpen}
+        onAddProject={addNewProject}
       />
     </div>
   );

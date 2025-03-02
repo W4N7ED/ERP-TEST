@@ -66,6 +66,53 @@ export const useProjectsState = () => {
     }
   };
 
+  const addNewProject = (projectData: {
+    name: string;
+    reference: string;
+    client?: string;
+    location: string;
+    startDate: string;
+    endDate: string;
+    description?: string;
+    estimatedBudget?: number;
+  }) => {
+    // Créer un nouvel ID (simpliste, dans un vrai système ce serait géré par le backend)
+    const newId = Math.max(...projects.map(p => p.id)) + 1;
+    
+    // Créer le nouveau projet
+    const newProject: Project = {
+      id: newId,
+      name: projectData.name,
+      reference: projectData.reference,
+      client: projectData.client || undefined,
+      location: projectData.location,
+      startDate: projectData.startDate,
+      endDate: projectData.endDate,
+      status: "En attente",
+      progress: 0,
+      description: projectData.description,
+      budget: {
+        estimated: projectData.estimatedBudget ? Number(projectData.estimatedBudget) : 0,
+        actual: 0
+      },
+      team: [],
+      phases: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Mettre à jour l'état
+    const updatedProjects = [...projects, newProject];
+    setProjects(updatedProjects);
+    
+    // Mettre à jour les projets filtrés si nécessaire
+    if (statusFilter === "Tous" || statusFilter === "En attente") {
+      setFilteredProjects(prev => [...prev, newProject]);
+    }
+    
+    return newProject;
+  };
+
   const calculateProjectStats = () => {
     const inProgress = filteredProjects.filter(p => p.status === "En cours").length;
     const completed = filteredProjects.filter(p => p.status === "Terminé").length;
@@ -114,6 +161,7 @@ export const useProjectsState = () => {
     handleAddProject,
     handleEditProject,
     handleDeleteProject,
+    addNewProject,
     setIsAddProjectDialogOpen,
     setCurrentProject
   };
