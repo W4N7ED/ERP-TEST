@@ -41,7 +41,12 @@ export type Permission =
   | 'quotes.add'
   | 'quotes.edit'
   | 'quotes.delete'
-  | 'quotes.approve';
+  | 'quotes.approve'
+  // Client permissions
+  | 'clients.view'
+  | 'clients.add'
+  | 'clients.edit'
+  | 'clients.delete';
 
 // User role definition
 export type UserRole = string;

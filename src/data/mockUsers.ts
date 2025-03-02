@@ -46,7 +46,12 @@ const mockUsers: User[] = [
       'quotes.add',
       'quotes.edit',
       'quotes.delete',
-      'quotes.approve'
+      'quotes.approve',
+      // Client permissions
+      'clients.view',
+      'clients.add',
+      'clients.edit',
+      'clients.delete'
     ]
   },
   {
@@ -87,7 +92,7 @@ const mockUsers: User[] = [
       'interventions.view',
       'interventions.add',
       'interventions.edit',
-      'interventions.approve',
+      'interventions.archive',  // Changed from 'interventions.approve' to 'interventions.archive'
       'quotes.view',
       'quotes.add',
       'quotes.edit'
@@ -116,9 +121,9 @@ const mockUsers: User[] = [
       'quotes.view',
       'quotes.add',
       'quotes.edit',
-      'clients.view',
-      'clients.add',
-      'clients.edit'
+      'clients.view',  // Added to Permission type
+      'clients.add',   // Added to Permission type
+      'clients.edit'   // Added to Permission type
     ]
   }
 ];
