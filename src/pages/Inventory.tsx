@@ -7,7 +7,7 @@ import { InventoryItem, inventoryMock } from "@/types/inventory";
 import CategoryCards from "@/components/inventory/CategoryCards";
 import InventoryList from "@/components/inventory/InventoryList";
 import InventoryDetail from "@/components/inventory/InventoryDetail";
-import AddItemDialog from "@/components/inventory/AddItemDialog";
+import AddItemDialog from "@/components/inventory/dialog/AddItemDialog";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
