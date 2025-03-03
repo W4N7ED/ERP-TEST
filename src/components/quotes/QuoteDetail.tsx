@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Quote, QuoteStatus } from "@/types/quote";
+import { Quote, QuoteStatus, QuoteItem } from "@/types/quote";
 import { useQuotesState } from "@/hooks/useQuotesState";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
