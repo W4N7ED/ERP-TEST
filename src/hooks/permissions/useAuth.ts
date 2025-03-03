@@ -33,6 +33,15 @@ export const useAuth = () => {
     // Simulation d'un délai de connexion
     await new Promise(resolve => setTimeout(resolve, 800));
     
+    // Connexion simplifiée pour le compte "admin"
+    if (username === 'admin' && (password === 'admin123' || password === 'password123')) {
+      const adminUser = allUsers.find(u => u.role === 'Administrateur');
+      if (adminUser) {
+        setCurrentUser({ ...adminUser, isAuthenticated: true });
+        return true;
+      }
+    }
+    
     // Check admin credentials from localStorage if available
     const adminCredentials = localStorage.getItem("admin_credentials");
     if (adminCredentials) {
@@ -45,15 +54,6 @@ export const useAuth = () => {
           setCurrentUser({ ...adminUser, isAuthenticated: true });
           return true;
         }
-      }
-    }
-    
-    // Pour les comptes créés dans la page de configuration avec un nom d'utilisateur
-    if (username === 'admin' && password === 'admin123') {
-      const adminUser = allUsers.find(u => u.role === 'Administrateur');
-      if (adminUser) {
-        setCurrentUser({ ...adminUser, isAuthenticated: true });
-        return true;
       }
     }
     

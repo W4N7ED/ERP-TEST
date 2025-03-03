@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -96,9 +97,12 @@ const Login = () => {
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="flex justify-center">
+          <CardFooter className="flex flex-col items-center space-y-2">
             <p className="text-sm text-muted-foreground">
               Compte administrateur par défaut: admin / admin123
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Tous les utilisateurs: [nom d'utilisateur] / password123
             </p>
           </CardFooter>
         </Card>
