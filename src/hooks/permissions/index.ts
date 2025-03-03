@@ -5,6 +5,7 @@ import { usePermissionChecks } from './usePermissionChecks';
 import { useUserManagement } from './useUserManagement';
 import { useRoleManagement } from './useRoleManagement';
 import { availablePermissions } from './availablePermissions';
+import { supabase } from '@/integrations/supabase/client';
 
 export const usePermissions = () => {
   const { 
