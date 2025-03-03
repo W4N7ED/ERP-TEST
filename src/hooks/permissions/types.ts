@@ -24,4 +24,5 @@ export interface PermissionsContextType {
   addUser: (user: Omit<User, 'id'>) => User;
   removeUser: (userId: number) => void;
   updateUser: (userId: number, updates: Partial<Omit<User, 'id'>>) => void;
+  authError: string | null;
 }

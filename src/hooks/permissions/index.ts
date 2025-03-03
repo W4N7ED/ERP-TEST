@@ -15,7 +15,8 @@ export const usePermissions = () => {
     loginUser, 
     logoutUser, 
     switchUser,
-    addUser 
+    addUser,
+    authError 
   } = useAuth();
 
   const { 
@@ -52,7 +53,8 @@ export const usePermissions = () => {
     updateRolePermissions,
     addUser,
     removeUser,
-    updateUser
+    updateUser,
+    authError
   };
 };
 
