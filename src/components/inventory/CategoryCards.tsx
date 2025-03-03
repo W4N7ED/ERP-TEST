@@ -1,9 +1,8 @@
 
 import React from "react";
-import { Package } from "lucide-react";
-import { productCategories } from "@/types/inventory";
 import { getCategoryIcon } from "@/utils/categoryIcons";
 import { inventoryMock } from "@/types/inventory";
+import { useInventoryState } from "@/hooks/useInventoryState";
 
 interface CategoryCardsProps {
   activeCategory: string | null;
@@ -11,6 +10,8 @@ interface CategoryCardsProps {
 }
 
 const CategoryCards: React.FC<CategoryCardsProps> = ({ activeCategory, onCategorySelect }) => {
+  // Utiliser directement productCategories à partir du hook
+  const { productCategories } = useInventoryState();
   const categories = Object.keys(productCategories);
 
   return (

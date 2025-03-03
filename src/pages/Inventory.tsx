@@ -1,6 +1,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import AddItemDialog from "@/components/inventory/dialog/AddItemDialog";
+import ManageCategoriesDialog from "@/components/inventory/dialog/ManageCategoriesDialog";
 import CategoryCards from "@/components/inventory/CategoryCards";
 import InventoryList from "@/components/inventory/InventoryList";
 import InventoryDetail from "@/components/inventory/InventoryDetail";
@@ -16,9 +17,11 @@ const Inventory = () => {
     viewMode,
     currentItem,
     isAddDialogOpen,
+    isCategoriesDialogOpen,
     newItem,
     currentUser,
     availableUsers,
+    productCategories,
     hasPermission,
     handleSearch,
     filterByCategory,
@@ -32,7 +35,11 @@ const Inventory = () => {
     handleSubmit,
     handleUserChange,
     handleBackToList,
-    setIsAddDialogOpen
+    setIsAddDialogOpen,
+    handleOpenCategoriesDialog,
+    setIsCategoriesDialogOpen,
+    handleAddCategory,
+    handleDeleteCategory
   } = useInventoryState();
 
   return (
@@ -42,11 +49,13 @@ const Inventory = () => {
         <InventoryActions 
           onAddItem={handleAddItem}
           onExportInventory={handleExportInventory}
+          onManageCategories={handleOpenCategoriesDialog}
           currentUser={currentUser}
           availableUsers={availableUsers}
           onUserChange={handleUserChange}
           hasAddPermission={hasPermission('inventory.add')}
           hasExportPermission={hasPermission('inventory.export')}
+          hasEditPermission={hasPermission('inventory.edit')}
         />
 
         <InventoryFilters 
@@ -87,6 +96,14 @@ const Inventory = () => {
           onInputChange={handleInputChange}
           onSelectChange={handleSelectChange}
           onSubmit={handleSubmit}
+        />
+
+        <ManageCategoriesDialog
+          isOpen={isCategoriesDialogOpen}
+          onClose={() => setIsCategoriesDialogOpen(false)}
+          onAddCategory={handleAddCategory}
+          onDeleteCategory={handleDeleteCategory}
+          categories={productCategories}
         />
       </div>
     </div>

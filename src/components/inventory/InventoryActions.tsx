@@ -1,28 +1,32 @@
 
 import React from "react";
 import { CustomButton } from "@/components/ui/custom-button";
-import { Plus, UserCircle2 } from "lucide-react";
+import { Plus, UserCircle2, Folder } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User } from "@/types/permissions";
 
 interface InventoryActionsProps {
   onAddItem: () => void;
   onExportInventory: () => void;
+  onManageCategories: () => void;
   currentUser: User;
   availableUsers: User[];
   onUserChange: (userId: string) => void;
   hasAddPermission: boolean;
   hasExportPermission: boolean;
+  hasEditPermission: boolean;
 }
 
 const InventoryActions: React.FC<InventoryActionsProps> = ({
   onAddItem,
   onExportInventory,
+  onManageCategories,
   currentUser,
   availableUsers,
   onUserChange,
   hasAddPermission,
-  hasExportPermission
+  hasExportPermission,
+  hasEditPermission
 }) => {
   return (
     <div className="flex justify-between items-center mb-6">
@@ -51,6 +55,16 @@ const InventoryActions: React.FC<InventoryActionsProps> = ({
         >
           <Plus size={16} className="mr-2" />
           Nouvel article
+        </CustomButton>
+
+        <CustomButton 
+          onClick={onManageCategories} 
+          disabled={!hasEditPermission}
+          variant="outline"
+          title={!hasEditPermission ? "Vous n'avez pas les droits" : undefined}
+        >
+          <Folder size={16} className="mr-2" />
+          Gérer catégories
         </CustomButton>
         
         {hasExportPermission && (
