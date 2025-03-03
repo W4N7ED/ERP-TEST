@@ -1,417 +1,259 @@
-
-import { useState } from "react";
-import Navbar from "@/components/layout/Navbar";
-import { CustomButton } from "@/components/ui/custom-button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from 'react';
+import { usePermissions } from '@/hooks/usePermissions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
-  Plus,
-  Search,
-  Filter,
-  User,
-  Mail,
-  Phone,
-  Shield,
-  Settings,
-  Wrench,
-  BarChart,
-  FileText
-} from "lucide-react";
-import { usePermissions } from "@/hooks/usePermissions";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from 'sonner';
+import { UserPlus, Trash2, Edit, UserCog } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
-// Mock data for users
-const usersMock = [
-  {
-    id: 1,
-    name: "Jean Dupont",
-    email: "jean.dupont@example.com",
-    phone: "+33 6 12 34 56 78",
-    role: "Technicien",
-    status: "Actif",
-    lastActive: "2023-09-14T15:30:00",
-    avatarInitials: "JD"
-  },
-  {
-    id: 2,
-    name: "Marie Lambert",
-    email: "marie.lambert@example.com",
-    phone: "+33 6 23 45 67 89",
-    role: "Technicien",
-    status: "Actif",
-    lastActive: "2023-09-14T14:15:00",
-    avatarInitials: "ML"
-  },
-  {
-    id: 3,
-    name: "Alex Thibault",
-    email: "alex.thibault@example.com",
-    phone: "+33 6 34 56 78 90",
-    role: "Administrateur",
-    status: "Actif",
-    lastActive: "2023-09-14T16:45:00",
-    avatarInitials: "AT"
-  },
-  {
-    id: 4,
-    name: "Claire Petit",
-    email: "claire.petit@example.com",
-    phone: "+33 6 45 67 89 01",
-    role: "Gestionnaire de projet",
-    status: "Actif",
-    lastActive: "2023-09-14T11:20:00",
-    avatarInitials: "CP"
-  },
-  {
-    id: 5,
-    name: "Thomas Martin",
-    email: "thomas.martin@example.com",
-    phone: "+33 6 56 78 90 12",
-    role: "Opérateur",
-    status: "Inactif",
-    lastActive: "2023-09-10T09:10:00",
-    avatarInitials: "TM"
-  },
-  {
-    id: 6,
-    name: "Sophie Leroy",
-    email: "sophie.leroy@example.com",
-    phone: "+33 6 67 89 01 23",
-    role: "Commercial",
-    status: "Actif",
-    lastActive: "2023-09-14T13:05:00",
-    avatarInitials: "SL"
-  }
-];
-
-// Role icons mapping
-const roleIcons: Record<string, React.ReactNode> = {
-  "Administrateur": <Shield size={16} />,
-  "Technicien": <Wrench size={16} />,
-  "Opérateur": <Settings size={16} />,
-  "Gestionnaire de projet": <BarChart size={16} />,
-  "Commercial": <FileText size={16} />
+type UserTableItem = {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: 'active' | 'inactive';
+  lastActive: string;
 };
 
-const Users = () => {
-  const { availableUsers, availableRoles, addUser } = usePermissions();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState(usersMock);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    role: "Technicien" as const
-  });
+const UsersPage = () => {
+  const { 
+    availableUsers, 
+    availableRoles, 
+    addUser, 
+    removeUser, 
+    updateUser,
+    hasPermission 
+  } = usePermissions();
   
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    
-    if (term.trim() === "") {
-      setFilteredUsers(usersMock);
-    } else {
-      const filtered = usersMock.filter(
-        user => 
-          user.name.toLowerCase().includes(term.toLowerCase()) ||
-          user.email.toLowerCase().includes(term.toLowerCase()) ||
-          user.role.toLowerCase().includes(term.toLowerCase())
-      );
-      setFilteredUsers(filtered);
-    }
-  };
+  const [users, setUsers] = useState<UserTableItem[]>([]);
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
   
-  const getStatusClass = (status: string) => {
-    return status === "Actif" 
-      ? "bg-green-100 text-green-700" 
-      : "bg-gray-100 text-gray-700";
-  };
+  const canManageUsers = hasPermission('users.add') && hasPermission('users.edit');
   
-  const formatLastActive = (dateTimeString: string) => {
-    const date = new Date(dateTimeString);
-    return `${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
-  };
+  useEffect(() => {
+    // Transform availableUsers to the format needed for the table
+    const transformedUsers = availableUsers.map(user => ({
+      id: user.id,
+      name: user.name,
+      email: `${user.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+      role: user.role,
+      status: 'active' as const,
+      lastActive: 'Today'
+    }));
+    
+    setUsers(transformedUsers);
+  }, [availableUsers]);
   
-  const getRoleBadgeClass = (role: string) => {
-    switch(role) {
-      case "Administrateur": 
-        return "bg-purple-100 text-purple-700";
-      case "Technicien":
-        return "bg-blue-100 text-blue-700";
-      case "Opérateur":
-        return "bg-amber-100 text-amber-700";
-      case "Gestionnaire de projet":
-        return "bg-green-100 text-green-700";
-      case "Commercial":
-        return "bg-indigo-100 text-indigo-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  const handleCreateUser = () => {
-    // Validation simple
-    if (!newUser.name || !newUser.email || !newUser.role) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
-      return;
-    }
-    
-    // Créer le nouvel utilisateur
-    const createdUser = addUser({
-      name: newUser.name,
-      role: newUser.role,
-      permissions: [], // Les permissions seront ajoutées en fonction du rôle
-    });
-    
-    // Réinitialiser le formulaire et fermer la boîte de dialogue
-    setNewUser({
-      name: "",
-      email: "",
-      phone: "",
-      role: "Technicien"
-    });
-    setOpenDialog(false);
-    
-    // Notification de succès
-    toast.success(`L'utilisateur ${createdUser.name} a été créé avec succès`);
-    
-    // Mettre à jour la liste des utilisateurs affichés
-    // Dans un environnement réel, nous rechargerions les données depuis le serveur
-    setFilteredUsers([...filteredUsers, {
-      id: createdUser.id,
-      name: createdUser.name,
-      email: newUser.email,
-      phone: newUser.phone,
-      role: createdUser.role,
-      status: "Actif",
-      lastActive: new Date().toISOString(),
-      avatarInitials: newUser.name.split(' ').map(n => n[0]).join('').toUpperCase()
-    }]);
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+  const handleAddUser = async () => {
+    try {
+      // Instead of directly using the Promise result
+      const newUser = await addUser({
+        name: newUserName,
+        role: selectedRole,
+        permissions: []
+      });
       
-      <main className="container mx-auto px-4 pt-24 pb-12 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Utilisateurs</h1>
-            <p className="text-muted-foreground mt-1">Gestion des utilisateurs et leurs permissions</p>
-          </div>
-          
-          <div className="mt-4 sm:mt-0">
-            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-              <DialogTrigger asChild>
-                <CustomButton 
-                  variant="primary" 
-                  icon={<Plus size={16} />}
+      // Now newUser is the resolved value, not a Promise
+      toast.success(`User ${newUser.name} added successfully`);
+      
+      // Use the resolved user properties
+      setUsers(prev => [...prev, {
+        id: newUser.id,
+        name: newUser.name,
+        email: `${newUser.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+        role: newUser.role,
+        status: 'active',
+        lastActive: 'Just now'
+      }]);
+      
+      // Reset form
+      setNewUserName('');
+      setIsAddUserDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding user:', error);
+      toast.error('Failed to add user');
+    }
+  };
+  
+  const handleRemoveUser = (userId: number, userName: string) => {
+    if (window.confirm(`Are you sure you want to remove ${userName}?`)) {
+      removeUser(userId);
+      setUsers(prev => prev.filter(user => user.id !== userId));
+      toast.success(`User ${userName} removed successfully`);
+    }
+  };
+  
+  const handleUpdateUserRole = (userId: number, newRole: string) => {
+    updateUser(userId, { role: newRole });
+    setUsers(prev => prev.map(user => 
+      user.id === userId ? { ...user, role: newRole } : user
+    ));
+    toast.success(`User role updated successfully`);
+  };
+  
+  return (
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">User Management</h1>
+        
+        {canManageUsers && (
+          <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <UserPlus size={16} />
+                Add New User
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New User</DialogTitle>
+                <DialogDescription>
+                  Create a new user account with specific role.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="name" className="text-right">
+                    Name
+                  </label>
+                  <Input
+                    id="name"
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="role" className="text-right">
+                    Role
+                  </label>
+                  <Select
+                    value={selectedRole}
+                    onValueChange={setSelectedRole}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableRoles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  type="submit" 
+                  onClick={handleAddUser}
+                  disabled={!newUserName || !selectedRole}
                 >
-                  Nouvel utilisateur
-                </CustomButton>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
-                  <DialogDescription>
-                    Créez un nouvel utilisateur et attribuez-lui un rôle avec les permissions associées.
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nom complet</Label>
-                    <Input
-                      id="name"
-                      placeholder="Jean Dupont"
-                      value={newUser.name}
-                      onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="jean.dupont@example.com"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Téléphone</Label>
-                    <Input
-                      id="phone"
-                      placeholder="+33 6 12 34 56 78"
-                      value={newUser.phone}
-                      onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Rôle</Label>
-                    <Select 
-                      value={newUser.role} 
-                      onValueChange={(value) => setNewUser({...newUser, role: value as any})}
+                  Add User
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+      
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Last Active</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell className="font-medium">{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
+                  {canManageUsers ? (
+                    <Select
+                      defaultValue={user.role}
+                      onValueChange={(value) => handleUpdateUserRole(user.id, value)}
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez un rôle" />
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue>{user.role}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {availableRoles.map((role) => (
                           <SelectItem key={role} value={role}>
-                            <div className="flex items-center">
-                              {roleIcons[role] && (
-                                <span className="mr-2">{roleIcons[role]}</span>
-                              )}
-                              {role}
-                            </div>
+                            {role}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Les permissions seront automatiquement attribuées en fonction du rôle sélectionné
-                    </p>
+                  ) : (
+                    user.role
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
+                    {user.status}
+                  </Badge>
+                </TableCell>
+                <TableCell>{user.lastActive}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" size="icon">
+                      <UserCog className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    {canManageUsers && (
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => handleRemoveUser(user.id, user.name)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
-                </div>
-                
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setOpenDialog(false)}>Annuler</Button>
-                  <Button onClick={handleCreateUser}>Créer l'utilisateur</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {["Administrateur", "Technicien", "Opérateur", "Commercial"].map((role) => (
-            <div 
-              key={role}
-              className="card-glass rounded-xl p-5 flex items-center justify-between"
-            >
-              <div>
-                <h3 className="font-medium">{role}s</h3>
-                <p className="text-2xl font-bold mt-1">
-                  {usersMock.filter(user => user.role === role).length}
-                </p>
-              </div>
-              <div className={`${getRoleBadgeClass(role).replace('text-', 'bg-').replace('bg-', 'text-')} p-3 rounded-full`}>
-                {roleIcons[role]}
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="card-glass rounded-xl mb-8">
-          <div className="p-5 border-b border-gray-100">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-grow">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
-                <Input
-                  placeholder="Rechercher un utilisateur..."
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  className="pl-10"
-                />
-              </div>
-              
-              <div className="flex gap-2">
-                <CustomButton variant="outline" icon={<Filter size={16} />}>
-                  Filtrer
-                </CustomButton>
-              </div>
-            </div>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-muted/50">
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Utilisateur</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Coordonnées</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Rôle</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Statut</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Dernière activité</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-3">
-                          {user.avatarInitials}
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium">{user.name}</div>
-                          <div className="text-xs text-muted-foreground">ID: {user.id}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm flex items-center mb-1">
-                        <Mail size={14} className="mr-2 text-muted-foreground" />
-                        {user.email}
-                      </div>
-                      <div className="text-sm flex items-center">
-                        <Phone size={14} className="mr-2 text-muted-foreground" />
-                        {user.phone}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getRoleBadgeClass(user.role)}`}>
-                        {roleIcons[user.role]}
-                        <span className="ml-1">{user.role}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusClass(user.status)}`}>
-                        {user.status}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                      {formatLastActive(user.lastActive)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <CustomButton variant="ghost" className="h-8 px-2 text-primary">Modifier</CustomButton>
-                      <CustomButton variant="ghost" className="h-8 px-2 text-muted-foreground">Détails</CustomButton>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          {filteredUsers.length === 0 && (
-            <div className="p-8 text-center">
-              <p className="text-muted-foreground">Aucun utilisateur trouvé</p>
-            </div>
-          )}
-          
-          <div className="p-4 border-t border-gray-100 flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              Affichage de <span className="font-medium">{filteredUsers.length}</span> utilisateurs
-            </p>
-            
-            <div className="flex gap-2">
-              <CustomButton variant="outline" size="sm" disabled>Précédent</CustomButton>
-              <CustomButton variant="outline" size="sm" className="bg-primary/5">1</CustomButton>
-              <CustomButton variant="outline" size="sm">Suivant</CustomButton>
-            </div>
-          </div>
-        </div>
-      </main>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
 
-export default Users;
+export default UsersPage;
