@@ -1,63 +1,39 @@
-
 import { useState, useEffect } from 'react';
 import { User, Permission } from './types';
-import { CURRENT_USER_KEY } from './types';
-import mockUsers, { defaultUser } from '@/data/mockUsers';
+import { defaultUser } from '@/data/mockUsers';
+import { authService } from './services/authService';
+import { storageService } from './services/storageService';
+import { mockUserService } from './services/mockUserService';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useAuth = () => {
-  // Récupérer l'utilisateur du localStorage au démarrage
+  // Get initial user from localStorage on startup
   const getInitialUser = (): User => {
-    const savedUser = localStorage.getItem(CURRENT_USER_KEY);
-    if (savedUser) {
-      try {
-        return JSON.parse(savedUser) as User;
-      } catch (e) {
-        // En cas d'erreur de parsing, utiliser l'utilisateur par défaut mais non authentifié
-        return { ...defaultUser, isAuthenticated: false };
-      }
-    }
-    // Par défaut, l'utilisateur n'est pas authentifié
-    return { ...defaultUser, isAuthenticated: false };
+    const savedUser = storageService.getUser();
+    return savedUser || { ...defaultUser, isAuthenticated: false };
   };
 
   const [currentUser, setCurrentUser] = useState<User & { isAuthenticated?: boolean }>(getInitialUser());
-  const [allUsers, setAllUsers] = useState<User[]>(mockUsers);
+  const [allUsers, setAllUsers] = useState<User[]>(mockUserService.getAllUsers());
 
-  // Sauvegarder l'utilisateur dans localStorage quand il change
+  // Save user to localStorage when it changes
   useEffect(() => {
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+    storageService.saveUser(currentUser);
   }, [currentUser]);
 
   // Check for Supabase session on load
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await authService.getSession();
       
       if (session) {
         try {
           // Get user profile and role from Supabase
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          const { data: userRole } = await supabase
-            .from('user_roles')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .single();
+          const { data: profile } = await authService.getUserProfile(session.user.id);
+          const { data: userRole } = await authService.getUserRole(session.user.id);
             
           if (profile && userRole) {
-            setCurrentUser({
-              id: Number(session.user.id),
-              name: profile.name,
-              role: userRole.role,
-              // Cast string[] to Permission[] since we know they are valid permissions
-              permissions: userRole.permissions as Permission[],
-              isAuthenticated: true
-            });
+            setCurrentUser(authService.transformToUser(session, profile, userRole));
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
@@ -68,32 +44,16 @@ export const useAuth = () => {
     checkSession();
     
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = authService.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
           try {
             // Get user profile and role from Supabase
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-              
-            const { data: userRole } = await supabase
-              .from('user_roles')
-              .select('*')
-              .eq('user_id', session.user.id)
-              .single();
+            const { data: profile } = await authService.getUserProfile(session.user.id);
+            const { data: userRole } = await authService.getUserRole(session.user.id);
               
             if (profile && userRole) {
-              setCurrentUser({
-                id: Number(session.user.id),
-                name: profile.name,
-                role: userRole.role,
-                // Cast string[] to Permission[] since we know they are valid permissions
-                permissions: userRole.permissions as Permission[],
-                isAuthenticated: true
-              });
+              setCurrentUser(authService.transformToUser(session, profile, userRole));
             }
           } catch (error) {
             console.error('Error fetching user data:', error);
@@ -111,36 +71,19 @@ export const useAuth = () => {
 
   // Login user with username and password
   const loginUser = async (username: string, password: string): Promise<boolean> => {
-    // For backwards compatibility, continue to support mock users
-    if (username === 'admin' && (password === 'admin123' || password === 'password123')) {
-      const adminUser = allUsers.find(u => u.role === 'Administrateur');
-      if (adminUser) {
-        setCurrentUser({ ...adminUser, isAuthenticated: true });
-        return true;
-      }
-    }
-    
-    // Check admin credentials from localStorage if available
-    const adminCredentials = localStorage.getItem("admin_credentials");
-    if (adminCredentials) {
-      const credentials = JSON.parse(adminCredentials);
-      // Si le nom d'utilisateur correspond à la première partie de l'email (avant @)
-      const adminUsername = credentials.email.split('@')[0];
-      if ((username === adminUsername || username === credentials.email) && password === credentials.password) {
-        const adminUser = allUsers.find(u => u.role === 'Administrateur');
-        if (adminUser) {
-          setCurrentUser({ ...adminUser, isAuthenticated: true });
-          return true;
-        }
-      }
+    // Try mock authentication first for backward compatibility
+    const mockUser = mockUserService.authenticateMockUser(username, password);
+    if (mockUser) {
+      setCurrentUser(mockUser);
+      return true;
     }
     
     try {
       // Try to login with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: username.includes('@') ? username : `${username}@example.com`,
+      const { data, error } = await authService.signInWithPassword(
+        username.includes('@') ? username : `${username}@example.com`,
         password
-      });
+      );
       
       if (error) throw error;
       
@@ -148,27 +91,11 @@ export const useAuth = () => {
         // Successfully logged in with Supabase
         try {
           // Get user profile and role
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.session.user.id)
-            .single();
-            
-          const { data: userRole } = await supabase
-            .from('user_roles')
-            .select('*')
-            .eq('user_id', data.session.user.id)
-            .single();
+          const { data: profile } = await authService.getUserProfile(data.session.user.id);
+          const { data: userRole } = await authService.getUserRole(data.session.user.id);
             
           if (profile && userRole) {
-            setCurrentUser({
-              id: Number(data.session.user.id),
-              name: profile.name,
-              role: userRole.role,
-              // Cast string[] to Permission[] since we know they are valid permissions
-              permissions: userRole.permissions as Permission[],
-              isAuthenticated: true
-            });
+            setCurrentUser(authService.transformToUser(data.session, profile, userRole));
             return true;
           }
         } catch (error) {
@@ -179,17 +106,6 @@ export const useAuth = () => {
       return false;
     } catch (error) {
       console.error('Login error:', error);
-      
-      // For demo purposes only, try local mock users
-      const user = allUsers.find(u => 
-        u.name.toLowerCase() === username.toLowerCase()
-      );
-      
-      if (user && password === 'password123') {
-        setCurrentUser({ ...user, isAuthenticated: true });
-        return true;
-      }
-      
       return false;
     }
   };
@@ -197,13 +113,13 @@ export const useAuth = () => {
   // Logout user
   const logoutUser = async () => {
     try {
-      await supabase.auth.signOut();
+      await authService.signOut();
     } catch (error) {
       console.error('Error signing out:', error);
     }
     
     setCurrentUser({ ...defaultUser, isAuthenticated: false });
-    localStorage.removeItem(CURRENT_USER_KEY);
+    storageService.removeUser();
   };
 
   // Switch to a different user (for demonstration purposes)
@@ -218,12 +134,11 @@ export const useAuth = () => {
   const addUser = async (newUser: Omit<User, 'id'>): Promise<User> => {
     try {
       // Create user in Supabase Auth
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: `${newUser.name.replace(/\s+/g, '').toLowerCase()}@example.com`,
-        password: 'password123',
-        email_confirm: true,
-        user_metadata: { name: newUser.name }
-      });
+      const { data, error } = await authService.createUser(
+        `${newUser.name.replace(/\s+/g, '').toLowerCase()}@example.com`,
+        'password123',
+        { name: newUser.name }
+      );
       
       if (error) throw error;
       
