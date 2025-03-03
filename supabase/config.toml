@@ -1,1 +1,9 @@
+
+# This is the configuration file for the Supabase functions.
 project_id = "jqwgbfzznwnotyplunaz"
+
+[functions.verify-db-connection]
+verify_jwt = false
+
+[functions.init-database]
+verify_jwt = false

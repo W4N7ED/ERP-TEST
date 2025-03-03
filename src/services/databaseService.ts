@@ -1,8 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-// This service will handle database operations through Supabase or API calls
-// rather than direct pg connections from the browser
+// Ce service gère les opérations de base de données à travers Supabase
+// plutôt que les connexions pg directes depuis le navigateur
 
 export const initDatabase = async (
   host: string,
@@ -12,34 +12,14 @@ export const initDatabase = async (
   database: string
 ): Promise<{ success: boolean; message: string; tables?: string[] }> => {
   try {
-    // Simulation of tables creation (in a real implementation, this would call a backend)
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network latency
+    // Vérifier d'abord la connexion
+    const connectionResult = await verifyDatabaseConnection(host, port, username, password, database);
     
-    // Create tables scripts that would be executed on the server-side
-    const mockTables = [
-      'users',
-      'inventory',
-      'suppliers',
-      'projects',
-      'quotes',
-      'interventions',
-      'movements'
-    ];
+    if (!connectionResult.success) {
+      return connectionResult;
+    }
     
-    console.log(`Initializing database ${database} on ${host}:${port}`);
-    
-    // In a real implementation, this would be an API call to a backend service
-    // or a Supabase Edge Function that would perform the actual SQL operations
-    const mockResponse = {
-      success: true,
-      message: `Connexion à ${database}@${host}:${port} établie avec succès et tables créées.`,
-      tables: mockTables
-    };
-    
-    return mockResponse;
-    
-    // In a production environment with Supabase Edge Functions:
-    /*
+    // Appeler la fonction supabase pour créer les tables
     const { data, error } = await supabase.functions.invoke('init-database', {
       body: { 
         host, 
@@ -50,9 +30,19 @@ export const initDatabase = async (
       }
     });
     
-    if (error) throw error;
-    return data;
-    */
+    if (error) {
+      console.error('Erreur lors de l\'appel à la fonction d\'initialisation:', error);
+      return {
+        success: false,
+        message: `Erreur d'initialisation: ${error.message}`
+      };
+    }
+    
+    return {
+      success: true,
+      message: data.message || `Connexion à ${database}@${host}:${port} établie avec succès et tables créées.`,
+      tables: data.tables || []
+    };
   } catch (error) {
     console.error('Erreur d\'initialisation de la base de données:', error);
     return {
@@ -70,17 +60,31 @@ export const verifyDatabaseConnection = async (
   database: string
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    // Simulation d'une vérification de connexion à la base de données
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Appeler la fonction Supabase pour vérifier la connexion
+    const { data, error } = await supabase.functions.invoke('verify-db-connection', {
+      body: { 
+        host, 
+        port, 
+        username, 
+        password, 
+        database 
+      }
+    });
     
-    // En production, ceci serait remplacé par un vrai appel à une API ou à une Edge Function
-    console.log(`Vérification de la connexion à ${database}@${host}:${port}`);
+    if (error) {
+      console.error('Erreur lors de la vérification de connexion:', error);
+      return {
+        success: false,
+        message: `Erreur de vérification: ${error.message}`
+      };
+    }
     
     return {
-      success: true,
-      message: `Connexion à ${database}@${host}:${port} vérifiée avec succès.`
+      success: data.success,
+      message: data.message
     };
   } catch (error) {
+    console.error('Erreur lors de la vérification de connexion:', error);
     return {
       success: false,
       message: `Erreur de vérification: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
