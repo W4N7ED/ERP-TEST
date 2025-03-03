@@ -18,6 +18,11 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    // Support pour HTTPS en développement
+    https: mode === 'development' ? {
+      // Ces options ne sont utilisées qu'en développement
+      // En production, vous utiliserez les certificats Let's Encrypt
+    } : false,
     // Configurer les en-têtes MIME correctement
     headers: {
       'Access-Control-Allow-Origin': '*',
