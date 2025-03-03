@@ -1,15 +1,15 @@
 
 import React from "react";
 import Navbar from "@/components/layout/Navbar";
-import { StatusChart } from "@/components/dashboard/StatusChart";
 import { CustomizationPanel } from "@/components/dashboard/CustomizationPanel";
 import { RecentInterventionsList } from "@/components/dashboard/RecentInterventionsList";
 import { StatsCardContainer } from "@/components/dashboard/StatsCardContainer";
 import { TechTeamWidget } from "@/components/dashboard/TechTeamWidget";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { StatusChartWidget } from "@/components/dashboard/widgets/StatusChartWidget";
 import { useLoadingState } from "@/hooks/useLoadingState";
 import { useDashboardWidgets } from "@/hooks/useDashboardWidgets";
-import { statusChartData, recentInterventions } from "@/components/dashboard/data/mockData";
+import { recentInterventions } from "@/components/dashboard/data/mockData";
 
 const Index = () => {
   const { isLoading } = useLoadingState();
@@ -63,18 +63,7 @@ const Index = () => {
                 
                 {isWidgetEnabled("statutsInterventions") && (
                   <div className={getWidgetSizeClass("statutsInterventions")}>
-                    <div className="card-glass rounded-xl p-5 h-full">
-                      <h2 className="text-xl font-semibold mb-6">Statuts des interventions</h2>
-                      <StatusChart data={statusChartData} />
-                      <div className="grid grid-cols-2 gap-2 mt-4">
-                        {statusChartData.map((status, index) => (
-                          <div key={index} className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: status.color }}></div>
-                            <span className="text-sm">{status.name}: {status.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <StatusChartWidget />
                   </div>
                 )}
               </div>
