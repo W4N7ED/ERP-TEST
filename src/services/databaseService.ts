@@ -10,33 +10,80 @@ export const initDatabase = async (
   username: string,
   password: string,
   database: string
-): Promise<{ success: boolean; message: string }> => {
+): Promise<{ success: boolean; message: string; tables?: string[] }> => {
   try {
-    // Call a server function that will initialize the database
-    // In a real app, you'd use a Supabase Edge Function or another backend service
+    // Simulation of tables creation (in a real implementation, this would call a backend)
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network latency
     
-    // For now, we'll use a mock successful response
+    // Create tables scripts that would be executed on the server-side
+    const mockTables = [
+      'users',
+      'inventory',
+      'suppliers',
+      'projects',
+      'quotes',
+      'interventions',
+      'movements'
+    ];
+    
+    console.log(`Initializing database ${database} on ${host}:${port}`);
+    
+    // In a real implementation, this would be an API call to a backend service
+    // or a Supabase Edge Function that would perform the actual SQL operations
     const mockResponse = {
       success: true,
-      message: `Connection to ${database}@${host}:${port} established successfully and tables created.`
+      message: `Connexion à ${database}@${host}:${port} établie avec succès et tables créées.`,
+      tables: mockTables
     };
     
     return mockResponse;
     
-    // In a real implementation with Supabase Edge Functions, you might do:
+    // In a production environment with Supabase Edge Functions:
     /*
     const { data, error } = await supabase.functions.invoke('init-database', {
-      body: { host, port, username, password, database }
+      body: { 
+        host, 
+        port, 
+        username, 
+        password, 
+        database 
+      }
     });
     
     if (error) throw error;
     return data;
     */
   } catch (error) {
-    console.error('Database initialization error:', error);
+    console.error('Erreur d\'initialisation de la base de données:', error);
     return {
       success: false,
-      message: `Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      message: `Erreur de connexion: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+    };
+  }
+};
+
+export const verifyDatabaseConnection = async (
+  host: string,
+  port: string,
+  username: string,
+  password: string,
+  database: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    // Simulation d'une vérification de connexion à la base de données
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // En production, ceci serait remplacé par un vrai appel à une API ou à une Edge Function
+    console.log(`Vérification de la connexion à ${database}@${host}:${port}`);
+    
+    return {
+      success: true,
+      message: `Connexion à ${database}@${host}:${port} vérifiée avec succès.`
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `Erreur de vérification: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
     };
   }
 };

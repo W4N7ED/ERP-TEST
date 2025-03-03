@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { initDatabase } from "@/services/databaseService";
+import { verifyDatabaseConnection } from "@/services/databaseService";
 
 interface DatabaseSectionProps {
   host: string;
@@ -52,8 +53,8 @@ export const DatabaseSection = ({
     });
 
     try {
-      // Use the new service instead of direct pg connection
-      const result = await initDatabase(host, port, username, password, database);
+      // Use the verification service
+      const result = await verifyDatabaseConnection(host, port, username, password, database);
       
       if (result.success) {
         toast({

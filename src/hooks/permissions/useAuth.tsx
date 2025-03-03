@@ -85,6 +85,14 @@ export const useAuth = () => {
     }
   };
 
+  // Add a new user (for configuration purposes)
+  const addUser = (newUser: Omit<User, 'id'>): User => {
+    const id = Math.max(...allUsers.map(u => u.id), 0) + 1;
+    const user: User = { id, ...newUser };
+    setAllUsers(prev => [...prev, user]);
+    return user;
+  };
+
   return {
     currentUser,
     setCurrentUser,
@@ -92,6 +100,7 @@ export const useAuth = () => {
     setAllUsers,
     loginUser,
     logoutUser,
-    switchUser
+    switchUser,
+    addUser
   };
 };

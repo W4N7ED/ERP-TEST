@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -126,6 +127,11 @@ export const useConfigurationState = () => {
         });
         updateField('isInitializing', false);
         return;
+      }
+
+      // Afficher les tables créées si disponibles
+      if (result.tables && result.tables.length > 0) {
+        console.log("Tables créées:", result.tables);
       }
 
       if (state.createAdmin) {
