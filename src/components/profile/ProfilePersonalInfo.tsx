@@ -1,14 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '@/types/permissions';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Camera, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import AvatarUpload from './avatar/AvatarUpload';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfilePersonalInfoProps {
   user: User;
@@ -16,6 +17,7 @@ interface ProfilePersonalInfoProps {
 
 const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({ user }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: user.name,
     email: 'utilisateur@example.com',
@@ -23,6 +25,31 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({ user }) => {
     address: '123 Rue Principale, 75001 Paris',
     bio: "Technicien de maintenance spécialisé dans les équipements industriels."
   });
+  
+  // Récupérer l'URL de l'avatar au chargement du composant
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        if (authUser) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('avatar_url')
+            .eq('id', authUser.id)
+            .single();
+            
+          if (!error && data) {
+            setAvatarUrl(data.avatar_url);
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération du profil:", error);
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -40,9 +67,8 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({ user }) => {
     }, 1000);
   };
   
-  const handleAvatarUpload = () => {
-    // This would typically open a file dialog
-    toast.info("Fonctionnalité de téléchargement d'avatar à implémenter");
+  const handleAvatarUpdate = (url: string) => {
+    setAvatarUrl(url);
   };
   
   return (
@@ -57,14 +83,12 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({ user }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex flex-col items-center space-y-2">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src="/placeholder.svg" alt={user.name} />
-                <AvatarFallback className="text-xl">{user.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <Button type="button" variant="outline" size="sm" onClick={handleAvatarUpload} className="mt-2">
-                <Camera className="h-4 w-4 mr-2" />
-                Modifier
-              </Button>
+              <AvatarUpload 
+                currentAvatarUrl={avatarUrl} 
+                userName={user.name} 
+                onAvatarUpdate={handleAvatarUpdate}
+                size="lg"
+              />
             </div>
             
             <div className="flex-1 space-y-4">

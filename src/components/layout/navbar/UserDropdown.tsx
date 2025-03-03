@@ -13,11 +13,38 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const UserDropdown = () => {
   const navigate = useNavigate();
   const { currentUser, logoutUser } = usePermissions();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const isAdmin = currentUser.role === "Administrateur";
+
+  useEffect(() => {
+    const fetchUserAvatar = async () => {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        if (authUser) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('avatar_url')
+            .eq('id', authUser.id)
+            .single();
+            
+          if (!error && data) {
+            setAvatarUrl(data.avatar_url);
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération de l'avatar:", error);
+      }
+    };
+    
+    fetchUserAvatar();
+  }, []);
 
   const handleLogout = () => {
     logoutUser();
@@ -29,8 +56,11 @@ const UserDropdown = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src="/placeholder.svg" alt={currentUser.name} />
-            <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+            {avatarUrl ? (
+              <AvatarImage src={avatarUrl} alt={currentUser.name} />
+            ) : (
+              <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+            )}
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
