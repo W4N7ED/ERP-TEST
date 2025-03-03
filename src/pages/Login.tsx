@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/usePermissions';
+import { CustomButton } from '@/components/ui/custom-button'; 
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -21,15 +22,29 @@ const Login = () => {
     // Get application name from configuration
     const config = localStorage.getItem("app_config");
     if (config) {
-      const parsedConfig = JSON.parse(config);
-      if (parsedConfig.appName) {
-        setAppName(parsedConfig.appName);
+      try {
+        const parsedConfig = JSON.parse(config);
+        if (parsedConfig.appName) {
+          setAppName(parsedConfig.appName);
+        }
+      } catch (error) {
+        console.error("Error parsing app configuration:", error);
       }
     }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!username || !password) {
+      toast({
+        variant: "destructive",
+        title: "Champs obligatoires",
+        description: "Veuillez remplir tous les champs",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -47,14 +62,15 @@ const Login = () => {
           title: "Erreur de connexion",
           description: "Nom d'utilisateur ou mot de passe incorrect",
         });
+        setIsLoading(false);
       }
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         variant: "destructive",
         title: "Erreur de connexion",
         description: "Une erreur s'est produite. Veuillez réessayer.",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -92,9 +108,14 @@ const Login = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Connexion en cours..." : "Se connecter"}
-              </Button>
+              <CustomButton 
+                type="submit" 
+                className="w-full" 
+                isLoading={isLoading}
+                variant="primary"
+              >
+                Se connecter
+              </CustomButton>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col items-center space-y-2">
