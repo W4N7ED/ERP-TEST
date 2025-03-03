@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { User } from './types';
+import { User, Permission } from './types';
 import { CURRENT_USER_KEY } from './types';
 import mockUsers, { defaultUser } from '@/data/mockUsers';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,7 +54,8 @@ export const useAuth = () => {
               id: Number(session.user.id),
               name: profile.name,
               role: userRole.role,
-              permissions: userRole.permissions,
+              // Cast string[] to Permission[] since we know they are valid permissions
+              permissions: userRole.permissions as Permission[],
               isAuthenticated: true
             });
           }
@@ -89,7 +90,8 @@ export const useAuth = () => {
                 id: Number(session.user.id),
                 name: profile.name,
                 role: userRole.role,
-                permissions: userRole.permissions,
+                // Cast string[] to Permission[] since we know they are valid permissions
+                permissions: userRole.permissions as Permission[],
                 isAuthenticated: true
               });
             }
@@ -163,7 +165,8 @@ export const useAuth = () => {
               id: Number(data.session.user.id),
               name: profile.name,
               role: userRole.role,
-              permissions: userRole.permissions,
+              // Cast string[] to Permission[] since we know they are valid permissions
+              permissions: userRole.permissions as Permission[],
               isAuthenticated: true
             });
             return true;
