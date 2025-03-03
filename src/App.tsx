@@ -15,6 +15,7 @@ import Login from './pages/Login';
 import Configuration from './pages/Configuration';
 import { usePermissions } from './hooks/usePermissions';
 import { ThemeProvider } from './components/ThemeProvider';
+import { AppNameProvider } from './components/AppNameProvider';
 
 const AdminRoute = ({ element }: { element: React.ReactNode }) => {
   const { currentUser } = usePermissions();
@@ -72,22 +73,24 @@ function App() {
 
   return (
     <ThemeProvider>
-      <Routes>
-        <Route path="/login" element={<ConfiguredRoute element={<Login />} />} />
-        <Route path="/configure" element={<Configuration />} />
-        <Route path="/" element={<PrivateRoute element={<Index />} />} />
-        <Route path="/projects" element={<PrivateRoute element={<Projects />} />} />
-        <Route path="/inventory" element={<PrivateRoute element={<Inventory />} />} />
-        <Route path="/interventions" element={<PrivateRoute element={<Interventions />} />} />
-        <Route path="/quotes" element={<PrivateRoute element={<Quotes />} />} />
-        <Route path="/suppliers" element={<PrivateRoute element={<Suppliers />} />} />
-        <Route path="/users" element={<AdminRoute element={<Users />} />} />
-        <Route path="/settings" element={<AdminRoute element={<Settings />} />} />
-        <Route path="/profile" element={<PrivateRoute element={<Profile />} />} />
-        <Route path="/profile/notifications" element={<PrivateRoute element={<Profile />} />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Toaster />
+      <AppNameProvider>
+        <Routes>
+          <Route path="/login" element={<ConfiguredRoute element={<Login />} />} />
+          <Route path="/configure" element={<Configuration />} />
+          <Route path="/" element={<PrivateRoute element={<Index />} />} />
+          <Route path="/projects" element={<PrivateRoute element={<Projects />} />} />
+          <Route path="/inventory" element={<PrivateRoute element={<Inventory />} />} />
+          <Route path="/interventions" element={<PrivateRoute element={<Interventions />} />} />
+          <Route path="/quotes" element={<PrivateRoute element={<Quotes />} />} />
+          <Route path="/suppliers" element={<PrivateRoute element={<Suppliers />} />} />
+          <Route path="/users" element={<AdminRoute element={<Users />} />} />
+          <Route path="/settings" element={<AdminRoute element={<Settings />} />} />
+          <Route path="/profile" element={<PrivateRoute element={<Profile />} />} />
+          <Route path="/profile/notifications" element={<PrivateRoute element={<Profile />} />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <Toaster />
+      </AppNameProvider>
     </ThemeProvider>
   );
 }

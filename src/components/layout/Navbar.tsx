@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -28,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useAppName } from "@/components/AppNameProvider";
 
 type NavItem = {
   label: string;
@@ -42,6 +42,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { currentUser, logoutUser } = usePermissions();
+  const { appName } = useAppName();
   
   const isAdmin = currentUser.role === "Administrateur";
   const isAuthenticated = currentUser.isAuthenticated;
@@ -56,7 +57,6 @@ const Navbar = () => {
     { label: "Paramètres", icon: <Settings size={20} />, href: "/settings", adminOnly: true },
   ];
 
-  // Filtrer les éléments de navigation en fonction du rôle
   const filteredNavItems = navItems.filter(item => (!item.adminOnly || isAdmin) && isAuthenticated);
 
   const toggleMenu = () => {
@@ -76,10 +76,9 @@ const Navbar = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b shadow-sm">
       <div className="flex h-16 items-center px-4">
         <Link to="/" className="font-bold text-xl md:text-2xl mr-8">
-          EDR Solution
+          {appName}
         </Link>
         
-        {/* Desktop Navigation */}
         {!isMobile && isAuthenticated && (
           <nav className="flex items-center space-x-1 overflow-x-auto hide-scrollbar">
             {filteredNavItems.map((item) => (
@@ -100,7 +99,6 @@ const Navbar = () => {
           </nav>
         )}
         
-        {/* Mobile Navigation - Hamburger menu toggle */}
         {isMobile && isAuthenticated && (
           <>
             <button
@@ -115,7 +113,6 @@ const Navbar = () => {
         )}
         
         <div className="ml-auto flex items-center space-x-4">
-          {/* Login Button for not authenticated users */}
           {!isAuthenticated && (
             <Button onClick={handleLogin} className="flex items-center gap-2">
               <LogIn size={16} />
@@ -123,7 +120,6 @@ const Navbar = () => {
             </Button>
           )}
           
-          {/* User Profile Dropdown for authenticated users*/}
           {isAuthenticated && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -177,7 +173,6 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile Menu */}
       {isMobile && isAuthenticated && isMenuOpen && (
         <div className="bg-white border-b shadow-inner animate-fade-in">
           <nav className="flex flex-col px-4 py-2">

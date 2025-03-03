@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useAppName } from '@/components/AppNameProvider';
 import { CustomButton } from '@/components/ui/custom-button'; 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -15,28 +15,12 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [appName, setAppName] = useState('EDR Solution');
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const { loginUser, currentUser, authError } = usePermissions();
+  const { appName } = useAppName();
 
-  // Récupération du nom de l'application depuis la configuration
-  useEffect(() => {
-    const config = localStorage.getItem("app_config");
-    if (config) {
-      try {
-        const parsedConfig = JSON.parse(config);
-        if (parsedConfig.appName) {
-          setAppName(parsedConfig.appName);
-        }
-      } catch (error) {
-        console.error("Error parsing app configuration:", error);
-      }
-    }
-  }, []);
-
-  // Rediriger si déjà connecté
   useEffect(() => {
     console.log("Login component - Auth state changed:", currentUser);
     if (currentUser && currentUser.isAuthenticated) {

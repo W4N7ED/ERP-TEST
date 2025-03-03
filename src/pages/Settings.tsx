@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import RoleManagement from "@/components/settings/RoleManagement";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useThemeContext } from "@/components/ThemeProvider";
+import { useAppName } from "@/components/AppNameProvider";
 import { Sun, Moon, Monitor } from "lucide-react";
 
 const Settings = () => {
@@ -25,6 +26,8 @@ const Settings = () => {
     updateRolePermissions 
   } = usePermissions();
   const { theme, setTheme } = useThemeContext();
+  const { appName, setAppName } = useAppName();
+  const [newAppName, setNewAppName] = useState(appName);
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme);
@@ -46,6 +49,23 @@ const Settings = () => {
     toast({
       title: "Mot de passe modifié",
       description: "Votre mot de passe a été mis à jour avec succès.",
+    });
+  };
+
+  const handleSaveAppName = () => {
+    if (newAppName.trim() === '') {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Le nom de l'application ne peut pas être vide.",
+      });
+      return;
+    }
+    
+    setAppName(newAppName);
+    toast({
+      title: "Nom modifié",
+      description: `Le nom de l'application a été changé en "${newAppName}".`,
     });
   };
 
@@ -89,6 +109,24 @@ const Settings = () => {
                 </div>
                 <div>
                   <Button>Mettre à jour les informations</Button>
+                </div>
+
+                <Separator className="my-4" />
+                
+                <div className="space-y-2">
+                  <Label htmlFor="app-name">Nom de l'application</Label>
+                  <Input 
+                    id="app-name" 
+                    value={newAppName} 
+                    onChange={(e) => setNewAppName(e.target.value)}
+                    placeholder="Nom de l'application" 
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Ce nom sera affiché dans la barre de navigation et partout où le nom de l'application est utilisé.
+                  </p>
+                  <Button onClick={handleSaveAppName} className="mt-2">
+                    Mettre à jour le nom
+                  </Button>
                 </div>
               </CardContent>
             </Card>
