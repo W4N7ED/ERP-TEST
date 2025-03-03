@@ -18,8 +18,12 @@ export const mockUserService = {
    * Authenticate with mock credentials
    */
   authenticateMockUser: (username: string, password: string): User | null => {
+    console.log("Authenticating mock user:", username);
+    
     // Check admin credentials
-    if (username === 'admin' && (password === 'admin123' || password === 'password123')) {
+    if ((username === 'admin' || username === 'admin@example.com') && 
+        (password === 'admin123' || password === 'password123')) {
+      console.log("Admin credentials match");
       const adminUser = mockUsers.find(u => u.role === 'Administrateur');
       if (adminUser) {
         return { ...adminUser, isAuthenticated: true };
@@ -29,8 +33,11 @@ export const mockUserService = {
     // Check admin credentials from localStorage
     const adminCredentials = storageService.getAdminCredentials();
     if (adminCredentials) {
+      console.log("Checking saved admin credentials");
       const adminUsername = adminCredentials.email.split('@')[0];
-      if ((username === adminUsername || username === adminCredentials.email) && password === adminCredentials.password) {
+      if ((username === adminUsername || username === adminCredentials.email) && 
+          password === adminCredentials.password) {
+        console.log("Saved admin credentials match");
         const adminUser = mockUsers.find(u => u.role === 'Administrateur');
         if (adminUser) {
           return { ...adminUser, isAuthenticated: true };
@@ -40,13 +47,16 @@ export const mockUserService = {
     
     // Check other mock users
     const user = mockUsers.find(u => 
-      u.name.toLowerCase() === username.toLowerCase()
+      u.name.toLowerCase() === username.toLowerCase() ||
+      `${u.name.toLowerCase()}@example.com` === username.toLowerCase()
     );
     
     if (user && password === 'password123') {
+      console.log("Regular user credentials match:", user.name);
       return { ...user, isAuthenticated: true };
     }
     
+    console.log("No matching mock credentials found");
     return null;
   }
 };

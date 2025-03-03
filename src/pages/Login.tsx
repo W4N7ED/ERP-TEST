@@ -19,16 +19,8 @@ const Login = () => {
   const location = useLocation();
   const { loginUser, currentUser } = usePermissions();
 
-  // Rediriger si déjà connecté
+  // Récupération du nom de l'application depuis la configuration
   useEffect(() => {
-    if (currentUser && currentUser.isAuthenticated) {
-      const from = location.state?.from?.pathname || '/';
-      navigate(from, { replace: true });
-    }
-  }, [currentUser, navigate, location]);
-
-  useEffect(() => {
-    // Get application name from configuration
     const config = localStorage.getItem("app_config");
     if (config) {
       try {
@@ -41,6 +33,16 @@ const Login = () => {
       }
     }
   }, []);
+
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    console.log("Login component - Auth state changed:", currentUser);
+    if (currentUser && currentUser.isAuthenticated) {
+      const from = location.state?.from?.pathname || '/';
+      console.log("Redirecting to:", from);
+      navigate(from, { replace: true });
+    }
+  }, [currentUser, navigate, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +60,10 @@ const Login = () => {
 
     try {
       console.log("Tentative de connexion avec:", username, password);
-      const success = await loginUser(username, password);
+      // Si le nom d'utilisateur ne contient pas @, considérez-le comme un nom d'utilisateur simple
+      const emailOrUsername = username.includes('@') ? username : username;
+      
+      const success = await loginUser(emailOrUsername, password);
       
       if (success) {
         toast({

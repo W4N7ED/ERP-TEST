@@ -10,6 +10,7 @@ export const useAuth = () => {
   // Get initial user from localStorage on startup
   const getInitialUser = (): User => {
     const savedUser = storageService.getUser();
+    console.log("Initial user from storage:", savedUser);
     return savedUser || { ...defaultUser, isAuthenticated: false };
   };
 
@@ -18,6 +19,7 @@ export const useAuth = () => {
 
   // Save user to localStorage when it changes
   useEffect(() => {
+    console.log("Saving user to localStorage:", currentUser);
     storageService.saveUser(currentUser);
   }, [currentUser]);
 
@@ -27,17 +29,22 @@ export const useAuth = () => {
       const { data: { session } } = await authService.getSession();
       
       if (session) {
+        console.log("Session found:", session);
         try {
           // Get user profile and role from Supabase
           const { data: profile } = await authService.getUserProfile(session.user.id);
           const { data: userRole } = await authService.getUserRole(session.user.id);
             
           if (profile && userRole) {
-            setCurrentUser(authService.transformToUser(session, profile, userRole));
+            const userData = authService.transformToUser(session, profile, userRole);
+            console.log("Setting user from session:", userData);
+            setCurrentUser(userData);
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
         }
+      } else {
+        console.log("No active session found");
       }
     };
     
@@ -46,6 +53,7 @@ export const useAuth = () => {
     // Listen for auth changes
     const { data: { subscription } } = authService.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
         if (event === 'SIGNED_IN' && session) {
           try {
             // Get user profile and role from Supabase
@@ -53,12 +61,15 @@ export const useAuth = () => {
             const { data: userRole } = await authService.getUserRole(session.user.id);
               
             if (profile && userRole) {
-              setCurrentUser(authService.transformToUser(session, profile, userRole));
+              const userData = authService.transformToUser(session, profile, userRole);
+              console.log("Setting user after sign in:", userData);
+              setCurrentUser(userData);
             }
           } catch (error) {
             console.error('Error fetching user data:', error);
           }
         } else if (event === 'SIGNED_OUT') {
+          console.log("User signed out");
           setCurrentUser({ ...defaultUser, isAuthenticated: false });
         }
       }
@@ -71,23 +82,30 @@ export const useAuth = () => {
 
   // Login user with username and password
   const loginUser = async (username: string, password: string): Promise<boolean> => {
+    console.log("Attempting login with:", username, password);
+    
     // Try mock authentication first for backward compatibility
     const mockUser = mockUserService.authenticateMockUser(username, password);
     if (mockUser) {
-      setCurrentUser(mockUser);
+      console.log("Mock user authenticated:", mockUser);
+      setCurrentUser({...mockUser, isAuthenticated: true});
       return true;
     }
     
     try {
       // Try to login with Supabase
-      const { data, error } = await authService.signInWithPassword(
-        username.includes('@') ? username : `${username}@example.com`,
-        password
-      );
+      const email = username.includes('@') ? username : `${username}@example.com`;
+      console.log("Attempting Supabase login with email:", email);
       
-      if (error) throw error;
+      const { data, error } = await authService.signInWithPassword(email, password);
+      
+      if (error) {
+        console.error("Supabase login error:", error);
+        throw error;
+      }
       
       if (data.session) {
+        console.log("Supabase session established:", data.session);
         // Successfully logged in with Supabase
         try {
           // Get user profile and role
@@ -95,7 +113,9 @@ export const useAuth = () => {
           const { data: userRole } = await authService.getUserRole(data.session.user.id);
             
           if (profile && userRole) {
-            setCurrentUser(authService.transformToUser(data.session, profile, userRole));
+            const userData = authService.transformToUser(data.session, profile, userRole);
+            console.log("Setting user after Supabase login:", userData);
+            setCurrentUser(userData);
             return true;
           }
         } catch (error) {
@@ -112,6 +132,7 @@ export const useAuth = () => {
 
   // Logout user
   const logoutUser = async () => {
+    console.log("Logging out user");
     try {
       await authService.signOut();
     } catch (error) {
