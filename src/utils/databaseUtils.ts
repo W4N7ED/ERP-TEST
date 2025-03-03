@@ -2,6 +2,9 @@
 import { Pool } from 'pg';
 import { availablePermissions } from '@/hooks/permissions/availablePermissions';
 
+// Function to check if code is running in browser
+const isBrowser = typeof window !== 'undefined';
+
 // Fonction pour initialiser la connexion à la base de données
 export const initDatabaseConnection = async (
   host: string,
@@ -11,6 +14,11 @@ export const initDatabaseConnection = async (
   database: string
 ): Promise<{ success: boolean; message: string }> => {
   try {
+    // In browser environment, we should handle this differently
+    if (isBrowser) {
+      console.warn('Direct database connection from browser is not recommended. Consider using API endpoints.');
+    }
+
     // Créer une connexion à la base de données
     const pool = new Pool({
       host,

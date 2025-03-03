@@ -1,27 +1,27 @@
 
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-    cors: true, // Activer CORS sur le serveur de développement
-  },
-  plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
+export default defineConfig({
+  plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
   },
-  build: {
-    sourcemap: true, // Activer les sourcemaps pour une meilleure intégration avec Sentry
+  define: {
+    // Add this section to provide process.env to the client-side code
+    'process.env': {
+      NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
+      // Add any other environment variables your app needs
+    },
+    // Polyfill for 'process' used by pg
+    'process': {
+      env: {},
+      // Add other process properties if needed
+      nextTick: (callback: () => void) => setTimeout(callback, 0),
+    },
   },
-}));
+})

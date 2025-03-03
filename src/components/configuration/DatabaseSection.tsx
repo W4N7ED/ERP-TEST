@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { initDatabaseConnection } from "@/utils/databaseUtils";
+import { initDatabase } from "@/services/databaseService";
 
 interface DatabaseSectionProps {
   host: string;
@@ -53,8 +52,8 @@ export const DatabaseSection = ({
     });
 
     try {
-      // Tentative réelle de connexion à la base de données et création des tables
-      const result = await initDatabaseConnection(host, port, username, password, database);
+      // Use the new service instead of direct pg connection
+      const result = await initDatabase(host, port, username, password, database);
       
       if (result.success) {
         toast({

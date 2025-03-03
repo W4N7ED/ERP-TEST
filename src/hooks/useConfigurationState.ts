@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { usePermissions } from "@/hooks/usePermissions";
-import { initDatabaseConnection } from "@/utils/databaseUtils";
+import { initDatabase } from "@/services/databaseService";
 
 export interface ConfigurationState {
   appName: string;
@@ -42,12 +41,10 @@ export const useConfigurationState = () => {
   const navigate = useNavigate();
   const { addUser } = usePermissions();
 
-  // Helper to update a single field
   const updateField = <K extends keyof ConfigurationState>(field: K, value: ConfigurationState[K]) => {
     setState(prev => ({ ...prev, [field]: value }));
   };
 
-  // Load existing configuration on mount
   useEffect(() => {
     const config = localStorage.getItem("app_config");
     if (config) {
@@ -62,19 +59,16 @@ export const useConfigurationState = () => {
         database: parsedConfig.database || "",
         isConfigured: parsedConfig.isConfigured || false,
         
-        // Admin settings
         adminName: parsedConfig.adminConfig?.name || "Administrateur",
         adminEmail: parsedConfig.adminConfig?.email || "admin@example.com",
         adminPassword: parsedConfig.adminConfig?.password || "admin123",
         createAdmin: parsedConfig.adminConfig?.createAdmin !== false,
         
-        // Notes
         notes: parsedConfig.notes || ""
       }));
     }
   }, []);
 
-  // Function to validate configuration form
   const validateForm = () => {
     if (!state.appName) {
       toast({
@@ -108,7 +102,6 @@ export const useConfigurationState = () => {
     return true;
   };
 
-  // Function to handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -117,8 +110,7 @@ export const useConfigurationState = () => {
     updateField('isInitializing', true);
     
     try {
-      // Initialize database connection and create tables
-      const result = await initDatabaseConnection(
+      const result = await initDatabase(
         state.host, 
         state.port, 
         state.username, 
@@ -136,10 +128,8 @@ export const useConfigurationState = () => {
         return;
       }
 
-      // Create default admin account if selected
       if (state.createAdmin) {
         try {
-          // Add admin user
           addUser({
             name: state.adminName,
             role: "Administrateur",
@@ -155,7 +145,6 @@ export const useConfigurationState = () => {
             ]
           });
           
-          // Store admin login credentials in localStorage for login page
           localStorage.setItem("admin_credentials", JSON.stringify({
             email: state.adminEmail,
             password: state.adminPassword
@@ -175,7 +164,6 @@ export const useConfigurationState = () => {
         }
       }
 
-      // Save configuration
       const configData = {
         appName: state.appName,
         host: state.host,
@@ -201,7 +189,6 @@ export const useConfigurationState = () => {
         description: "La configuration de l'application a été enregistrée avec succès et les tables ont été créées.",
       });
 
-      // Redirect to login page
       navigate("/login");
     } catch (error) {
       toast({
