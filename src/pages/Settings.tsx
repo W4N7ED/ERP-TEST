@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -16,7 +15,13 @@ const Settings = () => {
   const [theme, setTheme] = useState("light");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { toast } = useToast();
-  const { hasPermission } = usePermissions();
+  const { 
+    hasPermission, 
+    availableRoles, 
+    availablePermissions, 
+    updateRoles, 
+    updateRolePermissions 
+  } = usePermissions();
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
@@ -184,7 +189,12 @@ const Settings = () => {
           
           {hasPermission("users.edit") && (
             <TabsContent value="roles" className="space-y-6">
-              <RoleManagement />
+              <RoleManagement 
+                availableRoles={availableRoles}
+                availablePermissions={availablePermissions}
+                onUpdateRoles={updateRoles}
+                onUpdatePermissions={updateRolePermissions}
+              />
             </TabsContent>
           )}
           
