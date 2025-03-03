@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Quote, QuoteStatus } from "@/types/quote";
 import { 
@@ -129,6 +128,31 @@ export const QuoteDetail: React.FC<QuoteDetailProps> = ({ quote, onBack }) => {
   
   const canDelete = hasPermission("inventory.delete") && 
                    (quote.status === "Brouillon" || quote.status === "En attente");
+  
+  const renderItemDetails = (item: QuoteItem) => {
+    if (item.type === "Produit" && (item.brand || item.model || item.application || item.license)) {
+      return (
+        <div className="mt-2 text-xs text-gray-500 space-y-1">
+          {item.brand && (
+            <div><span className="font-medium">Marque:</span> {item.brand}</div>
+          )}
+          {item.model && (
+            <div><span className="font-medium">Modèle:</span> {item.model}</div>
+          )}
+          {item.application && (
+            <div><span className="font-medium">Application:</span> {item.application}</div>
+          )}
+          {item.license && (
+            <div><span className="font-medium">Licence:</span> {item.license}</div>
+          )}
+          {item.priceHT !== undefined && (
+            <div><span className="font-medium">Prix HT:</span> {formatCurrency(item.priceHT)}</div>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
   
   return (
     <div className="animate-fade-in space-y-6">
@@ -299,6 +323,7 @@ export const QuoteDetail: React.FC<QuoteDetailProps> = ({ quote, onBack }) => {
                               {item.type}
                             </Badge>
                           </div>
+                          {renderItemDetails(item)}
                         </td>
                         <td className="py-3 text-right">{formatCurrency(item.unitPrice)}</td>
                         <td className="py-3 text-right">{item.quantity}</td>

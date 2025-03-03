@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { Quote, QuoteItem } from "@/types/quote";
 
@@ -81,7 +80,6 @@ export const useQuoteItems = (
     toast.success(`Article "${itemName}" supprimé du devis`);
   };
 
-  // Fonction utilitaire pour recalculer les totaux du devis
   const updateQuoteTotals = (quote: Quote, items: QuoteItem[], actionMessage: string): Quote => {
     const subtotal = items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
     const taxTotal = items.reduce((sum, item) => {

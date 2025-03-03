@@ -13,6 +13,11 @@ export interface QuoteItem {
   taxRate: number; // en pourcentage
   total: number; // Prix total avec remise et taxes
   inventoryItemId?: number; // Pour les produits liés à l'inventaire
+  brand?: string;
+  model?: string;
+  application?: string;
+  license?: string;
+  priceHT?: number;
 }
 
 export interface QuoteContact {
@@ -90,6 +95,11 @@ export const quotesMock: Quote[] = [
         taxRate: 20,
         total: 7200,
         inventoryItemId: 7,
+        brand: "Dell",
+        model: "Latitude 5520",
+        application: "Ordinateur portable",
+        license: "Windows 10",
+        priceHT: 1200,
       },
       {
         id: 2,
@@ -245,6 +255,11 @@ export const quotesMock: Quote[] = [
         taxRate: 20,
         total: 1199.98,
         inventoryItemId: 5,
+        brand: "Cisco",
+        model: "2960",
+        application: "Switch réseau",
+        license: "Switch Catalyst",
+        priceHT: 599.99,
       },
       {
         id: 8,
@@ -256,6 +271,11 @@ export const quotesMock: Quote[] = [
         taxRate: 20,
         total: 199.8,
         inventoryItemId: 8,
+        brand: "Cable",
+        model: "Cat 6",
+        application: "Câble réseau",
+        license: "Cable Ethernet",
+        priceHT: 9.99,
       },
       {
         id: 9,

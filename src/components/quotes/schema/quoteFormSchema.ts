@@ -16,4 +16,15 @@ export const quoteFormSchema = z.object({
   terms: z.string().optional(),
 });
 
+// Schéma pour les informations détaillées sur les produits
+export const productDetailSchema = z.object({
+  brand: z.string().optional(),
+  model: z.string().optional(),
+  application: z.string().optional(),
+  license: z.string().optional(),
+  priceHT: z.number().optional(),
+});
+
 export type QuoteFormData = z.infer<typeof quoteFormSchema>;
+export type ProductDetailData = z.infer<typeof productDetailSchema>;
+

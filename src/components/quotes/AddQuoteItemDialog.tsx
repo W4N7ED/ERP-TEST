@@ -10,8 +10,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { inventoryMock } from "@/types/inventory";
+import { productDetailSchema } from "./schema/quoteFormSchema";
 
-// Définition du schéma de validation
+// Définition du schéma de validation étendu avec les détails du produit
 const quoteItemFormSchema = z.object({
   type: z.enum(["Produit", "Service", "Forfait"]),
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -21,6 +22,12 @@ const quoteItemFormSchema = z.object({
   discount: z.number().min(0).max(100).optional(),
   taxRate: z.number().min(0).max(100),
   inventoryItemId: z.number().optional(),
+  // Nouveaux champs pour les détails du produit
+  brand: z.string().optional(),
+  model: z.string().optional(),
+  application: z.string().optional(),
+  license: z.string().optional(),
+  priceHT: z.number().min(0).optional(),
 });
 
 type QuoteItemFormData = z.infer<typeof quoteItemFormSchema>;
@@ -37,6 +44,11 @@ interface AddQuoteItemDialogProps {
     discount?: number;
     taxRate: number;
     inventoryItemId?: number;
+    brand?: string;
+    model?: string;
+    application?: string;
+    license?: string;
+    priceHT?: number;
   }) => void;
 }
 
@@ -79,6 +91,10 @@ export const AddQuoteItemDialog: React.FC<AddQuoteItemDialogProps> = ({
       setValue("description", item.description || `${item.brand} ${item.model}`);
       setValue("unitPrice", item.sellingPrice || 0);
       setValue("inventoryItemId", item.id);
+      setValue("brand", item.brand);
+      setValue("model", item.model);
+      // Définir le prix HT comme le prix de vente par défaut
+      setValue("priceHT", item.sellingPrice || 0);
     }
   };
   
@@ -89,6 +105,11 @@ export const AddQuoteItemDialog: React.FC<AddQuoteItemDialogProps> = ({
     // Réinitialiser certains champs si on change de type
     if (value !== "Produit") {
       setValue("inventoryItemId", undefined);
+      setValue("brand", undefined);
+      setValue("model", undefined);
+      setValue("application", undefined);
+      setValue("license", undefined);
+      setValue("priceHT", undefined);
       setSelectedInventoryItem("");
     }
   };
@@ -103,6 +124,11 @@ export const AddQuoteItemDialog: React.FC<AddQuoteItemDialogProps> = ({
       discount: data.discount,
       taxRate: data.taxRate,
       inventoryItemId: data.inventoryItemId,
+      brand: data.brand,
+      model: data.model,
+      application: data.application,
+      license: data.license,
+      priceHT: data.priceHT,
     });
     
     reset();
@@ -175,6 +201,48 @@ export const AddQuoteItemDialog: React.FC<AddQuoteItemDialogProps> = ({
               <p className="text-sm text-red-500">{errors.description.message}</p>
             )}
           </div>
+          
+          {watchType === "Produit" && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium">Détails du produit</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="brand">Marque</Label>
+                  <Input id="brand" {...register("brand")} />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="model">Modèle</Label>
+                  <Input id="model" {...register("model")} />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="application">Application</Label>
+                  <Input id="application" {...register("application")} />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="license">Licence</Label>
+                  <Input id="license" {...register("license")} />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="priceHT">Prix HT (€)</Label>
+                <Input 
+                  id="priceHT" 
+                  type="number" 
+                  step="0.01"
+                  {...register("priceHT", {
+                    valueAsNumber: true,
+                  })} 
+                />
+              </div>
+            </div>
+          )}
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

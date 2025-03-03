@@ -60,10 +60,16 @@ export const avatarService = {
    */
   updateUserAvatarUrl: async (avatarUrl: string): Promise<{ success: boolean; error: Error | null }> => {
     try {
+      const user = await supabase.auth.getUser();
+      
+      if (!user || !user.data || !user.data.user) {
+        return { success: false, error: new Error("Utilisateur non connecté") };
+      }
+      
       const { error } = await supabase
         .from("profiles")
         .update({ avatar_url: avatarUrl })
-        .eq("id", supabase.auth.getUser()?.data?.user?.id);
+        .eq("id", user.data.user.id);
 
       if (error) {
         console.error("Erreur lors de la mise à jour de l'URL de l'avatar:", error);
