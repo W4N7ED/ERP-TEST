@@ -17,7 +17,25 @@ export default defineConfig(({ mode }) => ({
   },
   server: {
     host: "::",
-    port: 8080
+    port: 8080,
+    // Configurer les en-têtes MIME correctement
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'text/javascript; charset=utf-8',
+    },
+    // Activer CORS
+    cors: true,
+  },
+  build: {
+    // Assurer que le manifest est généré pour le déploiement
+    manifest: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
+    },
   },
   define: {
     // Add this section to provide process.env to the client-side code

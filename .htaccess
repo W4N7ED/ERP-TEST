@@ -1,0 +1,43 @@
+
+# Enable CORS
+Header set Access-Control-Allow-Origin "*"
+
+# Proper MIME type for JavaScript modules
+AddType text/javascript .js
+AddType text/javascript .mjs
+AddType text/javascript .tsx
+AddType text/javascript .ts
+
+# Proper MIME type for CSS
+AddType text/css .css
+
+# Proper MIME type for HTML
+AddType text/html .html .htm
+
+# Proper MIME type for JSON
+AddType application/json .json
+
+# Cache control
+<FilesMatch "\.(html|htm|js|json|css)$">
+  Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
+  Header set Pragma "no-cache"
+  Header set Expires "Wed, 11 Jan 1984 05:00:00 GMT"
+</FilesMatch>
+
+# Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Handle 404 errors
+ErrorDocument 404 /index.html
+
+# Force HTTPS
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
