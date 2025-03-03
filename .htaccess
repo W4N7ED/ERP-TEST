@@ -5,6 +5,7 @@ Header set Access-Control-Allow-Origin "*"
 # Proper MIME type for JavaScript modules
 AddType text/javascript .js
 AddType text/javascript .mjs
+AddType text/javascript .jsx
 AddType text/javascript .tsx
 AddType text/javascript .ts
 
@@ -18,7 +19,7 @@ AddType text/html .html .htm
 AddType application/json .json
 
 # Cache control
-<FilesMatch "\.(html|htm|js|json|css)$">
+<FilesMatch "\.(html|htm|js|jsx|ts|tsx|json|css)$">
   Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
   Header set Pragma "no-cache"
   Header set Expires "Wed, 11 Jan 1984 05:00:00 GMT"
@@ -40,4 +41,12 @@ ErrorDocument 404 /index.html
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
+</IfModule>
+
+# Explicitly set MIME types for TypeScript files
+<IfModule mod_mime.c>
+  AddHandler application/javascript .js
+  AddHandler application/javascript .jsx
+  AddHandler application/javascript .ts
+  AddHandler application/javascript .tsx
 </IfModule>

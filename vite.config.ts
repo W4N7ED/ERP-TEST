@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'vendor': ['react', 'react-dom', 'react-router-dom'],
         },
+        format: 'es', // Format ES modules explicite
       },
     },
   },
