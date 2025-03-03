@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Quote, QuoteStatus } from "@/types/quote";
+import { Quote, QuoteStatus, QuoteItem } from "@/types/quote";
 import { 
   ArrowLeft, 
   FileText, 
