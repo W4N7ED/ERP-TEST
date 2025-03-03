@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +16,16 @@ const Login = () => {
   const [appName, setAppName] = useState('EDR Solution');
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { loginUser } = usePermissions();
+  const location = useLocation();
+  const { loginUser, currentUser } = usePermissions();
+
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    if (currentUser && currentUser.isAuthenticated) {
+      const from = location.state?.from?.pathname || '/';
+      navigate(from, { replace: true });
+    }
+  }, [currentUser, navigate, location]);
 
   useEffect(() => {
     // Get application name from configuration
@@ -48,6 +57,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
+      console.log("Tentative de connexion avec:", username, password);
       const success = await loginUser(username, password);
       
       if (success) {
@@ -55,7 +65,10 @@ const Login = () => {
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté",
         });
-        navigate('/');
+        
+        const from = location.state?.from?.pathname || '/';
+        console.log("Redirection vers:", from);
+        navigate(from, { replace: true });
       } else {
         toast({
           variant: "destructive",

@@ -1,5 +1,5 @@
 
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { useEffect, useState } from 'react';
 import Index from './pages/Index';
@@ -19,19 +19,25 @@ import { usePermissions } from './hooks/usePermissions';
 // Composant qui vérifie si l'utilisateur est administrateur avant d'afficher un composant protégé
 const AdminRoute = ({ element }: { element: React.ReactNode }) => {
   const { currentUser } = usePermissions();
+  const location = useLocation();
   const isAdmin = currentUser.role === "Administrateur";
   const isAuthenticated = currentUser.isAuthenticated;
   
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    // Enregistrer l'emplacement actuel pour rediriger après la connexion
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
   return isAdmin ? <>{element}</> : <Navigate to="/" replace />;
 };
 
 // Composant qui vérifie si l'utilisateur est authentifié avant d'afficher un composant protégé
 const PrivateRoute = ({ element }: { element: React.ReactNode }) => {
   const { currentUser } = usePermissions();
+  const location = useLocation();
   const isAuthenticated = currentUser.isAuthenticated;
   
-  return isAuthenticated ? <>{element}</> : <Navigate to="/login" replace />;
+  return isAuthenticated ? <>{element}</> : <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 // Composant qui vérifie si l'application est configurée
@@ -41,8 +47,14 @@ const ConfiguredRoute = ({ element }: { element: React.ReactNode }) => {
   useEffect(() => {
     const config = localStorage.getItem("app_config");
     if (config) {
-      const parsedConfig = JSON.parse(config);
-      setIsConfigured(parsedConfig.isConfigured);
+      try {
+        const parsedConfig = JSON.parse(config);
+        setIsConfigured(parsedConfig.isConfigured);
+      } catch (error) {
+        console.error("Error parsing app configuration:", error);
+        // Marquer comme configuré par défaut pour donner priorité à la connexion
+        setIsConfigured(true);
+      }
     } else {
       // Marquer comme configuré par défaut pour donner priorité à la connexion
       setIsConfigured(true);
@@ -58,10 +70,18 @@ const ConfiguredRoute = ({ element }: { element: React.ReactNode }) => {
 };
 
 function App() {
+  const { currentUser } = usePermissions();
+  
+  useEffect(() => {
+    // Pour déboguer l'état d'authentification
+    console.log("État d'authentification:", currentUser.isAuthenticated);
+    console.log("Utilisateur:", currentUser);
+  }, [currentUser]);
+
   return (
     <>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<ConfiguredRoute element={<Login />} />} />
         <Route path="/configure" element={<Configuration />} />
         <Route path="/" element={<PrivateRoute element={<Index />} />} />
         <Route path="/projects" element={<PrivateRoute element={<Projects />} />} />
