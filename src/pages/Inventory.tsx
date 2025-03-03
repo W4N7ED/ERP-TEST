@@ -67,7 +67,8 @@ const Inventory = () => {
           <>
             <CategoryCards 
               activeCategory={activeCategory} 
-              onCategorySelect={filterByCategory} 
+              onCategorySelect={filterByCategory}
+              productCategories={productCategories}
             />
             <InventoryList 
               inventory={filteredInventory} 

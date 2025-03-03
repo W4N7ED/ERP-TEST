@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { InventoryItem, inventoryMock, productCategories as initialProductCategories } from "@/types/inventory";
 import { filterInventory } from "@/utils/inventoryUtils";
@@ -97,7 +96,6 @@ export const useInventoryState = () => {
       return;
     }
 
-    // Créer un nouvel article avec un ID unique
     const nextId = Math.max(...inventory.map(item => item.id)) + 1;
     const newInventoryItem: InventoryItem = {
       id: nextId,
@@ -108,7 +106,7 @@ export const useInventoryState = () => {
       category: newItem.category || "",
       subcategory: newItem.subcategory,
       supplier: Number(newItem.supplier) || 1,
-      supplierName: "TechDistribution", // Devrait être récupéré dynamiquement
+      supplierName: "TechDistribution",
       serialNumber: newItem.serialNumber || undefined,
       location: newItem.location as any || "Magasin central",
       status: newItem.status as any || "Neuf",
@@ -123,11 +121,9 @@ export const useInventoryState = () => {
       lastUpdated: new Date().toISOString().split('T')[0]
     };
 
-    // Ajouter l'article à l'inventaire
     const updatedInventory = [...inventory, newInventoryItem];
     setInventory(updatedInventory);
     
-    // Mettre à jour la liste filtrée
     applyFilters(searchTerm, activeCategory);
     
     toast.success(`Article "${newInventoryItem.name}" ajouté avec succès`);
@@ -152,21 +148,34 @@ export const useInventoryState = () => {
   };
 
   const handleAddCategory = (category: string, subcategories: string[]) => {
+    if (!category.trim()) {
+      toast.error("Le nom de la catégorie ne peut pas être vide");
+      return;
+    }
+    
+    if (Object.keys(productCategories).includes(category)) {
+      toast.error(`La catégorie "${category}" existe déjà`);
+      return;
+    }
+    
     setProductCategories(prev => ({
       ...prev,
       [category]: subcategories
     }));
+    
+    toast.success(`Catégorie "${category}" ajoutée avec succès`);
   };
 
   const handleDeleteCategory = (category: string) => {
     const { [category]: _, ...rest } = productCategories;
     setProductCategories(rest);
     
-    // Si la catégorie active est supprimée, réinitialiser
     if (activeCategory === category) {
       setActiveCategory(null);
       applyFilters(searchTerm, null);
     }
+    
+    toast.success(`Catégorie "${category}" supprimée avec succès`);
   };
 
   return {

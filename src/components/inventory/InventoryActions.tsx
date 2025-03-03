@@ -1,7 +1,7 @@
 
 import React from "react";
 import { CustomButton } from "@/components/ui/custom-button";
-import { Plus, UserCircle2, Folder } from "lucide-react";
+import { Plus, UserCircle2, Folder, FileDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User } from "@/types/permissions";
 
@@ -72,6 +72,7 @@ const InventoryActions: React.FC<InventoryActionsProps> = ({
             variant="outline" 
             onClick={onExportInventory}
           >
+            <FileDown size={16} className="mr-2" />
             Exporter
           </CustomButton>
         )}

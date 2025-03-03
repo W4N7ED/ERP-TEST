@@ -2,16 +2,18 @@
 import React from "react";
 import { getCategoryIcon } from "@/utils/categoryIcons";
 import { inventoryMock } from "@/types/inventory";
-import { useInventoryState } from "@/hooks/useInventoryState";
 
 interface CategoryCardsProps {
   activeCategory: string | null;
   onCategorySelect: (category: string | null) => void;
+  productCategories: Record<string, string[]>;
 }
 
-const CategoryCards: React.FC<CategoryCardsProps> = ({ activeCategory, onCategorySelect }) => {
-  // Utiliser directement productCategories à partir du hook
-  const { productCategories } = useInventoryState();
+const CategoryCards: React.FC<CategoryCardsProps> = ({ 
+  activeCategory, 
+  onCategorySelect,
+  productCategories
+}) => {
   const categories = Object.keys(productCategories);
 
   return (
