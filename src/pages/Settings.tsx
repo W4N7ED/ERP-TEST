@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -10,9 +11,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import RoleManagement from "@/components/settings/RoleManagement";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useThemeContext } from "@/components/ThemeProvider";
+import { Sun, Moon, Monitor } from "lucide-react";
 
 const Settings = () => {
-  const [theme, setTheme] = useState("light");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { toast } = useToast();
   const { 
@@ -22,8 +24,9 @@ const Settings = () => {
     updateRoles, 
     updateRolePermissions 
   } = usePermissions();
+  const { theme, setTheme } = useThemeContext();
 
-  const handleThemeChange = (newTheme: string) => {
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme);
     toast({
       title: "Thème modifié",
@@ -103,19 +106,25 @@ const Settings = () => {
                     <Button
                       variant={theme === "light" ? "default" : "outline"}
                       onClick={() => handleThemeChange("light")}
+                      className="flex items-center gap-2"
                     >
+                      <Sun className="h-4 w-4" />
                       Clair
                     </Button>
                     <Button
                       variant={theme === "dark" ? "default" : "outline"}
                       onClick={() => handleThemeChange("dark")}
+                      className="flex items-center gap-2"
                     >
+                      <Moon className="h-4 w-4" />
                       Sombre
                     </Button>
                     <Button
                       variant={theme === "system" ? "default" : "outline"}
                       onClick={() => handleThemeChange("system")}
+                      className="flex items-center gap-2"
                     >
+                      <Monitor className="h-4 w-4" />
                       Système
                     </Button>
                   </div>

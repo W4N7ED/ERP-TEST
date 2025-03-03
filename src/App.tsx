@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { useEffect, useState } from 'react';
@@ -15,8 +14,8 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Configuration from './pages/Configuration';
 import { usePermissions } from './hooks/usePermissions';
+import { ThemeProvider } from './components/ThemeProvider';
 
-// Composant qui vérifie si l'utilisateur est administrateur avant d'afficher un composant protégé
 const AdminRoute = ({ element }: { element: React.ReactNode }) => {
   const { currentUser } = usePermissions();
   const location = useLocation();
@@ -24,14 +23,12 @@ const AdminRoute = ({ element }: { element: React.ReactNode }) => {
   const isAuthenticated = currentUser.isAuthenticated;
   
   if (!isAuthenticated) {
-    // Enregistrer l'emplacement actuel pour rediriger après la connexion
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
   return isAdmin ? <>{element}</> : <Navigate to="/" replace />;
 };
 
-// Composant qui vérifie si l'utilisateur est authentifié avant d'afficher un composant protégé
 const PrivateRoute = ({ element }: { element: React.ReactNode }) => {
   const { currentUser } = usePermissions();
   const location = useLocation();
@@ -40,7 +37,6 @@ const PrivateRoute = ({ element }: { element: React.ReactNode }) => {
   return isAuthenticated ? <>{element}</> : <Navigate to="/login" state={{ from: location }} replace />;
 };
 
-// Composant qui vérifie si l'application est configurée
 const ConfiguredRoute = ({ element }: { element: React.ReactNode }) => {
   const [isConfigured, setIsConfigured] = useState<boolean | null>(null);
   
@@ -52,17 +48,14 @@ const ConfiguredRoute = ({ element }: { element: React.ReactNode }) => {
         setIsConfigured(parsedConfig.isConfigured);
       } catch (error) {
         console.error("Error parsing app configuration:", error);
-        // Marquer comme configuré par défaut pour donner priorité à la connexion
         setIsConfigured(true);
       }
     } else {
-      // Marquer comme configuré par défaut pour donner priorité à la connexion
       setIsConfigured(true);
     }
   }, []);
   
   if (isConfigured === null) {
-    // Still loading
     return null;
   }
   
@@ -73,13 +66,12 @@ function App() {
   const { currentUser } = usePermissions();
   
   useEffect(() => {
-    // Pour déboguer l'état d'authentification
     console.log("État d'authentification:", currentUser.isAuthenticated);
     console.log("Utilisateur:", currentUser);
   }, [currentUser]);
 
   return (
-    <>
+    <ThemeProvider>
       <Routes>
         <Route path="/login" element={<ConfiguredRoute element={<Login />} />} />
         <Route path="/configure" element={<Configuration />} />
@@ -96,7 +88,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
-    </>
+    </ThemeProvider>
   );
 }
 
