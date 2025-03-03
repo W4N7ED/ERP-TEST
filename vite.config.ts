@@ -11,6 +11,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    port: 8080
+  },
   define: {
     // Add this section to provide process.env to the client-side code
     'process.env': {
