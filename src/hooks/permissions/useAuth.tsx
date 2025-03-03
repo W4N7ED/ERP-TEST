@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { User, Permission } from './types';
 import { defaultUser } from '@/data/mockUsers';
@@ -16,6 +17,7 @@ export const useAuth = () => {
 
   const [currentUser, setCurrentUser] = useState<User & { isAuthenticated?: boolean }>(getInitialUser());
   const [allUsers, setAllUsers] = useState<User[]>(mockUserService.getAllUsers());
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Save user to localStorage when it changes
   useEffect(() => {
@@ -26,25 +28,31 @@ export const useAuth = () => {
   // Check for Supabase session on load
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await authService.getSession();
-      
-      if (session) {
-        console.log("Session found:", session);
-        try {
-          // Get user profile and role from Supabase
-          const { data: profile } = await authService.getUserProfile(session.user.id);
-          const { data: userRole } = await authService.getUserRole(session.user.id);
-            
-          if (profile && userRole) {
-            const userData = authService.transformToUser(session, profile, userRole);
-            console.log("Setting user from session:", userData);
-            setCurrentUser(userData);
+      try {
+        const { data: { session } } = await authService.getSession();
+        
+        if (session) {
+          console.log("Session found:", session);
+          try {
+            // Get user profile and role from Supabase
+            const { data: profile } = await authService.getUserProfile(session.user.id);
+            const { data: userRole } = await authService.getUserRole(session.user.id);
+              
+            if (profile && userRole) {
+              const userData = authService.transformToUser(session, profile, userRole);
+              console.log("Setting user from session:", userData);
+              setCurrentUser(userData);
+            } else {
+              console.log("Profile or role data missing");
+            }
+          } catch (error) {
+            console.error('Error fetching user data:', error);
           }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
+        } else {
+          console.log("No active session found");
         }
-      } else {
-        console.log("No active session found");
+      } catch (error) {
+        console.error('Session check error:', error);
       }
     };
     
@@ -55,6 +63,7 @@ export const useAuth = () => {
       async (event, session) => {
         console.log("Auth state changed:", event, session?.user?.id);
         if (event === 'SIGNED_IN' && session) {
+          setAuthError(null); // Clear any previous errors
           try {
             // Get user profile and role from Supabase
             const { data: profile } = await authService.getUserProfile(session.user.id);
@@ -64,12 +73,15 @@ export const useAuth = () => {
               const userData = authService.transformToUser(session, profile, userRole);
               console.log("Setting user after sign in:", userData);
               setCurrentUser(userData);
+            } else {
+              console.log("No profile or role found after login");
             }
           } catch (error) {
             console.error('Error fetching user data:', error);
           }
         } else if (event === 'SIGNED_OUT') {
           console.log("User signed out");
+          setAuthError(null); // Clear any errors on sign out
           setCurrentUser({ ...defaultUser, isAuthenticated: false });
         }
       }
@@ -83,6 +95,7 @@ export const useAuth = () => {
   // Login user with username and password
   const loginUser = async (username: string, password: string): Promise<boolean> => {
     console.log("Attempting login with:", username, password);
+    setAuthError(null); // Clear any previous errors
     
     // Try mock authentication first for backward compatibility
     const mockUser = mockUserService.authenticateMockUser(username, password);
@@ -101,6 +114,7 @@ export const useAuth = () => {
       
       if (error) {
         console.error("Supabase login error:", error);
+        setAuthError(error.message);
         throw error;
       }
       
@@ -117,15 +131,23 @@ export const useAuth = () => {
             console.log("Setting user after Supabase login:", userData);
             setCurrentUser(userData);
             return true;
+          } else {
+            const errorMsg = "Profil ou rôle d'utilisateur non trouvé après connexion";
+            console.error(errorMsg);
+            setAuthError(errorMsg);
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
+          setAuthError('Erreur lors de la récupération des données utilisateur');
         }
       }
       
       return false;
     } catch (error) {
       console.error('Login error:', error);
+      if (!authError) {
+        setAuthError('Erreur de connexion, veuillez réessayer');
+      }
       return false;
     }
   };
@@ -133,6 +155,7 @@ export const useAuth = () => {
   // Logout user
   const logoutUser = async () => {
     console.log("Logging out user");
+    setAuthError(null); // Clear any errors on logout
     try {
       await authService.signOut();
     } catch (error) {
@@ -199,6 +222,7 @@ export const useAuth = () => {
     loginUser,
     logoutUser,
     switchUser,
-    addUser
+    addUser,
+    authError
   };
 };

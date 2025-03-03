@@ -20,10 +20,20 @@ export const mockUserService = {
   authenticateMockUser: (username: string, password: string): User | null => {
     console.log("Authenticating mock user:", username);
     
-    // Check admin credentials
+    // Check specific admin credentials for admin@admin.fr
+    if ((username === 'admin@admin.fr') && 
+        (password === 'admin123')) {
+      console.log("Special admin credentials match");
+      const adminUser = mockUsers.find(u => u.role === 'Administrateur');
+      if (adminUser) {
+        return { ...adminUser, isAuthenticated: true };
+      }
+    }
+    
+    // Check standard admin credentials
     if ((username === 'admin' || username === 'admin@example.com') && 
         (password === 'admin123' || password === 'password123')) {
-      console.log("Admin credentials match");
+      console.log("Standard admin credentials match");
       const adminUser = mockUsers.find(u => u.role === 'Administrateur');
       if (adminUser) {
         return { ...adminUser, isAuthenticated: true };

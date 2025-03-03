@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/usePermissions';
 import { CustomButton } from '@/components/ui/custom-button'; 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -17,7 +19,7 @@ const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { loginUser, currentUser } = usePermissions();
+  const { loginUser, currentUser, authError } = usePermissions();
 
   // Récupération du nom de l'application depuis la configuration
   useEffect(() => {
@@ -104,6 +106,12 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {authError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="username">Nom d'utilisateur</Label>
@@ -138,7 +146,7 @@ const Login = () => {
           </CardContent>
           <CardFooter className="flex flex-col items-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              Compte administrateur par défaut: admin / admin123
+              Compte administrateur par défaut: admin@admin.fr / admin123
             </p>
             <p className="text-xs text-muted-foreground">
               Tous les utilisateurs: [nom d'utilisateur] / password123
