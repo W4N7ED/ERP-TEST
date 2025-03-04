@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { UserTable, UserTableItem } from '@/components/users/UserTable';
 import { AddUserDialog } from '@/components/users/AddUserDialog';
+import { Card, CardContent } from '@/components/ui/card';
 
 const UsersPage = () => {
   const { 
@@ -76,27 +77,45 @@ const UsersPage = () => {
   };
   
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">User Management</h1>
+    <div className="container mx-auto py-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">User Management</h1>
+          <p className="text-muted-foreground mt-1">Manage system users and their roles</p>
+        </div>
         
         {canManageUsers && (
-          <AddUserDialog
-            availableRoles={availableRoles}
-            onAddUser={handleAddUser}
-            isOpen={isAddUserDialogOpen}
-            onOpenChange={setIsAddUserDialogOpen}
-          />
+          <div className="mt-4 md:mt-0">
+            <Button 
+              className="flex items-center gap-2"
+              onClick={() => setIsAddUserDialogOpen(true)}
+            >
+              Add New User
+            </Button>
+          </div>
         )}
       </div>
       
-      <UserTable
-        users={users}
-        availableRoles={availableRoles}
-        canManageUsers={canManageUsers}
-        onUpdateUserRole={handleUpdateUserRole}
-        onRemoveUser={handleRemoveUser}
-      />
+      <Card>
+        <CardContent className="p-0">
+          <UserTable
+            users={users}
+            availableRoles={availableRoles}
+            canManageUsers={canManageUsers}
+            onUpdateUserRole={handleUpdateUserRole}
+            onRemoveUser={handleRemoveUser}
+          />
+        </CardContent>
+      </Card>
+      
+      {canManageUsers && (
+        <AddUserDialog
+          availableRoles={availableRoles}
+          onAddUser={handleAddUser}
+          isOpen={isAddUserDialogOpen}
+          onOpenChange={setIsAddUserDialogOpen}
+        />
+      )}
     </div>
   );
 };
