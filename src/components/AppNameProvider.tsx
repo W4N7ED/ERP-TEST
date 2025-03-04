@@ -30,7 +30,7 @@ export function AppNameProvider({ children }: { children: ReactNode }) {
   const updateAppName = (newName: string) => {
     setAppName(newName);
     
-    // Update in localStorage
+    // Update in localStorage without losing other config
     const config = localStorage.getItem("app_config");
     if (config) {
       try {
@@ -46,6 +46,25 @@ export function AppNameProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("app_config", JSON.stringify(newConfig));
     }
   };
+
+  // Sync app name from localStorage when it changes elsewhere
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "app_config" && e.newValue) {
+        try {
+          const parsedConfig = JSON.parse(e.newValue);
+          if (parsedConfig.appName && parsedConfig.appName !== appName) {
+            setAppName(parsedConfig.appName);
+          }
+        } catch (error) {
+          console.error("Error parsing updated app configuration:", error);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [appName]);
   
   return (
     <AppNameContext.Provider value={{ appName, setAppName: updateAppName }}>

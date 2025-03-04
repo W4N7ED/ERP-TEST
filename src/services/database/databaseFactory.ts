@@ -16,17 +16,23 @@ export function createDatabaseService(configOrType: DatabaseConfig | string): Da
       throw new Error("Configuration insuffisante - veuillez fournir les paramètres complets de connexion");
     } else {
       // We create an actual database service based on the type
-      switch (configOrType.type) {
-        case "mysql":
-          return new MySQLDatabaseService(configOrType);
-        case "postgres":
-          return new PostgreSQLDatabaseService(configOrType);
-        case "sqlite":
-          // Here we would create a SQLite service
-          throw new Error("SQLite database service not implemented yet");
-        default:
-          throw new Error(`Unsupported database type: ${configOrType.type}`);
-      }
+      const service = (() => {
+        switch (configOrType.type) {
+          case "mysql":
+            return new MySQLDatabaseService(configOrType);
+          case "postgres":
+            return new PostgreSQLDatabaseService(configOrType);
+          case "sqlite":
+            // Here we would create a SQLite service
+            throw new Error("SQLite database service not implemented yet");
+          default:
+            throw new Error(`Unsupported database type: ${configOrType.type}`);
+        }
+      })();
+
+      // Set the singleton instance after creation
+      setDatabaseInstance(service);
+      return service;
     }
   } catch (error) {
     console.error("Erreur lors de la création du service de base de données:", error);

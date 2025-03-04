@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAppName } from "@/components/AppNameProvider";
+import { storageService } from "@/services/storageService";
 
 const GeneralSettings = () => {
   const { toast } = useToast();
@@ -14,6 +15,11 @@ const GeneralSettings = () => {
   const [newAppName, setNewAppName] = useState(appName);
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
+
+  // Sync with AppName provider when it changes
+  useEffect(() => {
+    setNewAppName(appName);
+  }, [appName]);
 
   const handleSaveAppName = () => {
     if (newAppName.trim() === '') {
@@ -25,7 +31,18 @@ const GeneralSettings = () => {
       return;
     }
     
+    // Update app name in the app context
     setAppName(newAppName);
+    
+    // Update app config in localStorage
+    const config = storageService.getAppConfiguration();
+    if (config) {
+      storageService.saveAppConfiguration({
+        ...config,
+        appName: newAppName
+      });
+    }
+    
     toast({
       title: "Nom modifié",
       description: `Le nom de l'application a été changé en "${newAppName}".`,

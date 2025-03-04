@@ -2,8 +2,11 @@
 import { useCallback } from "react";
 import { ConfigurationState } from "@/types/configuration";
 import { useToast } from "@/hooks/use-toast";
+import { useAppName } from "@/components/AppNameProvider";
 
 export const useConfigurationPersistence = (state: ConfigurationState, toast: any) => {
+  const { setAppName } = useAppName();
+  
   const saveConfiguration = useCallback(() => {
     const configData = {
       appName: state.appName,
@@ -25,7 +28,11 @@ export const useConfigurationPersistence = (state: ConfigurationState, toast: an
       notes: state.notes
     };
 
+    // Save to localStorage
     localStorage.setItem("app_config", JSON.stringify(configData));
+    
+    // Update application name
+    setAppName(state.appName);
     
     toast({
       title: "Configuration sauvegardée",
@@ -33,7 +40,7 @@ export const useConfigurationPersistence = (state: ConfigurationState, toast: an
     });
 
     return true;
-  }, [state, toast]);
+  }, [state, toast, setAppName]);
 
   return { saveConfiguration };
 };
