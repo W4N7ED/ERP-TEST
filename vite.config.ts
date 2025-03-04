@@ -64,7 +64,7 @@ export default defineConfig(({ mode }) => ({
     // Polyfill pour 'process' utilisé par certains packages
     'process': {
       env: {},
-      nextTick: (callback) => setTimeout(callback, 0),
+      nextTick: (callback: () => void) => setTimeout(callback, 0),
     },
     // Ajouter des polyfills vides pour éviter les erreurs
     'global': {},
