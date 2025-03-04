@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +9,8 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { toast } from "sonner";
 import { UserTable } from '../users/UserTable'; // Fixed import to use named export
 import { AddUserDialog } from '../users/AddUserDialog'; // Fixed import to use named export
+import { Button } from "@/components/ui/button";
+import { UserPlus } from "lucide-react";
 
 const RolesSettings = () => {
   const { 
@@ -29,7 +30,6 @@ const RolesSettings = () => {
   const [activeTab, setActiveTab] = useState<string>("roles");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   
-  // Groupes de permissions
   const permissionGroups = [
     {
       name: "Inventaire",
@@ -65,7 +65,6 @@ const RolesSettings = () => {
     }
   ];
   
-  // Charger les permissions du rôle sélectionné
   useEffect(() => {
     if (selectedRole) {
       const permissions = getRolePermissions(selectedRole);
@@ -73,12 +72,10 @@ const RolesSettings = () => {
     }
   }, [selectedRole, getRolePermissions]);
   
-  // Gérer le changement de rôle sélectionné
   const handleSelectRole = (role: UserRole) => {
     setSelectedRole(role);
   };
   
-  // Gérer la suppression d'un rôle
   const handleDeleteRole = (role: UserRole) => {
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer le rôle "${role}" ?`)) {
       const updatedRoles = availableRoles.filter(r => r !== role);
@@ -92,7 +89,6 @@ const RolesSettings = () => {
     }
   };
   
-  // Gérer la création d'un rôle
   const handleCreateRole = (roleName: string) => {
     if (availableRoles.includes(roleName as UserRole)) {
       toast.error("Ce rôle existe déjà");
@@ -104,7 +100,6 @@ const RolesSettings = () => {
     toast.success(`Rôle "${roleName}" créé avec succès`);
   };
   
-  // Gérer la modification des permissions d'un rôle
   const handleTogglePermission = (permission: Permission) => {
     if (!selectedRole || selectedRole === "Administrateur") return;
     
@@ -119,28 +114,23 @@ const RolesSettings = () => {
     toast.success(`Permission "${permission}" ${action} du rôle "${selectedRole}"`);
   };
   
-  // Handler pour ajouter un utilisateur
   const handleAddUser = async (userData: { 
     name: string; 
-    role: UserRole; 
-  }) => {
+    role: string; 
+  }): Promise<void> => {
     try {
-      // Fixed: Only include valid properties in the User type
       const newUser = await addUser({
         name: userData.name,
-        role: userData.role,
+        role: userData.role as UserRole,
         permissions: []
       });
       
       toast.success(`Utilisateur "${userData.name}" ajouté avec succès`);
-      return true;
     } catch (error) {
       toast.error("Erreur lors de l'ajout de l'utilisateur");
-      return false;
     }
   };
   
-  // Handler pour supprimer un utilisateur
   const handleRemoveUser = (userId: number) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
       removeUser(userId);
@@ -148,7 +138,6 @@ const RolesSettings = () => {
     }
   };
   
-  // Handler pour mettre à jour un utilisateur
   const handleUpdateUser = (userId: number, updatedData: { name?: string; role?: UserRole }) => {
     updateUser(userId, updatedData);
     toast.success("Utilisateur mis à jour avec succès");
@@ -238,9 +227,4 @@ const RolesSettings = () => {
   );
 };
 
-// Import missing dependencies
-import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
-
 export default RolesSettings;
-
