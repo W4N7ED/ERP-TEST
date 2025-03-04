@@ -8,8 +8,8 @@ import NewRoleDialog from './roles/NewRoleDialog';
 import { UserRole, Permission } from '@/types/permissions';
 import { usePermissions } from '@/hooks/usePermissions';
 import { toast } from "sonner";
-import UserTable from '../users/UserTable';
-import AddUserDialog from '../users/AddUserDialog';
+import { UserTable } from '../users/UserTable'; // Fixed import to use named export
+import { AddUserDialog } from '../users/AddUserDialog'; // Fixed import to use named export
 
 const RolesSettings = () => {
   const { 
@@ -27,6 +27,7 @@ const RolesSettings = () => {
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [rolePermissions, setRolePermissions] = useState<Permission[]>([]);
   const [activeTab, setActiveTab] = useState<string>("roles");
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   
   // Groupes de permissions
   const permissionGroups = [
@@ -119,24 +120,22 @@ const RolesSettings = () => {
   };
   
   // Handler pour ajouter un utilisateur
-  const handleAddUser = (userData: { 
+  const handleAddUser = async (userData: { 
     name: string; 
     role: UserRole; 
-    email?: string; 
-    password?: string;
   }) => {
-    const result = addUser({
-      name: userData.name,
-      role: userData.role,
-      email: userData.email || `${userData.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-      password: userData.password || 'defaultpassword123'
-    });
-    
-    if (result.success) {
+    try {
+      // Fixed: Only include valid properties in the User type
+      const newUser = await addUser({
+        name: userData.name,
+        role: userData.role,
+        permissions: []
+      });
+      
       toast.success(`Utilisateur "${userData.name}" ajouté avec succès`);
       return true;
-    } else {
-      toast.error(result.error || "Erreur lors de l'ajout de l'utilisateur");
+    } catch (error) {
+      toast.error("Erreur lors de l'ajout de l'utilisateur");
       return false;
     }
   };
@@ -202,17 +201,35 @@ const RolesSettings = () => {
           <TabsContent value="users">
             <div className="flex justify-between mb-4">
               <h2 className="text-xl font-semibold">Liste des utilisateurs</h2>
-              <AddUserDialog 
-                onAddUser={handleAddUser} 
-                availableRoles={availableRoles}
-              />
+              <Button 
+                onClick={() => setIsAddUserDialogOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <UserPlus size={16} />
+                Ajouter un utilisateur
+              </Button>
             </div>
             
             <UserTable 
-              users={availableUsers}
-              roles={availableRoles}
-              onRemoveUser={handleRemoveUser}
-              onUpdateUser={handleUpdateUser}
+              users={availableUsers.map(user => ({
+                id: user.id,
+                name: user.name,
+                email: `${user.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+                role: user.role,
+                status: 'active' as const,
+                lastActive: 'Aujourd\'hui'
+              }))}
+              availableRoles={availableRoles}
+              canManageUsers={true}
+              onUpdateUserRole={(userId, newRole) => handleUpdateUser(userId, { role: newRole })}
+              onRemoveUser={(userId, userName) => handleRemoveUser(userId)}
+            />
+
+            <AddUserDialog
+              availableRoles={availableRoles}
+              onAddUser={handleAddUser}
+              isOpen={isAddUserDialogOpen}
+              onOpenChange={setIsAddUserDialogOpen}
             />
           </TabsContent>
         </Tabs>
@@ -221,4 +238,9 @@ const RolesSettings = () => {
   );
 };
 
+// Import missing dependencies
+import { Button } from "@/components/ui/button";
+import { UserPlus } from "lucide-react";
+
 export default RolesSettings;
+
