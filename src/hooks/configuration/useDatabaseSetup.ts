@@ -14,7 +14,7 @@ export const useDatabaseSetup = (state: ConfigurationState, toast: any) => {
       const config: DatabaseConfig = {
         type: state.dbType as any,
         host: state.host,
-        port: Number(state.port),
+        port: state.port, // Using string instead of Number()
         username: state.username,
         password: state.password,
         database: state.database,

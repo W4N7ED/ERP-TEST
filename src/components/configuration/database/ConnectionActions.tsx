@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Database } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -16,6 +16,7 @@ interface ConnectionActionsProps {
   onInitializeDatabase: () => Promise<void>;
   connectionResult: { success: boolean; message: string } | null;
   initResult: { success: boolean; message: string; tables?: string[] } | null;
+  isLoading?: { testing: boolean; initializing: boolean };
 }
 
 export const ConnectionActions = ({
@@ -27,21 +28,15 @@ export const ConnectionActions = ({
   onTestConnection,
   onInitializeDatabase,
   connectionResult,
-  initResult
+  initResult,
+  isLoading = { testing: false, initializing: false }
 }: ConnectionActionsProps) => {
-  const [isTesting, setIsTesting] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(false);
-
   const handleTestConnection = async () => {
-    setIsTesting(true);
     await onTestConnection();
-    setIsTesting(false);
   };
 
   const handleInitializeDatabase = async () => {
-    setIsInitializing(true);
     await onInitializeDatabase();
-    setIsInitializing(false);
   };
 
   return (
@@ -52,20 +47,20 @@ export const ConnectionActions = ({
           variant="outline" 
           onClick={handleTestConnection}
           className="flex items-center gap-2"
-          disabled={isTesting || !host || !port || !username || !database}
+          disabled={isLoading.testing || !host || !port || !username || !database}
         >
-          {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
-          {isTesting ? "Test en cours..." : "Tester la connexion"}
+          {isLoading.testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+          {isLoading.testing ? "Test en cours..." : "Tester la connexion"}
         </Button>
         
         <Button 
           type="button" 
           onClick={handleInitializeDatabase}
           className="flex items-center gap-2"
-          disabled={isInitializing || !connectionResult?.success}
+          disabled={isLoading.initializing || !connectionResult?.success}
         >
-          {isInitializing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {isInitializing ? "Initialisation en cours..." : "Initialiser les tables"}
+          {isLoading.initializing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {isLoading.initializing ? "Initialisation en cours..." : "Initialiser les tables"}
         </Button>
       </div>
       

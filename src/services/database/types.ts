@@ -4,7 +4,7 @@ import { Intervention } from "@/types/intervention";
 // Generic database configuration interface
 export interface DatabaseConfig {
   host: string;
-  port: string;
+  port: string; // Changed from number to string to match the form input
   username: string;
   password: string;
   database: string;

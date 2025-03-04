@@ -42,6 +42,7 @@ export const DatabaseSection = ({
   const {
     connectionResult,
     initResult,
+    isLoading,
     testConnection,
     initializeDatabase
   } = useDatabaseConnection(
@@ -101,6 +102,7 @@ export const DatabaseSection = ({
         tablePrefix={tablePrefix}
         connectionResult={connectionResult}
         initResult={initResult}
+        isLoading={isLoading}
         onTestConnection={testConnection}
         onInitializeDatabase={initializeDatabase}
       />
