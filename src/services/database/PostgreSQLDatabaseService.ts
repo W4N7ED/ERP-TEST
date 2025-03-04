@@ -1,4 +1,3 @@
-
 import { DatabaseService, DatabaseConfig } from "./types";
 import { Intervention } from "@/types/intervention";
 import { supabaseClient } from "@/integrations/supabase/client";
