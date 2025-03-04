@@ -4,13 +4,14 @@ import { Project } from "@/types/project";
 
 // Generic database configuration interface
 export interface DatabaseConfig {
-  host: string;
-  port: string; // String to match the form input
-  username: string;
-  password: string;
-  database: string;
-  tablePrefix?: string;
   type: "mysql" | "postgres" | "sqlite";
+  database: string;
+  // Ces champs sont nécessaires pour MySQL et PostgreSQL, mais pas pour SQLite
+  host?: string;
+  port?: string; // String to match the form input
+  username?: string;
+  password?: string;
+  tablePrefix?: string;
 }
 
 // Database service interface

@@ -48,7 +48,7 @@ export function createDatabaseService(configOrType: DatabaseConfig | string): Da
     // Utiliser SQLite comme solution de secours en cas d'erreur
     const fallbackService = new SQLiteDatabaseService({ 
       type: "sqlite", 
-      database: "fallback.db" 
+      database: "fallback.db"
     });
     setDatabaseInstance(fallbackService);
     return fallbackService;

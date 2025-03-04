@@ -46,20 +46,20 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    // Exclure better-sqlite3 pour éviter les erreurs de compilation
-    exclude: ['better-sqlite3', 'pg']
+    // Exclure les modules qui causent des problèmes de compilation
+    exclude: ['better-sqlite3', 'pg', 'mysql', 'mysql2']
   },
   define: {
     // Ajouter cette section pour fournir process.env au code côté client
     'process.env': {
       NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
-      // Ajouter d'autres variables d'environnement dont votre application a besoin
     },
-    // Polyfill pour 'process' utilisé par pg
+    // Polyfill pour 'process' utilisé par certains packages
     'process': {
       env: {},
-      // Ajouter d'autres propriétés de processus si nécessaire
       nextTick: (callback: () => void) => setTimeout(callback, 0),
     },
+    // Ajouter un polyfill vide pour fs pour éviter les erreurs
+    'global': {},
   },
 }))
