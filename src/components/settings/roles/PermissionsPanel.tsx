@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Permission, UserRole } from '@/types/permissions';
-import PermissionGroup from './PermissionGroup';
+import EmptyPermissionsState from './EmptyPermissionsState';
+import PermissionsList from './PermissionsList';
+import PermissionsFooter from './PermissionsFooter';
 
 interface PermissionGroupData {
   name: string;
@@ -23,11 +25,7 @@ const PermissionsPanel: React.FC<PermissionsPanelProps> = ({
   onTogglePermission 
 }) => {
   if (!role) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-gray-500">Sélectionnez un rôle pour voir et configurer ses permissions</p>
-      </div>
-    );
+    return <EmptyPermissionsState />;
   }
   
   const isAdmin = role === "Administrateur";
@@ -40,25 +38,15 @@ const PermissionsPanel: React.FC<PermissionsPanelProps> = ({
           Configurez les permissions accordées à ce rôle
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {permissionGroups.map((group) => (
-          <PermissionGroup
-            key={group.name}
-            groupName={group.name}
-            permissions={group.permissions}
-            selectedPermissions={selectedPermissions}
-            onTogglePermission={onTogglePermission}
-            isAdmin={isAdmin}
-          />
-        ))}
+      <CardContent>
+        <PermissionsList 
+          permissionGroups={permissionGroups}
+          selectedPermissions={selectedPermissions}
+          onTogglePermission={onTogglePermission}
+          isAdmin={isAdmin}
+        />
       </CardContent>
-      <CardFooter>
-        <p className="text-sm text-gray-500">
-          {isAdmin 
-            ? "Le rôle Administrateur a toutes les permissions par défaut et ne peut pas être modifié." 
-            : "Les modifications des permissions sont enregistrées automatiquement."}
-        </p>
-      </CardFooter>
+      <PermissionsFooter isAdmin={isAdmin} />
     </Card>
   );
 };

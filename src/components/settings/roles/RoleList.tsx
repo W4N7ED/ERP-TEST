@@ -1,10 +1,9 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
 import { UserRole } from '@/types/permissions';
-import { toast } from "sonner";
+import RoleItem from './RoleItem';
+import RoleHeader from './RoleHeader';
 
 interface RoleListProps {
   roles: UserRole[];
@@ -19,43 +18,19 @@ const RoleList: React.FC<RoleListProps> = ({
   onSelectRole, 
   onDeleteRole 
 }) => {
-  // Handler for deleting a role
-  const handleDeleteRole = (e: React.MouseEvent, roleToDelete: UserRole) => {
-    e.stopPropagation();
-    
-    if (roleToDelete === "Administrateur") {
-      toast.error("Le rôle Administrateur ne peut pas être supprimé");
-      return;
-    }
-    
-    onDeleteRole(roleToDelete);
-  };
-  
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Rôles disponibles</CardTitle>
-        <CardDescription>Sélectionnez un rôle pour configurer ses permissions</CardDescription>
-      </CardHeader>
+      <RoleHeader />
       <CardContent>
         <div className="space-y-2">
           {roles.map((role) => (
-            <div 
+            <RoleItem 
               key={role} 
-              className={`flex justify-between items-center p-3 rounded-md cursor-pointer hover:bg-gray-100 ${selectedRole === role ? 'bg-primary/10 border-l-4 border-primary' : ''}`}
-              onClick={() => onSelectRole(role)}
-            >
-              <span className="font-medium">{role}</span>
-              {role !== "Administrateur" && (
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={(e) => handleDeleteRole(e, role)}
-                >
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </Button>
-              )}
-            </div>
+              role={role}
+              isSelected={selectedRole === role}
+              onSelectRole={onSelectRole}
+              onDeleteRole={onDeleteRole}
+            />
           ))}
         </div>
       </CardContent>
