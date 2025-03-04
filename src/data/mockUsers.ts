@@ -1,7 +1,6 @@
-
 import { Permission, User } from '@/types/permissions';
 
-// Mock users with their respective permissions
+// Mock users with their respective permissions - emptied for clean start
 const mockUsers: User[] = [
   {
     id: 1,
@@ -53,82 +52,10 @@ const mockUsers: User[] = [
       'clients.edit',
       'clients.delete'
     ]
-  },
-  {
-    id: 2,
-    name: "Technicien",
-    role: "Technicien",
-    permissions: [
-      'inventory.view',
-      'inventory.add',
-      'movements.view',
-      'movements.add',
-      'suppliers.view',
-      'projects.view',
-      'interventions.view',
-      'interventions.add',
-      'interventions.edit',
-      'quotes.view'
-    ]
-  },
-  {
-    id: 3,
-    name: "Gestionnaire",
-    role: "Gestionnaire",
-    permissions: [
-      'inventory.view',
-      'inventory.add', 
-      'inventory.edit',
-      'inventory.export',
-      'suppliers.view',
-      'suppliers.add',
-      'suppliers.edit',
-      'movements.view',
-      'movements.add',
-      'movements.approve',
-      'projects.view',
-      'projects.add',
-      'projects.edit',
-      'interventions.view',
-      'interventions.add',
-      'interventions.edit',
-      'interventions.archive',  // Changed from 'interventions.approve' to 'interventions.archive'
-      'quotes.view',
-      'quotes.add',
-      'quotes.edit'
-    ]
-  },
-  {
-    id: 4,
-    name: "Invité",
-    role: "Invité",
-    permissions: [
-      'inventory.view',
-      'suppliers.view',
-      'movements.view',
-      'projects.view',
-      'interventions.view',
-      'quotes.view'
-    ]
-  },
-  {
-    id: 5,
-    name: "Commercial",
-    role: "Commercial",
-    permissions: [
-      'inventory.view',
-      'suppliers.view',
-      'quotes.view',
-      'quotes.add',
-      'quotes.edit',
-      'clients.view',  // Added to Permission type
-      'clients.add',   // Added to Permission type
-      'clients.edit'   // Added to Permission type
-    ]
   }
 ];
 
-// Default user for demonstration purposes
+// Default user for demonstration purposes - keeping only the admin
 export const defaultUser = mockUsers[0];
 
 export default mockUsers;

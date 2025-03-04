@@ -12,6 +12,8 @@ const GeneralSettings = () => {
   const { toast } = useToast();
   const { appName, setAppName } = useAppName();
   const [newAppName, setNewAppName] = useState(appName);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
   const handleSaveAppName = () => {
     if (newAppName.trim() === '') {
@@ -30,6 +32,13 @@ const GeneralSettings = () => {
     });
   };
 
+  const handleUpdateUserInfo = () => {
+    toast({
+      title: "Informations mises à jour",
+      description: "Vos informations personnelles ont été mises à jour.",
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -38,14 +47,25 @@ const GeneralSettings = () => {
       <CardContent className="grid gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">Nom</Label>
-          <Input id="name" defaultValue="John Doe" />
+          <Input 
+            id="name" 
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            placeholder="Votre nom"
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" defaultValue="john.doe@example.com" type="email" />
+          <Input 
+            id="email" 
+            value={userEmail}
+            onChange={(e) => setUserEmail(e.target.value)}
+            type="email" 
+            placeholder="Votre email"
+          />
         </div>
         <div>
-          <Button>Mettre à jour les informations</Button>
+          <Button onClick={handleUpdateUserInfo}>Mettre à jour les informations</Button>
         </div>
 
         <Separator className="my-4" />

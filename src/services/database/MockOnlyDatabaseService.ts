@@ -1,4 +1,3 @@
-
 import { storageService } from "../storageService";
 import { v4 as uuidv4 } from "uuid";
 import { Intervention } from "@/types/intervention";
@@ -95,43 +94,11 @@ export class MockOnlyDatabaseService implements DatabaseService {
     return this.collections[name];
   }
 
-  // Initialize the database with sample data if it's empty
+  // Initialize the database with empty collections - removed sample data
   initializeWithSampleData() {
-    // Check if we already have data
-    if (this.collection('inventory').getAll().length > 0) {
-      return;
-    }
-
-    // Add sample suppliers
-    const suppliers = [
-      { name: 'Fournisseur A', contact_name: 'Jean Dupont', email: 'contact@fournisseura.com', phone: '01 23 45 67 89' },
-      { name: 'Fournisseur B', contact_name: 'Marie Martin', email: 'contact@fournisseurb.com', phone: '01 23 45 67 90' }
-    ];
-    suppliers.forEach(supplier => this.collection('suppliers').add(supplier));
-
-    // Add sample inventory
-    const inventory = [
-      { name: 'Tournevis', category: 'Outils', quantity: 15, unit_price: 12.99, supplier_id: 1 },
-      { name: 'Marteau', category: 'Outils', quantity: 10, unit_price: 15.50, supplier_id: 1 },
-      { name: 'Lampe LED', category: 'Électricité', quantity: 25, unit_price: 8.75, supplier_id: 2 }
-    ];
-    inventory.forEach(item => this.collection('inventory').add(item));
-
-    // Add sample clients
-    const clients = [
-      { name: 'Client Alpha', contact_name: 'Sophie Bernard', email: 'contact@alpha.com', phone: '01 98 76 54 32' },
-      { name: 'Client Beta', contact_name: 'Thomas Petit', email: 'contact@beta.com', phone: '01 98 76 54 33' }
-    ];
-    clients.forEach(client => this.collection('clients').add(client));
-
-    // Add sample projects
-    const projects = [
-      { name: 'Projet Maintenance', client_id: 1, start_date: '2023-01-15', end_date: '2023-06-30', status: 'active' },
-      { name: 'Projet Installation', client_id: 2, start_date: '2023-02-01', end_date: '2023-04-30', status: 'completed' }
-    ];
-    projects.forEach(project => this.collection('projects').add(project));
-
-    console.log('Base de données initialisée avec des données d\'exemple');
+    // Don't add any sample data, just return
+    console.log('Base de données initialisée sans données d\'exemple');
+    return;
   }
 
   // DatabaseService interface implementation

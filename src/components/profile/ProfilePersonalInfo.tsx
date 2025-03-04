@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User } from '@/types/permissions';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,10 +20,10 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({ user }) => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: user.name,
-    email: 'utilisateur@example.com',
-    phone: '06 12 34 56 78',
-    address: '123 Rue Principale, 75001 Paris',
-    bio: "Technicien de maintenance spécialisé dans les équipements industriels."
+    email: '',
+    phone: '',
+    address: '',
+    bio: ""
   });
   
   // Récupérer l'URL de l'avatar au chargement du composant
@@ -99,7 +99,8 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({ user }) => {
                     id="name" 
                     name="name" 
                     value={formData.name} 
-                    onChange={handleInputChange} 
+                    onChange={handleInputChange}
+                    placeholder="Votre nom complet"
                   />
                 </div>
                 
@@ -110,7 +111,8 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({ user }) => {
                     name="email" 
                     type="email" 
                     value={formData.email} 
-                    onChange={handleInputChange} 
+                    onChange={handleInputChange}
+                    placeholder="Votre email"
                   />
                   <p className="text-xs text-muted-foreground">
                     Email professionnel (géré par l'administrateur)
@@ -123,7 +125,8 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({ user }) => {
                     id="phone" 
                     name="phone" 
                     value={formData.phone} 
-                    onChange={handleInputChange} 
+                    onChange={handleInputChange}
+                    placeholder="Votre numéro de téléphone"
                   />
                 </div>
                 
@@ -133,7 +136,8 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({ user }) => {
                     id="address" 
                     name="address" 
                     value={formData.address} 
-                    onChange={handleInputChange} 
+                    onChange={handleInputChange}
+                    placeholder="Votre adresse"
                   />
                 </div>
               </div>
