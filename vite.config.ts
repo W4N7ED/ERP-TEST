@@ -46,8 +46,8 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    // Exclure les modules qui causent des problèmes de compilation
-    exclude: ['better-sqlite3', 'pg', 'mysql', 'mysql2']
+    // Exclure complètement les modules natifs pour éviter les erreurs de compilation
+    exclude: ['better-sqlite3', 'pg', 'mysql', 'mysql2', 'sqlite3', 'node-gyp']
   },
   define: {
     // Ajouter cette section pour fournir process.env au code côté client
@@ -59,7 +59,10 @@ export default defineConfig(({ mode }) => ({
       env: {},
       nextTick: (callback: () => void) => setTimeout(callback, 0),
     },
-    // Ajouter un polyfill vide pour fs pour éviter les erreurs
+    // Ajouter des polyfills vides pour éviter les erreurs
     'global': {},
+    'fs': {},
+    'path': {},
+    'os': {},
   },
 }))

@@ -1,10 +1,14 @@
 
 import { User } from "@/types/permissions";
+import { Intervention } from "@/types/intervention";
+import { Project } from "@/types/project";
 
 // Define localStorage keys
 const USER_KEY = "current_user";
 const ADMIN_CREDENTIALS_KEY = "admin_credentials";
 const USER_AVATAR_KEY = "user_avatar";
+const PROJECTS_KEY = "projects_data";
+const INTERVENTIONS_KEY = "interventions_data";
 
 // Service for managing data in localStorage
 export const storageService = {
@@ -49,6 +53,26 @@ export const storageService = {
 
   saveAppConfiguration: (config: any): void => {
     localStorage.setItem("app_config", JSON.stringify(config));
+  },
+
+  // Projects operations
+  getProjects: (): Project[] => {
+    const data = localStorage.getItem(PROJECTS_KEY);
+    return data ? JSON.parse(data) : [];
+  },
+
+  saveProjects: (projects: Project[]): void => {
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+  },
+
+  // Interventions operations
+  getInterventions: (): Intervention[] => {
+    const data = localStorage.getItem(INTERVENTIONS_KEY);
+    return data ? JSON.parse(data) : [];
+  },
+
+  saveInterventions: (interventions: Intervention[]): void => {
+    localStorage.setItem(INTERVENTIONS_KEY, JSON.stringify(interventions));
   },
 
   // Generic data operations
