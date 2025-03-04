@@ -1,6 +1,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import AddItemDialog from "@/components/inventory/dialog/AddItemDialog";
+import EditItemDialog from "@/components/inventory/dialog/EditItemDialog";
 import ManageCategoriesDialog from "@/components/inventory/dialog/ManageCategoriesDialog";
 import CategoryCards from "@/components/inventory/CategoryCards";
 import InventoryList from "@/components/inventory/InventoryList";
@@ -17,8 +18,10 @@ const Inventory = () => {
     viewMode,
     currentItem,
     isAddDialogOpen,
+    isEditDialogOpen,
     isCategoriesDialogOpen,
     newItem,
+    itemToEdit,
     currentUser,
     availableUsers,
     productCategories,
@@ -36,10 +39,14 @@ const Inventory = () => {
     handleUserChange,
     handleBackToList,
     setIsAddDialogOpen,
+    setIsEditDialogOpen,
     handleOpenCategoriesDialog,
     setIsCategoriesDialogOpen,
     handleAddCategory,
-    handleDeleteCategory
+    handleDeleteCategory,
+    handleUpdateItem,
+    handleEditInputChange,
+    handleEditSelectChange
   } = useInventoryState();
 
   return (
@@ -97,6 +104,15 @@ const Inventory = () => {
           onInputChange={handleInputChange}
           onSelectChange={handleSelectChange}
           onSubmit={handleSubmit}
+        />
+
+        <EditItemDialog
+          isOpen={isEditDialogOpen}
+          onClose={() => setIsEditDialogOpen(false)}
+          item={itemToEdit}
+          onInputChange={handleEditInputChange}
+          onSelectChange={handleEditSelectChange}
+          onSubmit={handleUpdateItem}
         />
 
         <ManageCategoriesDialog

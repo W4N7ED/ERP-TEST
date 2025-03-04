@@ -43,13 +43,19 @@ export const useInventoryState = () => {
 
   const {
     newItem,
+    itemToEdit,
+    isEditDialogOpen,
+    setIsEditDialogOpen,
     handleAddItem,
     handleEditItem,
     handleDeleteItem,
     handleExportInventory,
     handleInputChange,
     handleSelectChange,
-    handleSubmit
+    handleSubmit,
+    handleUpdateItem,
+    handleEditInputChange,
+    handleEditSelectChange
   } = useInventoryItems(inventory, setInventory, hasPermission, currentUser);
 
   const handleOpenAddDialog = () => {
@@ -86,7 +92,9 @@ export const useInventoryState = () => {
     currentItem,
     isAddDialogOpen,
     isCategoriesDialogOpen,
+    isEditDialogOpen,
     newItem,
+    itemToEdit,
     currentUser,
     availableUsers,
     productCategories,
@@ -106,9 +114,13 @@ export const useInventoryState = () => {
     handleUserChange,
     handleBackToList,
     setIsAddDialogOpen,
+    setIsEditDialogOpen,
     handleOpenCategoriesDialog: openCategoriesDialog,
     setIsCategoriesDialogOpen,
     handleAddCategory,
-    handleDeleteCategory: handleCategoryDelete
+    handleDeleteCategory: handleCategoryDelete,
+    handleUpdateItem,
+    handleEditInputChange,
+    handleEditSelectChange
   };
 };

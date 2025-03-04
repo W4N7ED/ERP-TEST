@@ -29,6 +29,20 @@ const InventoryList: React.FC<InventoryListProps> = ({
     );
   }
 
+  const handleEditClick = (e: React.MouseEvent, item: InventoryItem) => {
+    e.stopPropagation();
+    if (onEditItem) {
+      onEditItem(item);
+    }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, item: InventoryItem) => {
+    e.stopPropagation();
+    if (onDeleteItem) {
+      onDeleteItem(item);
+    }
+  };
+
   return (
     <div className="mt-6 space-y-6">
       <div className="overflow-x-auto">
@@ -92,10 +106,7 @@ const InventoryList: React.FC<InventoryListProps> = ({
                       <CustomButton
                         variant="ghost"
                         size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEditItem(item);
-                        }}
+                        onClick={(e) => handleEditClick(e, item)}
                       >
                         <Pencil size={16} />
                       </CustomButton>
@@ -105,10 +116,7 @@ const InventoryList: React.FC<InventoryListProps> = ({
                       <CustomButton
                         variant="ghost"
                         size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteItem(item);
-                        }}
+                        onClick={(e) => handleDeleteClick(e, item)}
                       >
                         <Trash2 size={16} className="text-red-500" />
                       </CustomButton>

@@ -14,6 +14,9 @@ export const useInventoryItems = (
     location: "Magasin central",
     entryDate: new Date().toISOString().split('T')[0]
   });
+  
+  const [itemToEdit, setItemToEdit] = useState<InventoryItem | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleAddItem = () => {
     if (!hasPermission('inventory.add')) {
@@ -34,7 +37,11 @@ export const useInventoryItems = (
       toast.error(`${currentUser.name} n'a pas les droits pour modifier des articles.`);
       return;
     }
+    
+    setItemToEdit(item);
+    setIsEditDialogOpen(true);
     console.log("Editing item:", item);
+    return true;
   };
 
   const handleDeleteItem = (item: InventoryItem) => {
@@ -42,6 +49,13 @@ export const useInventoryItems = (
       toast.error(`${currentUser.name} n'a pas les droits pour supprimer des articles.`);
       return;
     }
+    
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'article "${item.name}" ?`)) {
+      const updatedInventory = inventory.filter(i => i.id !== item.id);
+      setInventory(updatedInventory);
+      toast.success(`Article "${item.name}" supprimé avec succès`);
+    }
+    
     console.log("Deleting item:", item);
   };
 
@@ -100,14 +114,60 @@ export const useInventoryItems = (
     return true;
   };
 
+  const handleUpdateItem = () => {
+    if (!itemToEdit) return false;
+    
+    const itemIndex = inventory.findIndex(i => i.id === itemToEdit.id);
+    if (itemIndex === -1) {
+      toast.error("Article non trouvé");
+      return false;
+    }
+    
+    const updatedInventory = [...inventory];
+    updatedInventory[itemIndex] = {
+      ...itemToEdit,
+      lastUpdated: new Date().toISOString().split('T')[0]
+    };
+    
+    setInventory(updatedInventory);
+    setIsEditDialogOpen(false);
+    toast.success(`Article "${itemToEdit.name}" mis à jour avec succès`);
+    return true;
+  };
+
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (!itemToEdit) return;
+    
+    const { name, value } = e.target;
+    setItemToEdit({
+      ...itemToEdit,
+      [name]: value
+    });
+  };
+
+  const handleEditSelectChange = (name: string, value: string) => {
+    if (!itemToEdit) return;
+    
+    setItemToEdit({
+      ...itemToEdit,
+      [name]: value
+    });
+  };
+
   return {
     newItem,
+    itemToEdit,
+    isEditDialogOpen,
+    setIsEditDialogOpen,
     handleAddItem,
     handleEditItem,
     handleDeleteItem,
     handleExportInventory,
     handleInputChange,
     handleSelectChange,
-    handleSubmit
+    handleSubmit,
+    handleUpdateItem,
+    handleEditInputChange,
+    handleEditSelectChange
   };
 };
