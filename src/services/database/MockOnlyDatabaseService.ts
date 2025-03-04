@@ -1,6 +1,8 @@
 
 import { storageService } from "../storageService";
 import { v4 as uuidv4 } from "uuid";
+import { Intervention } from "@/types/intervention";
+import { DatabaseService } from "./types";
 
 // Base class for all database collections
 class Collection {
@@ -70,8 +72,9 @@ class Collection {
 }
 
 // MockOnlyDatabaseService class that will replace the Supabase database services
-export class MockOnlyDatabaseService {
+export class MockOnlyDatabaseService implements DatabaseService {
   private collections: { [key: string]: Collection } = {};
+  private connected: boolean = false;
 
   constructor() {
     // Create some default collections
@@ -131,7 +134,52 @@ export class MockOnlyDatabaseService {
     console.log('Base de données initialisée avec des données d\'exemple');
   }
 
-  // Verify connection - returns true for mock database
+  // DatabaseService interface implementation
+
+  async connect(): Promise<{ success: boolean; message: string }> {
+    this.connected = true;
+    return {
+      success: true,
+      message: "Connexion à la base de données simulée établie"
+    };
+  }
+
+  async disconnect(): Promise<void> {
+    this.connected = false;
+    console.log("Déconnexion de la base de données simulée");
+  }
+
+  isConnected(): boolean {
+    return this.connected;
+  }
+
+  async getInterventions(): Promise<Intervention[]> {
+    return this.collection('interventions').getAll() as Intervention[];
+  }
+
+  async addIntervention(intervention: Omit<Intervention, "id">): Promise<Intervention> {
+    return this.collection('interventions').add(intervention) as Intervention;
+  }
+
+  async updateIntervention(id: number, intervention: Partial<Intervention>): Promise<Intervention | null> {
+    return this.collection('interventions').update(id, intervention) as Intervention | null;
+  }
+
+  async deleteIntervention(id: number): Promise<boolean> {
+    return this.collection('interventions').delete(id);
+  }
+
+  async getTechnicians(): Promise<string[]> {
+    // For simplicity, return some mock technicians
+    return ["Technicien 1", "Technicien 2", "Technicien 3"];
+  }
+
+  async getClients(): Promise<string[]> {
+    const clients = this.collection('clients').getAll();
+    return clients.map((client: any) => client.name);
+  }
+
+  // Verify connection - always returns true for mock database
   async verifyConnection() {
     return true;
   }
