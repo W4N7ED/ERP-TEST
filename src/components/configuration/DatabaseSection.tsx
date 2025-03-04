@@ -5,8 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { verifyDatabaseConnection } from "@/services/databaseService";
+import { initDatabase } from "@/services/databaseService";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Check, Database, Loader2 } from "lucide-react";
 
 interface DatabaseSectionProps {
   host: string;
@@ -42,7 +44,9 @@ export const DatabaseSection = ({
   setTablePrefix
 }: DatabaseSectionProps) => {
   const [isTesting, setIsTesting] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   const [connectionResult, setConnectionResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [initResult, setInitResult] = useState<{ success: boolean; message: string; tables?: string[] } | null>(null);
   const { toast } = useToast();
 
   // Mise à jour du port par défaut lorsque le type de base de données change
@@ -114,6 +118,66 @@ export const DatabaseSection = ({
       });
     } finally {
       setIsTesting(false);
+    }
+  };
+
+  const initializeDatabase = async () => {
+    if (!connectionResult?.success) {
+      toast({
+        variant: "destructive",
+        title: "Erreur d'initialisation",
+        description: "Veuillez d'abord tester la connexion à la base de données avec succès",
+      });
+      return;
+    }
+
+    setIsInitializing(true);
+    setInitResult(null);
+
+    toast({
+      title: "Initialisation en cours",
+      description: "Création des tables dans la base de données...",
+    });
+
+    try {
+      // Initialize the database
+      const result = await initDatabase(
+        host, 
+        port, 
+        username, 
+        password, 
+        database, 
+        dbType as any,
+        tablePrefix
+      );
+      
+      setInitResult(result);
+      
+      if (result.success) {
+        toast({
+          title: "Initialisation réussie",
+          description: "Les tables ont été créées avec succès",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Échec de l'initialisation",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      setInitResult({
+        success: false,
+        message: `Une erreur s'est produite: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+      });
+      
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: `Une erreur s'est produite: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+      });
+    } finally {
+      setIsInitializing(false);
     }
   };
 
@@ -198,20 +262,56 @@ export const DatabaseSection = ({
       </div>
       
       <div className="space-y-3">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={testConnection}
-          className="mt-2"
-          disabled={isTesting}
-        >
-          {isTesting ? "Test en cours..." : "Tester la connexion"}
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={testConnection}
+            className="flex items-center gap-2"
+            disabled={isTesting}
+          >
+            {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+            {isTesting ? "Test en cours..." : "Tester la connexion"}
+          </Button>
+          
+          {connectionResult?.success && (
+            <Button 
+              type="button" 
+              onClick={initializeDatabase}
+              className="flex items-center gap-2"
+              disabled={isInitializing}
+            >
+              {isInitializing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {isInitializing ? "Initialisation en cours..." : "Initialiser les tables"}
+            </Button>
+          )}
+        </div>
         
         {connectionResult && (
           <Alert variant={connectionResult.success ? "default" : "destructive"} className="mt-3">
             <AlertTitle>{connectionResult.success ? "Connexion réussie" : "Échec de connexion"}</AlertTitle>
             <AlertDescription>{connectionResult.message}</AlertDescription>
+          </Alert>
+        )}
+        
+        {initResult && (
+          <Alert variant={initResult.success ? "default" : "destructive"} className="mt-3">
+            <AlertTitle>{initResult.success ? "Initialisation réussie" : "Échec de l'initialisation"}</AlertTitle>
+            <AlertDescription>
+              {initResult.message}
+              {initResult.success && initResult.tables && (
+                <div className="mt-2">
+                  <p className="font-medium">Tables créées:</p>
+                  <ul className="list-disc list-inside mt-1">
+                    {initResult.tables.map((table, index) => (
+                      <li key={index} className="text-sm">
+                        <span className="font-mono">{table}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </AlertDescription>
           </Alert>
         )}
       </div>

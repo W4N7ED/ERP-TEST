@@ -30,6 +30,9 @@ export const initDatabase = async (
       tablePrefix ? `${tablePrefix}${table}` : table
     );
     
+    // Real implementation would create tables here
+    // For mock version, we just simulate successful creation
+    
     return {
       success: true,
       message: `Connexion à ${database}@${host}:${port} établie avec succès et tables créées.`,

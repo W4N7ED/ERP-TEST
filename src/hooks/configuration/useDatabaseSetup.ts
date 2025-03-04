@@ -9,7 +9,7 @@ export const useDatabaseSetup = (state: ConfigurationState, toast: any) => {
       return { 
         success: true, 
         message: "Base de données simulée configurée", 
-        tables: ['users', 'inventory', 'suppliers', 'projects', 'interventions', 'movements', 'clients', 'quotes']
+        tables: ['users', 'inventory', 'suppliers', 'projects', 'interventions', 'movements', 'clients', 'quotes', 'quote_items']
       };
     }
     
@@ -34,12 +34,21 @@ export const useDatabaseSetup = (state: ConfigurationState, toast: any) => {
       }
       
       if (result.tables && result.tables.length > 0) {
-        console.log("Tables créées:", result.tables);
+        toast({
+          title: "Initialisation réussie",
+          description: `${result.tables.length} tables créées avec succès`,
+        });
       }
       
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
+      toast({
+        variant: "destructive",
+        title: "Erreur d'initialisation",
+        description: `Erreur d'initialisation: ${errorMessage}`,
+      });
+      
       return {
         success: false,
         message: `Erreur d'initialisation: ${errorMessage}`

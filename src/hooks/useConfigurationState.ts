@@ -29,21 +29,41 @@ export const useConfigurationState = () => {
     configFields.updateField('isInitializing', true);
     
     try {
+      // Initialize the database first
       const initResult = await initializeDatabase();
       if (!initResult.success) {
+        toast({
+          variant: "destructive",
+          title: "Erreur d'initialisation",
+          description: "L'initialisation de la base de données a échoué. Veuillez vérifier vos paramètres.",
+        });
         configFields.updateField('isInitializing', false);
         return;
       }
 
+      // Set up admin account if requested
       if (configFields.createAdmin) {
         const adminSetupResult = await setupAdminAccount();
         if (!adminSetupResult.success) {
+          toast({
+            variant: "destructive",
+            title: "Erreur de configuration",
+            description: "La création du compte administrateur a échoué.",
+          });
           configFields.updateField('isInitializing', false);
           return;
         }
       }
 
+      // Save configuration to localStorage
       saveConfiguration();
+      
+      toast({
+        title: "Configuration terminée",
+        description: "L'application est maintenant configurée et prête à l'emploi.",
+      });
+      
+      // Navigate to login page
       navigate("/login");
     } catch (error) {
       toast({
