@@ -25,11 +25,11 @@
 # Types MIME appropriés
 <IfModule mod_mime.c>
   # JavaScript
-  AddType text/javascript .js
-  AddType text/javascript .mjs
-  AddType text/javascript .jsx
-  AddType text/javascript .ts
-  AddType text/javascript .tsx
+  AddType application/javascript .js
+  AddType application/javascript .mjs
+  AddType application/javascript .jsx
+  AddType application/javascript .ts
+  AddType application/javascript .tsx
   
   # CSS
   AddType text/css .css
@@ -57,7 +57,7 @@
 
 # Compression
 <IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
 </IfModule>
 
 # Gestion des erreurs 404

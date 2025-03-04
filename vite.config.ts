@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  base: './', // Configure Vite to use relative paths
   server: {
     host: "::",
     port: 8080,
@@ -26,7 +27,7 @@ export default defineConfig(({ mode }) => ({
     // Configurer les en-têtes MIME correctement
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'text/javascript; charset=utf-8',
+      'Content-Type': 'application/javascript; charset=utf-8',
       'X-Content-Type-Options': 'nosniff',
     },
     // Activer CORS
@@ -35,6 +36,8 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Assurer que le manifest est généré pour le déploiement
     manifest: true,
+    outDir: 'dist',
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks: {
