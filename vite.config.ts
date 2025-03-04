@@ -46,8 +46,15 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    // Exclure complètement les modules natifs pour éviter les erreurs de compilation
-    exclude: ['better-sqlite3', 'pg', 'mysql', 'mysql2', 'sqlite3', 'node-gyp']
+    // Exclure complètement les modules natifs qui nécessitent une compilation
+    exclude: ['better-sqlite3', 'pg', 'mysql', 'mysql2', 'sqlite3', 'node-gyp'],
+    // Empêcher Vite d'essayer de prétraiter ces modules
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
+      platform: 'browser',
+    }
   },
   define: {
     // Ajouter cette section pour fournir process.env au code côté client
@@ -57,12 +64,13 @@ export default defineConfig(({ mode }) => ({
     // Polyfill pour 'process' utilisé par certains packages
     'process': {
       env: {},
-      nextTick: (callback: () => void) => setTimeout(callback, 0),
+      nextTick: (callback) => setTimeout(callback, 0),
     },
     // Ajouter des polyfills vides pour éviter les erreurs
     'global': {},
     'fs': {},
     'path': {},
     'os': {},
+    'child_process': {},
   },
 }))

@@ -8,7 +8,6 @@ source "$(dirname "$0")/scripts/config.sh"
 source "$(dirname "$0")/scripts/utils.sh"
 source "$(dirname "$0")/scripts/system_check.sh"
 source "$(dirname "$0")/scripts/dependencies.sh"
-source "$(dirname "$0")/scripts/database.sh"
 source "$(dirname "$0")/scripts/app_install.sh"
 source "$(dirname "$0")/scripts/apache_config.sh"
 
@@ -32,7 +31,6 @@ check_os
 # Exécuter les étapes d'installation
 install_dependencies
 install_nodejs
-install_mysql
 install_app
 configure_apache
 

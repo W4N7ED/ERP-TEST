@@ -8,7 +8,6 @@ source "$(dirname "$0")/scripts/config.sh"
 source "$(dirname "$0")/scripts/utils.sh" 
 source "$(dirname "$0")/scripts/system_check.sh"
 source "$(dirname "$0")/scripts/dependencies.sh"
-source "$(dirname "$0")/scripts/dev_database.sh"
 source "$(dirname "$0")/scripts/dev_setup.sh"
 
 # Exécution principale
@@ -20,7 +19,6 @@ check_os
 # Installer les dépendances
 install_dependencies
 install_nodejs
-install_mysql_dev
 setup_dev_environment
 
 print_success "=== Configuration terminée avec succès ==="

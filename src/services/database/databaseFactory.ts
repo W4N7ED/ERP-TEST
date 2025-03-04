@@ -10,27 +10,20 @@ export function createDatabaseService(config: DatabaseConfig): DatabaseService;
 export function createDatabaseService(type: string): DatabaseService;
 export function createDatabaseService(configOrType: DatabaseConfig | string): DatabaseService {
   try {
-    if (typeof configOrType === 'string') {
-      // Gérer le paramètre de type string (support hérité)
-      console.warn("Configuration simplifiée utilisée - on utilise SQLite par défaut");
-      const defaultConfig: DatabaseConfig = {
-        type: "sqlite",
-        database: "app.db"
-      };
-      const service = new SQLiteDatabaseService(defaultConfig);
-      setDatabaseInstance(service);
-      return service;
-    } else {
-      // Utiliser SQLite pour le développement web
-      console.log("Création du service de base de données avec la configuration:", configOrType);
-      
-      // Toujours utiliser SQLite pour éviter les problèmes de compilation native
-      const service = new SQLiteDatabaseService(configOrType);
-      
-      // Définir l'instance singleton après création
-      setDatabaseInstance(service);
-      return service;
-    }
+    console.log("Création du service de base de données en mode navigateur");
+    // Toujours utiliser SQLite/localStorage pour le navigateur
+    const defaultConfig: DatabaseConfig = {
+      type: "sqlite",
+      database: typeof configOrType === 'string' ? "app.db" : (configOrType.database || "app.db")
+    };
+    
+    // Créer l'instance SQLite (qui utilise localStorage)
+    const service = new SQLiteDatabaseService(defaultConfig);
+    
+    // Définir l'instance singleton
+    setDatabaseInstance(service);
+    
+    return service;
   } catch (error) {
     console.error("Erreur lors de la création du service de base de données:", error);
     toast.error("Erreur de connexion à la base de données");
@@ -49,11 +42,10 @@ export function createDatabaseService(configOrType: DatabaseConfig | string): Da
 export function getDatabaseInstance(): DatabaseService {
   if (!databaseInstance) {
     // Créer une instance SQLite par défaut si aucune n'existe
-    const defaultConfig: DatabaseConfig = {
+    databaseInstance = new SQLiteDatabaseService({
       type: "sqlite",
       database: "app.db"
-    };
-    databaseInstance = new SQLiteDatabaseService(defaultConfig);
+    });
   }
   return databaseInstance;
 }
