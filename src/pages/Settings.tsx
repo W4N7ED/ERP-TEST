@@ -1,18 +1,24 @@
 
-import { useState } from "react";
-import Navbar from "@/components/layout/Navbar";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { usePermissions } from "@/hooks/usePermissions";
-import GeneralSettings from "@/components/settings/GeneralSettings";
-import AppearanceSettings from "@/components/settings/AppearanceSettings";
-import NotificationSettings from "@/components/settings/NotificationSettings";
-import SecuritySettings from "@/components/settings/SecuritySettings";
-import RolesSettings from "@/components/settings/RolesSettings";
-import AdvancedSettings from "@/components/settings/AdvancedSettings";
+import React, { useState } from 'react';
+import Navbar from '@/components/layout/Navbar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { Card } from '@/components/ui/card';
+import GeneralSettings from '@/components/settings/GeneralSettings';
+import RolesSettings from '@/components/settings/RolesSettings';
+import AppearanceSettings from '@/components/settings/AppearanceSettings';
+import SecuritySettings from '@/components/settings/SecuritySettings';
+import NotificationSettings from '@/components/settings/NotificationSettings';
+import AdvancedSettings from '@/components/settings/AdvancedSettings';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const Settings = () => {
+  const [activeTab, setActiveTab] = useState("general");
   const { hasPermission } = usePermissions();
-
+  
+  // Vérifier les permissions pour voir certains onglets
+  const canManageUsers = hasPermission("users.view");
+  
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -20,20 +26,16 @@ const Settings = () => {
       <main className="container mx-auto px-4 pt-24 pb-12">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Paramètres</h1>
-          <p className="text-muted-foreground mt-1">
-            Gérez les paramètres de votre compte et de l'application
-          </p>
+          <p className="text-muted-foreground mt-1">Configurez les paramètres de l'application</p>
         </div>
         
-        <Tabs defaultValue="general" className="space-y-4">
-          <TabsList className="w-full md:w-auto">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="w-full md:w-auto flex overflow-x-auto mb-6">
             <TabsTrigger value="general">Général</TabsTrigger>
+            {canManageUsers && <TabsTrigger value="users">Utilisateurs & Rôles</TabsTrigger>}
             <TabsTrigger value="appearance">Apparence</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="security">Sécurité</TabsTrigger>
-            {hasPermission("users.edit") && (
-              <TabsTrigger value="roles">Gestion des rôles</TabsTrigger>
-            )}
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="advanced">Avancé</TabsTrigger>
           </TabsList>
           
@@ -41,23 +43,23 @@ const Settings = () => {
             <GeneralSettings />
           </TabsContent>
           
+          {canManageUsers && (
+            <TabsContent value="users" className="space-y-6">
+              <RolesSettings />
+            </TabsContent>
+          )}
+          
           <TabsContent value="appearance" className="space-y-6">
             <AppearanceSettings />
-          </TabsContent>
-          
-          <TabsContent value="notifications" className="space-y-6">
-            <NotificationSettings />
           </TabsContent>
           
           <TabsContent value="security" className="space-y-6">
             <SecuritySettings />
           </TabsContent>
           
-          {hasPermission("users.edit") && (
-            <TabsContent value="roles" className="space-y-6">
-              <RolesSettings />
-            </TabsContent>
-          )}
+          <TabsContent value="notifications" className="space-y-6">
+            <NotificationSettings />
+          </TabsContent>
           
           <TabsContent value="advanced" className="space-y-6">
             <AdvancedSettings />
