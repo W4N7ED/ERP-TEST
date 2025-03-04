@@ -4,7 +4,7 @@ import { useProjectFilters } from "./projects/useProjectFilters";
 import { useProjectStats } from "./projects/useProjectStats";
 import { useProjectActions } from "./projects/useProjectActions";
 import { useProjectCreation } from "./projects/useProjectCreation";
-import { useProjectContent } from "./projects/useProjectContent";
+import { useProjectContent } from "./projects/content";
 
 export const useProjectsState = () => {
   const [state, actions] = useProjectsData();
