@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -6,7 +5,6 @@ import {
   Package, 
   FolderKanban, 
   FileText, 
-  Users,
   Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,7 +22,6 @@ export const getNavItems = (): NavItem[] => [
   { label: "Inventaire", icon: <Package size={20} />, href: "/inventory" },
   { label: "Projets", icon: <FolderKanban size={20} />, href: "/projects" },
   { label: "Devis", icon: <FileText size={20} />, href: "/quotes" },
-  { label: "Utilisateurs", icon: <Users size={20} />, href: "/users", adminOnly: true },
   { label: "Paramètres", icon: <Settings size={20} />, href: "/settings", adminOnly: true },
 ];
 
