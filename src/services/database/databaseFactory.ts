@@ -3,6 +3,7 @@ import { DatabaseConfig, DatabaseService } from "./types";
 import { toast } from "sonner";
 import { MySQLDatabaseService } from "./MySQLDatabaseService";
 import { PostgreSQLDatabaseService } from "./PostgreSQLDatabaseService";
+import { SQLiteDatabaseService } from "./SQLiteDatabaseService";
 
 // Cache singleton instance
 let databaseInstance: DatabaseService | null = null;
@@ -23,8 +24,7 @@ export function createDatabaseService(configOrType: DatabaseConfig | string): Da
           case "postgres":
             return new PostgreSQLDatabaseService(configOrType);
           case "sqlite":
-            // Here we would create a SQLite service
-            throw new Error("SQLite database service not implemented yet");
+            return new SQLiteDatabaseService(configOrType);
           default:
             throw new Error(`Unsupported database type: ${configOrType.type}`);
         }

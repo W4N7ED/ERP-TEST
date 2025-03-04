@@ -1,5 +1,6 @@
 
 import { Intervention } from "@/types/intervention";
+import { Project } from "@/types/project";
 
 // Generic database configuration interface
 export interface DatabaseConfig {
@@ -23,4 +24,10 @@ export interface DatabaseService {
   deleteIntervention(id: number): Promise<boolean>;
   getTechnicians(): Promise<string[]>;
   getClients(): Promise<string[]>;
+  
+  // Project methods
+  getProjects(): Promise<Project[]>;
+  addProject(project: Omit<Project, "id">): Promise<Project>;
+  updateProject(id: number, project: Partial<Project>): Promise<Project | null>;
+  deleteProject(id: number): Promise<boolean>;
 }

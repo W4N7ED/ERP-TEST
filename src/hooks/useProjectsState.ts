@@ -1,15 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Project, projectsMock, ProjectStatus, ProjectPhase, ProjectTask, ProjectMember, TaskStatus, TaskPriority } from "@/types/project";
+import { getDatabaseInstance } from "@/services/database/databaseFactory";
 
 export const useProjectsState = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [projects, setProjects] = useState<Project[]>(projectsMock);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>(projectsMock);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "Tous">("Tous");
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [isAddProjectDialogOpen, setIsAddProjectDialogOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      setIsLoading(true);
+      try {
+        const dbService = getDatabaseInstance();
+        const data = await dbService.getProjects();
+        setProjects(data.length > 0 ? data : projectsMock);
+        setFilteredProjects(data.length > 0 ? data : projectsMock);
+      } catch (err) {
+        console.error("Failed to load projects:", err);
+        toast.error("Échec du chargement des projets. Utilisation des données de démonstration.");
+        setProjects(projectsMock);
+        setFilteredProjects(projectsMock);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    try {
+      loadProjects();
+    } catch (err) {
+      console.warn("Database not initialized yet, using mock data", err);
+      setProjects(projectsMock);
+      setFilteredProjects(projectsMock);
+      setIsLoading(false);
+    }
+  }, []);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
@@ -86,46 +116,73 @@ export const useProjectsState = () => {
     // Implement edit functionality
   };
 
-  const handleArchiveProject = (projectId: number) => {
+  const handleArchiveProject = async (projectId: number) => {
     if (window.confirm("Êtes-vous sûr de vouloir archiver ce projet ?")) {
-      const projectIndex = projects.findIndex(p => p.id === projectId);
-      if (projectIndex !== -1) {
-        const updatedProject = { ...projects[projectIndex], archived: true };
-        const updatedProjects = [...projects];
-        updatedProjects[projectIndex] = updatedProject;
-        
-        setProjects(updatedProjects);
-        
-        if (!showArchived) {
-          setFilteredProjects(filteredProjects.filter(p => p.id !== projectId));
-        } else {
-          const filteredIndex = filteredProjects.findIndex(p => p.id === projectId);
-          if (filteredIndex !== -1) {
-            const updatedFiltered = [...filteredProjects];
-            updatedFiltered[filteredIndex] = updatedProject;
-            setFilteredProjects(updatedFiltered);
+      try {
+        const projectIndex = projects.findIndex(p => p.id === projectId);
+        if (projectIndex !== -1) {
+          const updatedProject = { ...projects[projectIndex], archived: true };
+          
+          try {
+            const dbService = getDatabaseInstance();
+            await dbService.updateProject(projectId, { status: "Archivée", archived: true });
+          } catch (err) {
+            console.error("Failed to update project in database:", err);
           }
+          
+          const updatedProjects = [...projects];
+          updatedProjects[projectIndex] = updatedProject;
+          setProjects(updatedProjects);
+          
+          if (!showArchived) {
+            setFilteredProjects(filteredProjects.filter(p => p.id !== projectId));
+          } else {
+            const filteredIndex = filteredProjects.findIndex(p => p.id === projectId);
+            if (filteredIndex !== -1) {
+              const updatedFiltered = [...filteredProjects];
+              updatedFiltered[filteredIndex] = updatedProject;
+              setFilteredProjects(updatedFiltered);
+            }
+          }
+          
+          if (currentProject && currentProject.id === projectId) {
+            setCurrentProject(null);
+          }
+          
+          toast.success(`Le projet "${updatedProject.name}" a été archivé`);
+          return true;
+        }
+      } catch (error) {
+        console.error("Error archiving project:", error);
+        toast.error("Erreur lors de l'archivage du projet");
+      }
+    }
+    
+    return false;
+  };
+
+  const handleDeleteProject = async (project: Project) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le projet "${project.name}" ?`)) {
+      try {
+        try {
+          const dbService = getDatabaseInstance();
+          await dbService.deleteProject(project.id);
+        } catch (err) {
+          console.error("Failed to delete project from database:", err);
         }
         
-        if (currentProject && currentProject.id === projectId) {
-          setCurrentProject(null);
-        }
-        
-        toast.success(`Le projet "${updatedProject.name}" a été archivé`);
+        const updatedProjects = projects.filter(p => p.id !== project.id);
+        setProjects(updatedProjects);
+        setFilteredProjects(filteredProjects.filter(p => p.id !== project.id));
+        toast.success(`Projet "${project.name}" supprimé avec succès`);
+      } catch (error) {
+        console.error("Error deleting project:", error);
+        toast.error("Erreur lors de la suppression du projet");
       }
     }
   };
 
-  const handleDeleteProject = (project: Project) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le projet "${project.name}" ?`)) {
-      const updatedProjects = projects.filter(p => p.id !== project.id);
-      setProjects(updatedProjects);
-      setFilteredProjects(filteredProjects.filter(p => p.id !== project.id));
-      toast.success(`Projet "${project.name}" supprimé avec succès`);
-    }
-  };
-
-  const addNewProject = (projectData: {
+  const addNewProject = async (projectData: {
     name: string;
     reference: string;
     client?: string;
@@ -135,37 +192,59 @@ export const useProjectsState = () => {
     description?: string;
     estimatedBudget?: number;
   }) => {
-    const newId = Math.max(...projects.map(p => p.id)) + 1;
-    
-    const newProject: Project = {
-      id: newId,
-      name: projectData.name,
-      reference: projectData.reference,
-      client: projectData.client || undefined,
-      location: projectData.location,
-      startDate: projectData.startDate,
-      endDate: projectData.endDate,
-      status: "En attente",
-      progress: 0,
-      description: projectData.description,
-      budget: {
-        estimated: projectData.estimatedBudget ? Number(projectData.estimatedBudget) : 0,
-        actual: 0
-      },
-      team: [],
-      phases: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    const updatedProjects = [...projects, newProject];
-    setProjects(updatedProjects);
-    
-    if (statusFilter === "Tous" || statusFilter === "En attente") {
-      setFilteredProjects(prev => [...prev, newProject]);
+    try {
+      const newId = Math.max(...projects.map(p => p.id), 0) + 1;
+      
+      const newProject: Project = {
+        id: newId,
+        name: projectData.name,
+        reference: projectData.reference,
+        client: projectData.client || undefined,
+        location: projectData.location,
+        startDate: projectData.startDate,
+        endDate: projectData.endDate,
+        status: "En attente",
+        progress: 0,
+        description: projectData.description,
+        budget: {
+          estimated: projectData.estimatedBudget ? Number(projectData.estimatedBudget) : 0,
+          actual: 0
+        },
+        team: [],
+        phases: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      try {
+        const dbService = getDatabaseInstance();
+        const savedProject = await dbService.addProject(newProject);
+        
+        const updatedProjects = [...projects, savedProject];
+        setProjects(updatedProjects);
+        
+        if (statusFilter === "Tous" || statusFilter === "En attente") {
+          setFilteredProjects(prev => [...prev, savedProject]);
+        }
+        
+        return savedProject;
+      } catch (err) {
+        console.error("Failed to save project to database:", err);
+        
+        const updatedProjects = [...projects, newProject];
+        setProjects(updatedProjects);
+        
+        if (statusFilter === "Tous" || statusFilter === "En attente") {
+          setFilteredProjects(prev => [...prev, newProject]);
+        }
+        
+        return newProject;
+      }
+    } catch (error) {
+      console.error("Error adding project:", error);
+      toast.error("Erreur lors de l'ajout du projet");
+      return null;
     }
-    
-    return newProject;
   };
 
   const addPhaseToProject = (projectId: number, phaseData: {
@@ -439,6 +518,7 @@ export const useProjectsState = () => {
     currentProject,
     isAddProjectDialogOpen,
     showArchived,
+    isLoading,
     stats: calculateProjectStats(),
     handleSearch,
     filterByStatus,
