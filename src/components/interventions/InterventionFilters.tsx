@@ -3,14 +3,14 @@ import React from 'react';
 import { Input } from "@/components/ui/input";
 import { CustomButton } from "@/components/ui/custom-button";
 import { Search, Filter, SortAsc, Tag, X } from 'lucide-react';
-import { InterventionFilters } from '@/types/intervention';
+import type { InterventionFilters as InterventionFiltersType } from '@/types/intervention';
 
 interface InterventionFiltersProps {
   searchTerm: string;
   handleSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isAdvancedFiltersOpen: boolean;
   setIsAdvancedFiltersOpen: (open: boolean) => void;
-  filters: InterventionFilters;
+  filters: InterventionFiltersType;
 }
 
 const InterventionFilters: React.FC<InterventionFiltersProps> = ({
