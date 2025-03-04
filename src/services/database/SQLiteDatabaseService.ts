@@ -4,7 +4,7 @@ import { Intervention } from "@/types/intervention";
 import { Project } from "@/types/project";
 import { toast } from "sonner";
 
-// SQLite-specific implementation using localStorage for the browser environment
+// Implémentation SQLite utilisant localStorage pour l'environnement navigateur
 export class SQLiteDatabaseService implements DatabaseService {
   private connected: boolean = false;
   private config: DatabaseConfig;
@@ -17,19 +17,19 @@ export class SQLiteDatabaseService implements DatabaseService {
 
   async connect(): Promise<{ success: boolean; message: string }> {
     try {
-      // In browser environment - use localStorage
+      // Dans l'environnement navigateur - utilise localStorage
       this.loadFromLocalStorage();
       
       this.connected = true;
       return { 
         success: true, 
-        message: `Connected to SQLite database ${this.config.database || 'in memory'}` 
+        message: `Connecté à la base de données SQLite ${this.config.database || 'en mémoire'}` 
       };
     } catch (error) {
-      console.error("Error connecting to SQLite database:", error);
+      console.error("Erreur de connexion à la base de données SQLite:", error);
       return { 
         success: false, 
-        message: `Failed to connect to SQLite database: ${error instanceof Error ? error.message : 'Unknown error'}` 
+        message: `Échec de connexion à la base de données SQLite: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
       };
     }
   }
@@ -46,19 +46,19 @@ export class SQLiteDatabaseService implements DatabaseService {
         this.interventions = JSON.parse(interventionsData);
       }
     } catch (error) {
-      console.error("Error loading data from localStorage:", error);
-      toast.error("Error loading saved data");
+      console.error("Erreur lors du chargement des données depuis localStorage:", error);
+      toast.error("Erreur lors du chargement des données sauvegardées");
     }
   }
 
   private saveToStorage() {
-    // Save to localStorage
+    // Sauvegarde dans localStorage
     try {
       localStorage.setItem('projects', JSON.stringify(this.projects));
       localStorage.setItem('interventions', JSON.stringify(this.interventions));
     } catch (error) {
-      console.error("Error saving to localStorage:", error);
-      toast.error("Error saving data");
+      console.error("Erreur lors de la sauvegarde dans localStorage:", error);
+      toast.error("Erreur lors de la sauvegarde des données");
     }
   }
 

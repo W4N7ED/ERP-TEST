@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: './', // Configure Vite to use relative paths
+  base: './', // Configurer Vite pour utiliser des chemins relatifs
   server: {
     host: "::",
     port: 8080,
@@ -45,16 +45,20 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  optimizeDeps: {
+    // Exclure better-sqlite3 pour éviter les erreurs de compilation
+    exclude: ['better-sqlite3', 'pg']
+  },
   define: {
-    // Add this section to provide process.env to the client-side code
+    // Ajouter cette section pour fournir process.env au code côté client
     'process.env': {
       NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
-      // Add any other environment variables your app needs
+      // Ajouter d'autres variables d'environnement dont votre application a besoin
     },
-    // Polyfill for 'process' used by pg
+    // Polyfill pour 'process' utilisé par pg
     'process': {
       env: {},
-      // Add other process properties if needed
+      // Ajouter d'autres propriétés de processus si nécessaire
       nextTick: (callback: () => void) => setTimeout(callback, 0),
     },
   },
