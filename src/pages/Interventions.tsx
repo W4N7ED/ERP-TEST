@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { CustomButton } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
   Select,
   SelectContent,
@@ -14,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -23,12 +26,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
 import {
   Plus,
   Search,
   Filter,
   SortAsc,
-  Calendar,
+  Calendar as CalendarIcon,
   CheckCircle2,
   Clock,
   AlertTriangle,
@@ -44,9 +48,11 @@ import {
   Edit,
   Eye,
   Link,
+  CalendarDays,
+  X,
+  Tag,
 } from "lucide-react";
 
-// Types pour les interventions
 type Priority = "Critique" | "Haute" | "Moyenne" | "Basse";
 type Status = "À planifier" | "Planifiée" | "En cours" | "En attente" | "Terminée" | "Annulée" | "Archivée";
 type InterventionType = "Panne" | "Installation" | "Maintenance" | "Mise à jour" | "Autre";
@@ -73,7 +79,6 @@ interface Intervention {
   archived?: boolean;
 }
 
-// Mock data pour les interventions
 const interventionsMock: Intervention[] = [
   { 
     id: 1, 
@@ -189,7 +194,6 @@ const interventionsMock: Intervention[] = [
   }
 ];
 
-// Liste de techniciens pour l'attribution
 const techniciansList = [
   "Jean Dupont",
   "Marie Lambert",
@@ -199,7 +203,6 @@ const techniciansList = [
   "Sophie Bernard"
 ];
 
-// Liste de clients pour la sélection
 const clientsList = [
   "Entreprise ABC",
   "Société XYZ",
@@ -210,48 +213,127 @@ const clientsList = [
   "Clinique MNO"
 ];
 
+interface InterventionFilters {
+  status: Status | "Tous" | null;
+  priority: Priority | "Tous" | null;
+  type: InterventionType | "Tous" | null;
+  dateStart: Date | null;
+  dateEnd: Date | null;
+  technician: string | null;
+  client: string | null;
+  keyword: string;
+}
+
 const Interventions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredInterventions, setFilteredInterventions] = useState<Intervention[]>(interventionsMock);
   const [isNewInterventionDialogOpen, setIsNewInterventionDialogOpen] = useState(false);
   const [isEditInterventionDialogOpen, setIsEditInterventionDialogOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
+  const [isAdvancedFiltersOpen, setIsAdvancedFiltersOpen] = useState(false);
   const [currentIntervention, setCurrentIntervention] = useState<Partial<Intervention>>({
     priority: "Moyenne",
     status: "À planifier",
     type: "Panne",
     creationMode: "Manuelle"
   });
+  const [filters, setFilters] = useState<InterventionFilters>({
+    status: null,
+    priority: null,
+    type: null,
+    dateStart: null,
+    dateEnd: null,
+    technician: null,
+    client: null,
+    keyword: ""
+  });
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  
+  useEffect(() => {
+    applyFilters();
+  }, [filters, searchTerm, showArchived]);
+
+  const applyFilters = () => {
+    let filtered = [...interventionsMock];
+    
+    if (!showArchived) {
+      filtered = filtered.filter(i => i.status !== "Archivée");
+    }
+    
+    if (searchTerm.trim() !== "") {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(intervention => 
+        intervention.title.toLowerCase().includes(term) ||
+        intervention.client.toLowerCase().includes(term) ||
+        intervention.technician.toLowerCase().includes(term) ||
+        (intervention.material && intervention.material.toLowerCase().includes(term)) ||
+        (intervention.description && intervention.description.toLowerCase().includes(term))
+      );
+    }
+    
+    if (filters.status && filters.status !== "Tous") {
+      filtered = filtered.filter(i => i.status === filters.status);
+    }
+    
+    if (filters.priority && filters.priority !== "Tous") {
+      filtered = filtered.filter(i => i.priority === filters.priority);
+    }
+    
+    if (filters.type && filters.type !== "Tous") {
+      filtered = filtered.filter(i => i.type === filters.type);
+    }
+    
+    if (filters.technician) {
+      filtered = filtered.filter(i => i.technician === filters.technician);
+    }
+    
+    if (filters.client) {
+      filtered = filtered.filter(i => i.client === filters.client);
+    }
+    
+    if (filters.dateStart) {
+      const startDate = new Date(filters.dateStart);
+      startDate.setHours(0, 0, 0, 0);
+      filtered = filtered.filter(i => {
+        const date = new Date(i.dateCreated);
+        return date >= startDate;
+      });
+    }
+    
+    if (filters.dateEnd) {
+      const endDate = new Date(filters.dateEnd);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(i => {
+        const date = new Date(i.dateCreated);
+        return date <= endDate;
+      });
+    }
+    
+    setFilteredInterventions(filtered);
+  };
+  
+  const resetFilters = () => {
+    setFilters({
+      status: null,
+      priority: null,
+      type: null,
+      dateStart: null,
+      dateEnd: null,
+      technician: null,
+      client: null,
+      keyword: ""
+    });
+    setSearchTerm("");
+  };
   
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
     setSearchTerm(term);
-    
-    if (term.trim() === "") {
-      setFilteredInterventions(showArchived ? interventionsMock : interventionsMock.filter(i => i.status !== "Archivée"));
-    } else {
-      const filtered = interventionsMock.filter(
-        intervention => 
-          (showArchived || intervention.status !== "Archivée") &&
-          (intervention.title.toLowerCase().includes(term.toLowerCase()) ||
-          intervention.client.toLowerCase().includes(term.toLowerCase()) ||
-          intervention.technician.toLowerCase().includes(term.toLowerCase()) ||
-          intervention.material?.toLowerCase().includes(term.toLowerCase()) ||
-          intervention.description?.toLowerCase().includes(term.toLowerCase()))
-      );
-      setFilteredInterventions(filtered);
-    }
   };
   
   const toggleArchivedView = () => {
     setShowArchived(!showArchived);
-    if (!showArchived) {
-      setFilteredInterventions(interventionsMock);
-    } else {
-      setFilteredInterventions(interventionsMock.filter(i => i.status !== "Archivée"));
-    }
   };
   
   const getStatusIcon = (status: Status) => {
@@ -576,6 +658,184 @@ const Interventions = () => {
     </div>
   );
 
+  const renderAdvancedFilters = () => (
+    <div className="card-glass rounded-xl p-5 mb-6">
+      <div className="flex justify-between items-center mb-5">
+        <h3 className="text-lg font-medium">Filtres avancés</h3>
+        <CustomButton 
+          variant="ghost" 
+          size="sm" 
+          className="h-7 w-7 p-0" 
+          onClick={() => setIsAdvancedFiltersOpen(false)}
+        >
+          <X size={18} />
+        </CustomButton>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+        <div className="space-y-2">
+          <Label>Statut</Label>
+          <Select
+            value={filters.status || ""}
+            onValueChange={(value) => setFilters({...filters, status: value as Status | "Tous" | null})}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Tous les statuts" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Tous">Tous</SelectItem>
+              <SelectItem value="À planifier">À planifier</SelectItem>
+              <SelectItem value="Planifiée">Planifiée</SelectItem>
+              <SelectItem value="En cours">En cours</SelectItem>
+              <SelectItem value="En attente">En attente</SelectItem>
+              <SelectItem value="Terminée">Terminée</SelectItem>
+              <SelectItem value="Annulée">Annulée</SelectItem>
+              <SelectItem value="Archivée">Archivée</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label>Priorité</Label>
+          <Select
+            value={filters.priority || ""}
+            onValueChange={(value) => setFilters({...filters, priority: value as Priority | "Tous" | null})}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Toutes les priorités" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Tous">Toutes</SelectItem>
+              <SelectItem value="Basse">Basse</SelectItem>
+              <SelectItem value="Moyenne">Moyenne</SelectItem>
+              <SelectItem value="Haute">Haute</SelectItem>
+              <SelectItem value="Critique">Critique</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label>Type</Label>
+          <Select
+            value={filters.type || ""}
+            onValueChange={(value) => setFilters({...filters, type: value as InterventionType | "Tous" | null})}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Tous les types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Tous">Tous</SelectItem>
+              <SelectItem value="Panne">Panne</SelectItem>
+              <SelectItem value="Installation">Installation</SelectItem>
+              <SelectItem value="Maintenance">Maintenance</SelectItem>
+              <SelectItem value="Mise à jour">Mise à jour</SelectItem>
+              <SelectItem value="Autre">Autre</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label>Technicien</Label>
+          <Select
+            value={filters.technician || ""}
+            onValueChange={(value) => setFilters({...filters, technician: value || null})}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Tous les techniciens" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Tous</SelectItem>
+              {techniciansList.map(tech => (
+                <SelectItem key={tech} value={tech}>{tech}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label>Client</Label>
+          <Select
+            value={filters.client || ""}
+            onValueChange={(value) => setFilters({...filters, client: value || null})}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Tous les clients" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Tous</SelectItem>
+              {clientsList.map(client => (
+                <SelectItem key={client} value={client}>{client}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label>Date début</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <CustomButton
+                variant="outline"
+                className="w-full justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {filters.dateStart ? (
+                  format(filters.dateStart, "dd/MM/yyyy")
+                ) : (
+                  <span>Sélectionner...</span>
+                )}
+              </CustomButton>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={filters.dateStart || undefined}
+                onSelect={(date) => setFilters({...filters, dateStart: date})}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        
+        <div className="space-y-2">
+          <Label>Date fin</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <CustomButton
+                variant="outline"
+                className="w-full justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {filters.dateEnd ? (
+                  format(filters.dateEnd, "dd/MM/yyyy")
+                ) : (
+                  <span>Sélectionner...</span>
+                )}
+              </CustomButton>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={filters.dateEnd || undefined}
+                onSelect={(date) => setFilters({...filters, dateEnd: date})}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+      
+      <div className="flex gap-2 justify-end">
+        <CustomButton variant="outline" onClick={resetFilters}>
+          Réinitialiser
+        </CustomButton>
+        <CustomButton variant="primary" onClick={applyFilters}>
+          Appliquer
+        </CustomButton>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -690,18 +950,28 @@ const Interventions = () => {
                 </div>
                 
                 <div className="flex gap-2">
-                  <CustomButton variant="outline" icon={<Filter size={16} />}>
+                  <CustomButton 
+                    variant={isAdvancedFiltersOpen ? "primary" : "outline"} 
+                    icon={<Filter size={16} />}
+                    onClick={() => setIsAdvancedFiltersOpen(!isAdvancedFiltersOpen)}
+                  >
                     Filtrer
                   </CustomButton>
                   <CustomButton variant="outline" icon={<SortAsc size={16} />}>
                     Trier
                   </CustomButton>
-                  <CustomButton variant="outline" icon={<Calendar size={16} />}>
-                    Date
+                  <CustomButton 
+                    variant="outline" 
+                    icon={<Tag size={16} />}
+                    className={Object.values(filters).some(v => v !== null && v !== "") || searchTerm ? "bg-primary/5 border-primary text-primary" : ""}
+                  >
+                    {Object.values(filters).some(v => v !== null && v !== "") || searchTerm ? "Filtres actifs" : "Filtres"}
                   </CustomButton>
                 </div>
               </div>
             </div>
+            
+            {isAdvancedFiltersOpen && renderAdvancedFilters()}
             
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -720,90 +990,92 @@ const Interventions = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {filteredInterventions.map((intervention) => (
-                    <tr key={intervention.id} className={`hover:bg-muted/20 transition-colors ${intervention.status === "Archivée" ? "bg-gray-50" : ""}`}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        #{intervention.id.toString().padStart(4, '0')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium">{intervention.title}</div>
-                        {intervention.material && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {intervention.material}
+                  {filteredInterventions.length > 0 ? (
+                    filteredInterventions.map((intervention) => (
+                      <tr key={intervention.id} className={`hover:bg-muted/20 transition-colors ${intervention.status === "Archivée" ? "bg-gray-50" : ""}`}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          #{intervention.id.toString().padStart(4, '0')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium">{intervention.title}</div>
+                          {intervention.material && (
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {intervention.material}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm">{intervention.client}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm">{intervention.technician}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusClass(intervention.status)}`}>
+                            {getStatusIcon(intervention.status)}
+                            <span className="ml-1">{intervention.status}</span>
                           </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm">{intervention.client}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm">{intervention.technician}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusClass(intervention.status)}`}>
-                          {getStatusIcon(intervention.status)}
-                          <span className="ml-1">{intervention.status}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getPriorityClass(intervention.priority)}`}>
-                          {intervention.priority}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {new Date(intervention.deadline).toLocaleDateString('fr-FR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex items-center">
-                          <Wrench className="h-4 w-4 text-muted-foreground mr-1" />
-                          {intervention.type}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {intervention.projectId ? (
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getPriorityClass(intervention.priority)}`}>
+                            {intervention.priority}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          {new Date(intervention.deadline).toLocaleDateString('fr-FR')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <div className="flex items-center">
+                            <Wrench className="h-4 w-4 text-muted-foreground mr-1" />
+                            {intervention.type}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          {intervention.projectId ? (
+                            <CustomButton 
+                              variant="ghost" 
+                              className="h-8 px-2 text-blue-600 flex items-center"
+                              onClick={() => linkToProject(intervention.projectId!)}
+                            >
+                              <Link size={14} className="mr-1" />
+                              #{intervention.projectId}
+                            </CustomButton>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                           <CustomButton 
                             variant="ghost" 
-                            className="h-8 px-2 text-blue-600 flex items-center"
-                            onClick={() => linkToProject(intervention.projectId!)}
+                            className="h-8 px-2 text-primary"
+                            onClick={() => handleEditIntervention(intervention)}
+                            disabled={intervention.status === "Archivée"}
                           >
-                            <Link size={14} className="mr-1" />
-                            #{intervention.projectId}
+                            <Edit size={14} className="mr-1" /> Modifier
                           </CustomButton>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                        <CustomButton 
-                          variant="ghost" 
-                          className="h-8 px-2 text-primary"
-                          onClick={() => handleEditIntervention(intervention)}
-                          disabled={intervention.status === "Archivée"}
-                        >
-                          <Edit size={14} className="mr-1" /> Modifier
-                        </CustomButton>
-                        
-                        {intervention.status !== "Archivée" && (
-                          <CustomButton 
-                            variant="ghost" 
-                            className="h-8 px-2 text-gray-600"
-                            onClick={() => handleArchiveIntervention(intervention)}
-                          >
-                            <Archive size={14} className="mr-1" /> Archiver
-                          </CustomButton>
-                        )}
+                          
+                          {intervention.status !== "Archivée" && (
+                            <CustomButton 
+                              variant="ghost" 
+                              className="h-8 px-2 text-gray-600"
+                              onClick={() => handleArchiveIntervention(intervention)}
+                            >
+                              <Archive size={14} className="mr-1" /> Archiver
+                            </CustomButton>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={10} className="px-6 py-10 text-center text-muted-foreground">
+                        Aucune intervention ne correspond à vos critères de recherche
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
-            
-            {filteredInterventions.length === 0 && (
-              <div className="p-8 text-center">
-                <p className="text-muted-foreground">Aucune intervention trouvée</p>
-              </div>
-            )}
             
             <div className="p-4 border-t border-gray-100 flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
