@@ -1,6 +1,7 @@
 
 import { useCallback } from "react";
 import { ConfigurationState } from "@/types/configuration";
+import { useToast } from "@/hooks/use-toast";
 
 export const useFormValidation = (state: ConfigurationState, toast: any) => {
   const validateForm = useCallback(() => {
@@ -30,6 +31,17 @@ export const useFormValidation = (state: ConfigurationState, toast: any) => {
           variant: "destructive",
           title: "Erreur de configuration",
           description: "Tous les champs pour le compte administrateur sont requis",
+        });
+        return false;
+      }
+      
+      // Add email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(state.adminEmail)) {
+        toast({
+          variant: "destructive",
+          title: "Erreur de configuration",
+          description: "L'adresse email de l'administrateur n'est pas valide",
         });
         return false;
       }
