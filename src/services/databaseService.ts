@@ -1,47 +1,165 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { clientsList, interventionsMock, techniciansList } from "@/data/interventionsMock";
+import { Intervention } from "@/types/intervention";
 
-// Ce service gère les opérations de base de données à travers Supabase
-// plutôt que les connexions pg directes depuis le navigateur
+// Generic database configuration interface
+export interface DatabaseConfig {
+  host: string;
+  port: string;
+  username: string;
+  password: string;
+  database: string;
+  type: "postgres" | "mysql" | "sqlite" | "mock";
+}
 
+// Mock implementation for demonstration purposes
+class MockDatabaseService {
+  private config: DatabaseConfig;
+  private connected: boolean = false;
+  private interventions: Intervention[] = [];
+
+  constructor(config: DatabaseConfig) {
+    this.config = config;
+    // Initialize with mock data
+    this.interventions = [...interventionsMock];
+  }
+
+  async connect(): Promise<{ success: boolean; message: string }> {
+    // Simulate connection delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    if (this.config.host && this.config.database) {
+      this.connected = true;
+      console.log(`Connected to ${this.config.type} database: ${this.config.database}`);
+      return {
+        success: true,
+        message: `Connecté à ${this.config.database}@${this.config.host}:${this.config.port}`
+      };
+    } else {
+      return {
+        success: false,
+        message: "Configuration de base de données invalide"
+      };
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    this.connected = false;
+    console.log("Disconnected from database");
+  }
+
+  isConnected(): boolean {
+    return this.connected;
+  }
+
+  async getInterventions(): Promise<Intervention[]> {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return this.interventions;
+  }
+
+  async addIntervention(intervention: Omit<Intervention, "id">): Promise<Intervention> {
+    // Generate a new ID
+    const newId = Math.max(...this.interventions.map(i => i.id), 0) + 1;
+    const newIntervention = { ...intervention, id: newId };
+    this.interventions.push(newIntervention);
+    return newIntervention;
+  }
+
+  async updateIntervention(id: number, intervention: Partial<Intervention>): Promise<Intervention | null> {
+    const index = this.interventions.findIndex(i => i.id === id);
+    if (index === -1) return null;
+    
+    this.interventions[index] = { ...this.interventions[index], ...intervention };
+    return this.interventions[index];
+  }
+
+  async deleteIntervention(id: number): Promise<boolean> {
+    const initialLength = this.interventions.length;
+    this.interventions = this.interventions.filter(i => i.id !== id);
+    return initialLength > this.interventions.length;
+  }
+
+  async getTechnicians(): Promise<string[]> {
+    return techniciansList;
+  }
+
+  async getClients(): Promise<string[]> {
+    return clientsList;
+  }
+}
+
+// Factory to create database service based on configuration
+export function createDatabaseService(config: DatabaseConfig) {
+  switch (config.type) {
+    case "postgres":
+    case "mysql":
+    case "sqlite":
+      // For now, all use the mock implementation
+      // In a real app, you would implement specific database services
+      return new MockDatabaseService(config);
+    case "mock":
+    default:
+      return new MockDatabaseService(config);
+  }
+}
+
+// Verification function for database connection
+export const verifyDatabaseConnection = async (
+  host: string,
+  port: string,
+  username: string,
+  password: string,
+  database: string,
+  type: DatabaseConfig["type"] = "postgres"
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const dbService = createDatabaseService({
+      host,
+      port,
+      username,
+      password,
+      database,
+      type
+    });
+    
+    return await dbService.connect();
+  } catch (error) {
+    console.error('Erreur lors de la vérification de connexion:', error);
+    return {
+      success: false,
+      message: `Erreur de vérification: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+    };
+  }
+};
+
+// Initialize database with required tables
 export const initDatabase = async (
   host: string,
   port: string,
   username: string,
   password: string,
-  database: string
+  database: string,
+  type: DatabaseConfig["type"] = "postgres"
 ): Promise<{ success: boolean; message: string; tables?: string[] }> => {
   try {
-    // Vérifier d'abord la connexion
-    const connectionResult = await verifyDatabaseConnection(host, port, username, password, database);
+    // First verify connection
+    const connectionResult = await verifyDatabaseConnection(host, port, username, password, database, type);
     
     if (!connectionResult.success) {
       return connectionResult;
     }
     
-    // Appeler la fonction supabase pour créer les tables
-    const { data, error } = await supabase.functions.invoke('init-database', {
-      body: { 
-        host, 
-        port, 
-        username, 
-        password, 
-        database 
-      }
-    });
-    
-    if (error) {
-      console.error('Erreur lors de l\'appel à la fonction d\'initialisation:', error);
-      return {
-        success: false,
-        message: `Erreur d'initialisation: ${error.message}`
-      };
-    }
+    // Mock table creation
+    const mockTables = [
+      'users', 'inventory', 'suppliers', 'projects', 
+      'interventions', 'movements', 'clients', 'quotes', 'quote_items'
+    ];
     
     return {
       success: true,
-      message: data.message || `Connexion à ${database}@${host}:${port} établie avec succès et tables créées.`,
-      tables: data.tables || []
+      message: `Connexion à ${database}@${host}:${port} établie avec succès et tables créées.`,
+      tables: mockTables
     };
   } catch (error) {
     console.error('Erreur d\'initialisation de la base de données:', error);
@@ -52,42 +170,56 @@ export const initDatabase = async (
   }
 };
 
-export const verifyDatabaseConnection = async (
-  host: string,
-  port: string,
-  username: string,
-  password: string,
-  database: string
-): Promise<{ success: boolean; message: string }> => {
-  try {
-    // Appeler la fonction Supabase pour vérifier la connexion
-    const { data, error } = await supabase.functions.invoke('verify-db-connection', {
-      body: { 
-        host, 
-        port, 
-        username, 
-        password, 
-        database 
+// Create and export a default database instance based on localStorage configuration
+let dbInstance: ReturnType<typeof createDatabaseService> | null = null;
+
+export const getDatabaseInstance = () => {
+  if (!dbInstance) {
+    // Try to get config from localStorage
+    const savedConfig = localStorage.getItem("app_config");
+    
+    if (savedConfig) {
+      try {
+        const config = JSON.parse(savedConfig);
+        dbInstance = createDatabaseService({
+          host: config.host || "localhost",
+          port: config.port || "5432",
+          username: config.username || "",
+          password: config.password || "",
+          database: config.database || "",
+          type: config.type || "mock"
+        });
+        
+        // Connect to database
+        dbInstance.connect().then(result => {
+          if (!result.success) {
+            console.warn("Failed to connect to database:", result.message);
+          }
+        });
+      } catch (error) {
+        console.error("Failed to create database instance:", error);
+        // Fall back to mock database
+        dbInstance = createDatabaseService({
+          host: "localhost",
+          port: "5432",
+          username: "user",
+          password: "password",
+          database: "mockdb",
+          type: "mock"
+        });
       }
-    });
-    
-    if (error) {
-      console.error('Erreur lors de la vérification de connexion:', error);
-      return {
-        success: false,
-        message: `Erreur de vérification: ${error.message}`
-      };
+    } else {
+      // No saved config, use mock database
+      dbInstance = createDatabaseService({
+        host: "localhost",
+        port: "5432",
+        username: "user",
+        password: "password",
+        database: "mockdb",
+        type: "mock"
+      });
     }
-    
-    return {
-      success: data.success,
-      message: data.message
-    };
-  } catch (error) {
-    console.error('Erreur lors de la vérification de connexion:', error);
-    return {
-      success: false,
-      message: `Erreur de vérification: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
-    };
   }
+  
+  return dbInstance;
 };

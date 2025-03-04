@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { storageService } from "@/services/storageService";
 
 const UserDropdown = () => {
   const navigate = useNavigate();
@@ -23,27 +23,11 @@ const UserDropdown = () => {
   const isAdmin = currentUser.role === "Administrateur";
 
   useEffect(() => {
-    const fetchUserAvatar = async () => {
-      try {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        
-        if (authUser) {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('avatar_url')
-            .eq('id', authUser.id)
-            .single();
-            
-          if (!error && data) {
-            setAvatarUrl(data.avatar_url);
-          }
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération de l'avatar:", error);
-      }
-    };
-    
-    fetchUserAvatar();
+    // Get avatar from localStorage
+    const userAvatar = storageService.getUserAvatar();
+    if (userAvatar) {
+      setAvatarUrl(userAvatar);
+    }
   }, []);
 
   const handleLogout = () => {

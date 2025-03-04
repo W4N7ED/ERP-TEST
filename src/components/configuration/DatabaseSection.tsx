@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { verifyDatabaseConnection } from "@/services/databaseService";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DatabaseSectionProps {
   host: string;
@@ -17,6 +18,8 @@ interface DatabaseSectionProps {
   setPassword: (value: string) => void;
   database: string;
   setDatabase: (value: string) => void;
+  dbType: string;
+  setDbType: (value: string) => void;
 }
 
 export const DatabaseSection = ({
@@ -30,6 +33,8 @@ export const DatabaseSection = ({
   setPassword,
   database,
   setDatabase,
+  dbType,
+  setDbType
 }: DatabaseSectionProps) => {
   const [isTesting, setIsTesting] = useState(false);
   const { toast } = useToast();
@@ -54,7 +59,14 @@ export const DatabaseSection = ({
 
     try {
       // Use the verification service
-      const result = await verifyDatabaseConnection(host, port, username, password, database);
+      const result = await verifyDatabaseConnection(
+        host, 
+        port, 
+        username, 
+        password, 
+        database, 
+        dbType as any
+      );
       
       if (result.success) {
         toast({
@@ -82,6 +94,22 @@ export const DatabaseSection = ({
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Connexion à la base de données</h3>
+      
+      <div className="space-y-2">
+        <Label htmlFor="dbType">Type de base de données</Label>
+        <Select value={dbType} onValueChange={setDbType}>
+          <SelectTrigger id="dbType">
+            <SelectValue placeholder="Sélectionner un type de base de données" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="postgres">PostgreSQL</SelectItem>
+            <SelectItem value="mysql">MySQL</SelectItem>
+            <SelectItem value="sqlite">SQLite</SelectItem>
+            <SelectItem value="mock">Base de données simulée (pour test)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="host">Hôte</Label>

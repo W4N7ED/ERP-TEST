@@ -11,6 +11,7 @@ interface InterventionFiltersProps {
   isAdvancedFiltersOpen: boolean;
   setIsAdvancedFiltersOpen: (open: boolean) => void;
   filters: InterventionFiltersType;
+  clearFilters?: () => void;
 }
 
 const InterventionFilters: React.FC<InterventionFiltersProps> = ({
@@ -18,7 +19,8 @@ const InterventionFilters: React.FC<InterventionFiltersProps> = ({
   handleSearch,
   isAdvancedFiltersOpen,
   setIsAdvancedFiltersOpen,
-  filters
+  filters,
+  clearFilters
 }) => {
   const hasActiveFilters = Object.values(filters).some(v => v !== null && v !== "") || searchTerm;
 
@@ -48,11 +50,12 @@ const InterventionFilters: React.FC<InterventionFiltersProps> = ({
               Trier
             </CustomButton>
             <CustomButton 
-              variant="outline" 
-              icon={<Tag size={16} />}
+              variant={hasActiveFilters ? "outline" : "ghost"}
+              icon={hasActiveFilters ? <X size={16} /> : <Tag size={16} />}
               className={hasActiveFilters ? "bg-primary/5 border-primary text-primary" : ""}
+              onClick={hasActiveFilters && clearFilters ? clearFilters : undefined}
             >
-              {hasActiveFilters ? "Filtres actifs" : "Filtres"}
+              {hasActiveFilters ? "Effacer les filtres" : "Filtres"}
             </CustomButton>
           </div>
         </div>

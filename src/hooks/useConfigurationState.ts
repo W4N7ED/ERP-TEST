@@ -12,6 +12,7 @@ export interface ConfigurationState {
   username: string;
   password: string;
   database: string;
+  dbType: string;
   isConfigured: boolean;
   isInitializing: boolean;
   adminName: string;
@@ -29,6 +30,7 @@ export const useConfigurationState = () => {
     username: "",
     password: "",
     database: "",
+    dbType: "postgres",
     isConfigured: false,
     isInitializing: false,
     adminName: "Administrateur",
@@ -58,6 +60,7 @@ export const useConfigurationState = () => {
         username: parsedConfig.username || "",
         password: parsedConfig.password || "",
         database: parsedConfig.database || "",
+        dbType: parsedConfig.dbType || "postgres",
         isConfigured: parsedConfig.isConfigured || false,
         
         adminName: parsedConfig.adminConfig?.name || "Administrateur",
@@ -80,13 +83,16 @@ export const useConfigurationState = () => {
       return false;
     }
 
-    if (!state.host || !state.port || !state.username || !state.password || !state.database) {
-      toast({
-        variant: "destructive",
-        title: "Erreur de configuration",
-        description: "Tous les champs de connexion à la base de données sont requis",
-      });
-      return false;
+    // For mock database, we don't need to validate database connection fields
+    if (state.dbType !== "mock") {
+      if (!state.host || !state.port || !state.username || !state.password || !state.database) {
+        toast({
+          variant: "destructive",
+          title: "Erreur de configuration",
+          description: "Tous les champs de connexion à la base de données sont requis",
+        });
+        return false;
+      }
     }
 
     if (state.createAdmin) {
@@ -111,27 +117,33 @@ export const useConfigurationState = () => {
     updateField('isInitializing', true);
     
     try {
-      const result = await initDatabase(
-        state.host, 
-        state.port, 
-        state.username, 
-        state.password, 
-        state.database
-      );
+      let initResult = { success: true, message: "Configuration réussie", tables: [] as string[] };
       
-      if (!result.success) {
-        toast({
-          variant: "destructive",
-          title: "Erreur d'initialisation",
-          description: result.message,
-        });
-        updateField('isInitializing', false);
-        return;
+      // Skip database initialization for mock database
+      if (state.dbType !== "mock") {
+        initResult = await initDatabase(
+          state.host, 
+          state.port, 
+          state.username, 
+          state.password, 
+          state.database,
+          state.dbType as any
+        );
+        
+        if (!initResult.success) {
+          toast({
+            variant: "destructive",
+            title: "Erreur d'initialisation",
+            description: initResult.message,
+          });
+          updateField('isInitializing', false);
+          return;
+        }
       }
 
       // Afficher les tables créées si disponibles
-      if (result.tables && result.tables.length > 0) {
-        console.log("Tables créées:", result.tables);
+      if (initResult.tables && initResult.tables.length > 0) {
+        console.log("Tables créées:", initResult.tables);
       }
 
       if (state.createAdmin) {
@@ -177,6 +189,7 @@ export const useConfigurationState = () => {
         username: state.username,
         password: state.password,
         database: state.database,
+        dbType: state.dbType,
         isConfigured: true,
         configuredAt: new Date().toISOString(),
         adminConfig: {
@@ -192,7 +205,7 @@ export const useConfigurationState = () => {
       
       toast({
         title: "Configuration sauvegardée",
-        description: "La configuration de l'application a été enregistrée avec succès et les tables ont été créées.",
+        description: "La configuration de l'application a été enregistrée avec succès.",
       });
 
       navigate("/login");
@@ -215,6 +228,7 @@ export const useConfigurationState = () => {
     setUsername: (value: string) => updateField('username', value),
     setPassword: (value: string) => updateField('password', value),
     setDatabase: (value: string) => updateField('database', value),
+    setDbType: (value: string) => updateField('dbType', value),
     setAdminName: (value: string) => updateField('adminName', value),
     setAdminEmail: (value: string) => updateField('adminEmail', value),
     setAdminPassword: (value: string) => updateField('adminPassword', value),
