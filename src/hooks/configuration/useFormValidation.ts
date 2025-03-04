@@ -14,15 +14,14 @@ export const useFormValidation = (state: ConfigurationState, toast: any) => {
       return false;
     }
 
-    if (state.dbType !== "mock") {
-      if (!state.host || !state.port || !state.username || !state.password || !state.database) {
-        toast({
-          variant: "destructive",
-          title: "Erreur de configuration",
-          description: "Tous les champs de connexion à la base de données sont requis",
-        });
-        return false;
-      }
+    // Database connection details are always required
+    if (!state.host || !state.port || !state.username || !state.password || !state.database) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de configuration",
+        description: "Tous les champs de connexion à la base de données sont requis",
+      });
+      return false;
     }
 
     if (state.createAdmin) {

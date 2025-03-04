@@ -44,7 +44,7 @@ export function createDatabaseService(configOrType: DatabaseConfig | string): Da
 // Get the singleton instance of the database service
 export function getDatabaseInstance(): DatabaseService {
   if (!databaseInstance) {
-    throw new Error("Service de base de données non initialisé - Veuillez configurer une base de données réelle");
+    throw new Error("Service de base de données non initialisé - Veuillez configurer une base de données");
   }
   return databaseInstance;
 }

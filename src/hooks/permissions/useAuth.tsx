@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { User } from './types';
 import { defaultUser } from '@/data/mockUsers';
-import { storageService } from './services/storageService';
+import { storageService } from '@/services/storageService';
 import { mockUserService } from './services/mockUserService';
 
 export const useAuth = () => {

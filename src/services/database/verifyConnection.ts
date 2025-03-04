@@ -21,14 +21,6 @@ export const verifyDatabaseConnection = async (
       };
     }
     
-    // In offline mode, simulate a successful connection for all database types
-    if (type === "offline") {
-      return {
-        success: true,
-        message: `Simulated connection to ${type} database at ${host}:${port}/${database}`
-      };
-    }
-    
     // Use the database service for actual connection attempts
     const dbService = createDatabaseService({
       host,
