@@ -13,14 +13,23 @@ export const verifyDatabaseConnection = async (
   tablePrefix?: string
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    // Pour la base de données simulée, retourner immédiatement un succès
+    // For the simulated database, return immediate success
     if (type === "mock") {
       return {
         success: true,
-        message: "Connexion à la base de données simulée établie avec succès"
+        message: "Connection to simulated database established successfully"
       };
     }
     
+    // In offline mode, simulate a successful connection for all database types
+    if (type === "offline") {
+      return {
+        success: true,
+        message: `Simulated connection to ${type} database at ${host}:${port}/${database}`
+      };
+    }
+    
+    // Use the database service for actual connection attempts
     const dbService = createDatabaseService({
       host,
       port,
@@ -33,10 +42,10 @@ export const verifyDatabaseConnection = async (
     
     return await dbService.connect();
   } catch (error) {
-    console.error('Erreur lors de la vérification de connexion:', error);
+    console.error('Connection verification error:', error);
     return {
       success: false,
-      message: `Erreur de vérification: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+      message: `Verification error: ${error instanceof Error ? error.message : 'Unknown error'}`
     };
   }
 };

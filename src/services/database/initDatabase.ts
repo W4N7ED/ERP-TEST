@@ -1,7 +1,6 @@
 
 import { DatabaseConfig } from "./types";
 import { verifyDatabaseConnection } from "./verifyConnection";
-import { createDatabaseService } from "./databaseFactory";
 
 // Initialize database with required tables
 export const initDatabase = async (
@@ -31,61 +30,28 @@ export const initDatabase = async (
       tablePrefix ? `${tablePrefix}${table}` : table
     );
     
-    // For PostgreSQL, use the Supabase edge function
-    if (type === 'postgres') {
-      try {
-        const response = await fetch('https://jqwgbfzznwnotyplunaz.functions.supabase.co/init-database', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            host,
-            port,
-            username,
-            password,
-            database,
-            type,
-            tablePrefix
-          })
-        });
-        
-        const data = await response.json();
-        
-        if (!data.success) {
-          console.error('Error from edge function:', data.message);
-          return {
-            success: false,
-            message: data.message || "Failed to initialize database tables"
-          };
-        }
-        
-        return {
-          success: true,
-          message: data.message || "Tables created successfully",
-          tables: data.tables || prefixedTables
-        };
-      } catch (error) {
-        console.error("Error calling edge function:", error);
-        return {
-          success: false,
-          message: `Failed to initialize database: ${error instanceof Error ? error.message : 'Unknown error'}`
-        };
-      }
+    // For mock database, always return success
+    if (type === 'mock') {
+      return {
+        success: true,
+        message: `Mock database initialized successfully.`,
+        tables: prefixedTables
+      };
     }
     
-    // For other database types, return success for now
-    // In a real implementation, you would create tables for MySQL or other DBs
+    // For all database types in offline mode, simulate success
+    console.log(`Simulating database initialization for ${type} database at ${host}:${port}/${database}`);
+    
     return {
       success: true,
-      message: `Connexion à ${database}@${host}:${port} établie avec succès et tables créées.`,
+      message: `Simulated connection to ${database}@${host}:${port} established and tables created.`,
       tables: prefixedTables
     };
   } catch (error) {
-    console.error('Erreur d\'initialisation de la base de données:', error);
+    console.error('Error initializing database:', error);
     return {
       success: false,
-      message: `Erreur de connexion: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+      message: `Initialization error: ${error instanceof Error ? error.message : 'Unknown error'}`
     };
   }
 };

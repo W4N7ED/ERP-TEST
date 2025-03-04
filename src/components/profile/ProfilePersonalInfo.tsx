@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { User } from '@/types/permissions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import AvatarUpload from './avatar/AvatarUpload';
-import { supabase } from '@/integrations/supabase/client';
 
 interface ProfilePersonalInfoProps {
   user: User;
@@ -25,31 +24,6 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({ user }) => {
     address: '',
     bio: ""
   });
-  
-  // Récupérer l'URL de l'avatar au chargement du composant
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        
-        if (authUser) {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('avatar_url')
-            .eq('id', authUser.id)
-            .single();
-            
-          if (!error && data) {
-            setAvatarUrl(data.avatar_url);
-          }
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération du profil:", error);
-      }
-    };
-    
-    fetchUserProfile();
-  }, []);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

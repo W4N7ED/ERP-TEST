@@ -1,6 +1,6 @@
+
 import { DatabaseService, DatabaseConfig } from "./types";
 import { Intervention } from "@/types/intervention";
-import { supabaseClient } from "@/integrations/supabase/client";
 
 // PostgreSQL-specific implementation
 export class PostgreSQLDatabaseService implements DatabaseService {
@@ -15,23 +15,9 @@ export class PostgreSQLDatabaseService implements DatabaseService {
   async connect(): Promise<{ success: boolean; message: string }> {
     try {
       // For PostgreSQL, we can implement connection logic
-      // This could use the node-postgres library or Supabase for local development
-      
-      // If we're using Supabase, we can check if the connection is working
-      if (this.config.host.includes('supabase')) {
-        const { data, error } = await supabaseClient.from('profiles').select('count').limit(1);
-        
-        if (error) throw new Error(error.message);
-        
-        this.connected = true;
-        return {
-          success: true,
-          message: `Connected to PostgreSQL database at ${this.config.host}:${this.config.port}/${this.config.database}`
-        };
-      }
+      // This could use the node-postgres library or another PostgreSQL client
       
       // For now, simulate a successful connection
-      // In a real implementation, you would actually connect to PostgreSQL
       this.connected = true;
       return {
         success: true,
