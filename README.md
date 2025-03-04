@@ -15,8 +15,9 @@ Une application de gestion d'inventaire, de projets et d'interventions conçue p
 ## Prérequis
 
 - Node.js (v18 ou supérieure)
-- Une base de données (PostgreSQL, MySQL ou SQLite)
+- Une base de données (MySQL recommandé, PostgreSQL ou SQLite supportés)
 - Serveur Linux (Ubuntu, Debian, CentOS, RHEL, Fedora)
+- Serveur Apache
 
 ## Installation rapide
 
@@ -33,7 +34,27 @@ chmod +x install.sh
 sudo ./install.sh
 ```
 
-### Méthode 2 : Installation manuelle
+Le script va automatiquement:
+1. Installer les dépendances nécessaires
+2. Installer Node.js
+3. Installer et configurer MySQL (optionnel)
+4. Cloner l'application depuis le dépôt
+5. Configurer Apache pour servir l'application
+
+### Méthode 2 : Installation pour développement
+
+```bash
+# Télécharger le script d'installation pour développement
+wget -O dev-install.sh https://raw.githubusercontent.com/votre-utilisateur/votre-repo/main/dev-install.sh
+
+# Rendre le script exécutable
+chmod +x dev-install.sh
+
+# Exécuter le script
+./dev-install.sh
+```
+
+### Méthode 3 : Installation manuelle
 
 1. Cloner le dépôt :
 ```bash
@@ -60,33 +81,37 @@ npm run build
 
 L'application supporte les types de bases de données suivants :
 
-- PostgreSQL (recommandé)
-- MySQL
+- MySQL (recommandé)
+- PostgreSQL
 - SQLite
 - Base de données simulée (pour test uniquement)
 
 Vous pouvez configurer votre base de données directement depuis l'interface de l'application lors de la première exécution.
 
-## Déploiement avec Nginx
+## Déploiement avec Apache
 
-Pour déployer l'application avec Nginx, utilisez la configuration suivante :
+Pour déployer l'application avec Apache, utilisez la configuration suivante :
 
-```nginx
-server {
-    listen 80;
-    server_name votre-domaine.com;
+```apache
+<VirtualHost *:80>
+    ServerName votre-domaine.com
+    DocumentRoot /var/www/html/GestionInventaire/dist
     
-    root /chemin/vers/votre-app/dist;
-    index index.html;
+    <Directory /var/www/html/GestionInventaire/dist>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
     
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-    
-    location ~* \.(js|jsx|ts|tsx)$ {
-        add_header Content-Type "text/javascript" always;
-    }
-}
+    ErrorLog ${APACHE_LOG_DIR}/gestioninventaire-error.log
+    CustomLog ${APACHE_LOG_DIR}/gestioninventaire-access.log combined
+</VirtualHost>
+```
+
+Assurez-vous que le module rewrite est activé :
+```bash
+sudo a2enmod rewrite
+sudo systemctl restart apache2
 ```
 
 ## Sécurité
@@ -101,3 +126,5 @@ Pour une utilisation en production, veillez à :
 ## Licence
 
 Cette application est distribuée sous licence MIT.
+
+```

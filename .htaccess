@@ -1,50 +1,15 @@
 
-# Redirection HTTP vers HTTPS
+# Activation du moteur de réécriture
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteCond %{HTTPS} off
+  
+  # Redirection HTTP vers HTTPS (commentez cette section pour le développement local)
+  # RewriteCond %{HTTPS} off
   # Ne pas rediriger les requêtes pour les validations Let's Encrypt
-  RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
-  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-</IfModule>
-
-# Enable CORS
-Header set Access-Control-Allow-Origin "*"
-
-# Proper MIME type for JavaScript modules
-AddType text/javascript .js
-AddType text/javascript .mjs
-AddType text/javascript .jsx
-AddType text/javascript .tsx
-AddType text/javascript .ts
-
-# Proper MIME type for CSS
-AddType text/css .css
-
-# Proper MIME type for HTML
-AddType text/html .html .htm
-
-# Proper MIME type for JSON
-AddType application/json .json
-
-# Cache control
-<FilesMatch "\.(html|htm|js|jsx|ts|tsx|json|css)$">
-  Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
-  Header set Pragma "no-cache"
-  Header set Expires "Wed, 11 Jan 1984 05:00:00 GMT"
-</FilesMatch>
-
-# Compression
-<IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
-</IfModule>
-
-# Handle 404 errors
-ErrorDocument 404 /index.html
-
-# SPA routing
-<IfModule mod_rewrite.c>
-  RewriteEngine On
+  # RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+  # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  
+  # SPA routing - rediriger toutes les requêtes vers index.html
   RewriteBase /
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
@@ -52,18 +17,56 @@ ErrorDocument 404 /index.html
   RewriteRule . /index.html [L]
 </IfModule>
 
-# Explicitly set MIME types for TypeScript files
-<IfModule mod_mime.c>
-  AddHandler application/javascript .js
-  AddHandler application/javascript .jsx
-  AddHandler application/javascript .ts
-  AddHandler application/javascript .tsx
+# Activer CORS
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
 </IfModule>
 
-# Headers de sécurité (uniquement pour HTTPS)
-<IfModule mod_headers.c>
-  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
-  Header always set X-Content-Type-Options "nosniff"
-  Header always set X-Frame-Options "DENY"
-  Header always set X-XSS-Protection "1; mode=block"
+# Types MIME appropriés
+<IfModule mod_mime.c>
+  # JavaScript
+  AddType text/javascript .js
+  AddType text/javascript .mjs
+  AddType text/javascript .jsx
+  AddType text/javascript .ts
+  AddType text/javascript .tsx
+  
+  # CSS
+  AddType text/css .css
+  
+  # HTML
+  AddType text/html .html .htm
+  
+  # JSON
+  AddType application/json .json
 </IfModule>
+
+# Contrôle du cache
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 month"
+  
+  # Ne pas mettre en cache les fichiers HTML, JS, et CSS pour le développement
+  <FilesMatch "\.(html|htm|js|jsx|ts|tsx|json|css)$">
+    ExpiresDefault "access plus 0 seconds"
+    Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "Wed, 11 Jan 1984 05:00:00 GMT"
+  </FilesMatch>
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Gestion des erreurs 404
+ErrorDocument 404 /index.html
+
+# En-têtes de sécurité (pour HTTPS uniquement - commentez pour le développement local)
+# <IfModule mod_headers.c>
+#   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+#   Header always set X-Content-Type-Options "nosniff"
+#   Header always set X-Frame-Options "DENY"
+#   Header always set X-XSS-Protection "1; mode=block"
+# </IfModule>

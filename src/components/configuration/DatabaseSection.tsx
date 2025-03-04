@@ -39,6 +39,18 @@ export const DatabaseSection = ({
   const [isTesting, setIsTesting] = useState(false);
   const { toast } = useToast();
 
+  // Mise à jour du port par défaut lorsque le type de base de données change
+  const handleDbTypeChange = (value: string) => {
+    setDbType(value);
+    
+    // Définir le port par défaut en fonction du type de base de données
+    if (value === "mysql" && (!port || port === "5432")) {
+      setPort("3306");
+    } else if (value === "postgres" && (!port || port === "3306")) {
+      setPort("5432");
+    }
+  };
+
   const testConnection = async () => {
     if (!host || !port || !username || !password || !database) {
       toast({
@@ -97,13 +109,13 @@ export const DatabaseSection = ({
       
       <div className="space-y-2">
         <Label htmlFor="dbType">Type de base de données</Label>
-        <Select value={dbType} onValueChange={setDbType}>
+        <Select value={dbType} onValueChange={handleDbTypeChange}>
           <SelectTrigger id="dbType">
             <SelectValue placeholder="Sélectionner un type de base de données" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="postgres">PostgreSQL</SelectItem>
             <SelectItem value="mysql">MySQL</SelectItem>
+            <SelectItem value="postgres">PostgreSQL</SelectItem>
             <SelectItem value="sqlite">SQLite</SelectItem>
             <SelectItem value="mock">Base de données simulée (pour test)</SelectItem>
           </SelectContent>
@@ -126,7 +138,7 @@ export const DatabaseSection = ({
             id="port"
             value={port}
             onChange={(e) => setPort(e.target.value)}
-            placeholder="5432"
+            placeholder={dbType === "mysql" ? "3306" : "5432"}
           />
         </div>
         <div className="space-y-2">

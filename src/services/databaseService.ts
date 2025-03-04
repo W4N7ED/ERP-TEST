@@ -1,4 +1,3 @@
-
 import { clientsList, interventionsMock, techniciansList } from "@/data/interventionsMock";
 import { Intervention } from "@/types/intervention";
 
@@ -9,7 +8,7 @@ export interface DatabaseConfig {
   username: string;
   password: string;
   database: string;
-  type: "postgres" | "mysql" | "sqlite" | "mock";
+  type: "mysql" | "postgres" | "sqlite" | "mock";
 }
 
 // Mock implementation for demonstration purposes
@@ -89,11 +88,23 @@ class MockDatabaseService {
   }
 }
 
+// MySQL-specific implementation
+class MySQLDatabaseService extends MockDatabaseService {
+  constructor(config: DatabaseConfig) {
+    super(config);
+    console.log("MySQL service initialized");
+  }
+
+  // Dans une implémentation réelle, on surchargerait les méthodes de MockDatabaseService
+  // pour utiliser les connexions MySQL à la place des données mock
+}
+
 // Factory to create database service based on configuration
 export function createDatabaseService(config: DatabaseConfig) {
   switch (config.type) {
-    case "postgres":
     case "mysql":
+      return new MySQLDatabaseService(config);
+    case "postgres":
     case "sqlite":
       // For now, all use the mock implementation
       // In a real app, you would implement specific database services
@@ -111,7 +122,7 @@ export const verifyDatabaseConnection = async (
   username: string,
   password: string,
   database: string,
-  type: DatabaseConfig["type"] = "postgres"
+  type: DatabaseConfig["type"] = "mysql"
 ): Promise<{ success: boolean; message: string }> => {
   try {
     const dbService = createDatabaseService({
@@ -140,7 +151,7 @@ export const initDatabase = async (
   username: string,
   password: string,
   database: string,
-  type: DatabaseConfig["type"] = "postgres"
+  type: DatabaseConfig["type"] = "mysql"
 ): Promise<{ success: boolean; message: string; tables?: string[] }> => {
   try {
     // First verify connection
@@ -183,7 +194,7 @@ export const getDatabaseInstance = () => {
         const config = JSON.parse(savedConfig);
         dbInstance = createDatabaseService({
           host: config.host || "localhost",
-          port: config.port || "5432",
+          port: config.port || "3306",
           username: config.username || "",
           password: config.password || "",
           database: config.database || "",
@@ -201,7 +212,7 @@ export const getDatabaseInstance = () => {
         // Fall back to mock database
         dbInstance = createDatabaseService({
           host: "localhost",
-          port: "5432",
+          port: "3306",
           username: "user",
           password: "password",
           database: "mockdb",
@@ -212,7 +223,7 @@ export const getDatabaseInstance = () => {
       // No saved config, use mock database
       dbInstance = createDatabaseService({
         host: "localhost",
-        port: "5432",
+        port: "3306",
         username: "user",
         password: "password",
         database: "mockdb",
