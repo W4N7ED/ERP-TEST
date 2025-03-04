@@ -13,6 +13,7 @@ export const useConfigurationPersistence = (state: ConfigurationState, toast: an
       password: state.password,
       database: state.database,
       dbType: state.dbType,
+      tablePrefix: state.tablePrefix,
       isConfigured: true,
       configuredAt: new Date().toISOString(),
       adminConfig: {

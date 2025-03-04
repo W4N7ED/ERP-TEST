@@ -9,7 +9,8 @@ export const verifyDatabaseConnection = async (
   username: string,
   password: string,
   database: string,
-  type: DatabaseConfig["type"] = "mysql"
+  type: DatabaseConfig["type"] = "mysql",
+  tablePrefix?: string
 ): Promise<{ success: boolean; message: string }> => {
   try {
     const dbService = createDatabaseService({
@@ -18,7 +19,8 @@ export const verifyDatabaseConnection = async (
       username,
       password,
       database,
-      type
+      type,
+      tablePrefix
     });
     
     return await dbService.connect();

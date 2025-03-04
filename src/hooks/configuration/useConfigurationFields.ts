@@ -11,6 +11,7 @@ export const useConfigurationFields = () => {
     password: "",
     database: "",
     dbType: "mysql",
+    tablePrefix: "",
     isConfigured: false,
     isInitializing: false,
     adminName: "Administrateur",
@@ -38,6 +39,7 @@ export const useConfigurationFields = () => {
           password: parsedConfig.password || "",
           database: parsedConfig.database || "",
           dbType: parsedConfig.dbType || "mysql",
+          tablePrefix: parsedConfig.tablePrefix || "",
           isConfigured: parsedConfig.isConfigured || false,
           
           adminName: parsedConfig.adminConfig?.name || "Administrateur",
@@ -62,6 +64,7 @@ export const useConfigurationFields = () => {
     setPassword: (value: string) => updateField('password', value),
     setDatabase: (value: string) => updateField('database', value),
     setDbType: (value: string) => updateField('dbType', value),
+    setTablePrefix: (value: string) => updateField('tablePrefix', value),
     setAdminName: (value: string) => updateField('adminName', value),
     setAdminEmail: (value: string) => updateField('adminEmail', value),
     setAdminPassword: (value: string) => updateField('adminPassword', value),

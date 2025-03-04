@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { verifyDatabaseConnection } from "@/services/databaseService";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface DatabaseSectionProps {
   host: string;
@@ -20,6 +21,8 @@ interface DatabaseSectionProps {
   setDatabase: (value: string) => void;
   dbType: string;
   setDbType: (value: string) => void;
+  tablePrefix: string;
+  setTablePrefix: (value: string) => void;
 }
 
 export const DatabaseSection = ({
@@ -34,9 +37,12 @@ export const DatabaseSection = ({
   database,
   setDatabase,
   dbType,
-  setDbType
+  setDbType,
+  tablePrefix,
+  setTablePrefix
 }: DatabaseSectionProps) => {
   const [isTesting, setIsTesting] = useState(false);
+  const [connectionResult, setConnectionResult] = useState<{ success: boolean; message: string } | null>(null);
   const { toast } = useToast();
 
   // Mise à jour du port par défaut lorsque le type de base de données change
@@ -63,6 +69,7 @@ export const DatabaseSection = ({
 
     // Set testing state to true
     setIsTesting(true);
+    setConnectionResult(null);
 
     toast({
       title: "Test de connexion",
@@ -80,6 +87,8 @@ export const DatabaseSection = ({
         dbType as any
       );
       
+      setConnectionResult(result);
+      
       if (result.success) {
         toast({
           title: "Connexion réussie",
@@ -93,6 +102,11 @@ export const DatabaseSection = ({
         });
       }
     } catch (error) {
+      setConnectionResult({
+        success: false,
+        message: `Une erreur s'est produite: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+      });
+      
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -169,8 +183,21 @@ export const DatabaseSection = ({
             placeholder="Nom de la base de données"
           />
         </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="tablePrefix">Préfixe des tables (optionnel)</Label>
+          <Input
+            id="tablePrefix"
+            value={tablePrefix}
+            onChange={(e) => setTablePrefix(e.target.value)}
+            placeholder="ex: edr_"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Les tables seront créées avec ce préfixe (ex: edr_users, edr_inventory)
+          </p>
+        </div>
       </div>
-      <div>
+      
+      <div className="space-y-3">
         <Button 
           type="button" 
           variant="outline" 
@@ -180,6 +207,13 @@ export const DatabaseSection = ({
         >
           {isTesting ? "Test en cours..." : "Tester la connexion"}
         </Button>
+        
+        {connectionResult && (
+          <Alert variant={connectionResult.success ? "default" : "destructive"} className="mt-3">
+            <AlertTitle>{connectionResult.success ? "Connexion réussie" : "Échec de connexion"}</AlertTitle>
+            <AlertDescription>{connectionResult.message}</AlertDescription>
+          </Alert>
+        )}
       </div>
     </div>
   );

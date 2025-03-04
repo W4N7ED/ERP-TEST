@@ -20,7 +20,8 @@ export const useDatabaseSetup = (state: ConfigurationState, toast: any) => {
         state.username, 
         state.password, 
         state.database,
-        state.dbType as any
+        state.dbType as any,
+        state.tablePrefix
       );
       
       if (!result.success) {

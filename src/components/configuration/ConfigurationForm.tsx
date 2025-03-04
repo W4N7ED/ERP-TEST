@@ -15,6 +15,7 @@ interface ConfigurationFormProps extends ConfigurationState {
   setPassword: (value: string) => void;
   setDatabase: (value: string) => void;
   setDbType: (value: string) => void;
+  setTablePrefix: (value: string) => void;
   setAdminName: (value: string) => void;
   setAdminEmail: (value: string) => void;
   setAdminPassword: (value: string) => void;
@@ -31,6 +32,7 @@ export const ConfigurationForm = ({
   password,
   database,
   dbType,
+  tablePrefix,
   adminName,
   adminEmail,
   adminPassword,
@@ -44,6 +46,7 @@ export const ConfigurationForm = ({
   setPassword,
   setDatabase,
   setDbType,
+  setTablePrefix,
   setAdminName,
   setAdminEmail,
   setAdminPassword,
@@ -71,6 +74,8 @@ export const ConfigurationForm = ({
         setDatabase={setDatabase}
         dbType={dbType}
         setDbType={setDbType}
+        tablePrefix={tablePrefix}
+        setTablePrefix={setTablePrefix}
       />
       
       <Separator />

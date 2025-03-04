@@ -8,6 +8,7 @@ export interface DatabaseConfig {
   username: string;
   password: string;
   database: string;
+  tablePrefix?: string;
   type: "mysql" | "postgres" | "sqlite" | "mock";
 }
 

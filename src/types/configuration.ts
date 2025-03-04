@@ -7,6 +7,7 @@ export interface ConfigurationState {
   password: string;
   database: string;
   dbType: string;
+  tablePrefix: string;
   isConfigured: boolean;
   isInitializing: boolean;
   adminName: string;
