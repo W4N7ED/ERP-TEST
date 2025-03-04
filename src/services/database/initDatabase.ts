@@ -14,35 +14,12 @@ export const initDatabase = async (
   tablePrefix: string = ""
 ): Promise<{ success: boolean; message: string; tables?: string[] }> => {
   try {
-    // Pour la base de données simulée, retourner immédiatement un succès
-    if (type === "mock") {
-      return {
-        success: true,
-        message: "Base de données simulée configurée",
-        tables: ['users', 'inventory', 'suppliers', 'projects', 'interventions', 'movements', 'clients', 'quotes', 'quote_items']
-      };
-    }
-    
     // First verify connection
     const connectionResult = await verifyDatabaseConnection(host, port, username, password, database, type, tablePrefix);
     
     if (!connectionResult.success) {
       return connectionResult;
     }
-    
-    // Create database service to initialize tables
-    const dbService = createDatabaseService({
-      host,
-      port,
-      username,
-      password,
-      database,
-      type,
-      tablePrefix
-    });
-    
-    // Initialiser la base de données avec les tables requises
-    await dbService.connect();
     
     // Generate table names with prefix
     const baseTableNames = [

@@ -24,18 +24,6 @@ const Configuration = () => {
     }
   }, []);
 
-  const handleSkip = () => {
-    // Set minimal configuration
-    const minimalConfig = {
-      appName: "EDR Solution",
-      dbType: "mock",
-      isConfigured: true,
-      configuredAt: new Date().toISOString(),
-    };
-    localStorage.setItem("app_config", JSON.stringify(minimalConfig));
-    navigate('/login');
-  };
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b bg-background py-4">
@@ -77,16 +65,6 @@ const Configuration = () => {
                 Configurez votre application pour qu'elle fonctionne selon vos besoins.
                 Vous pourrez modifier ces paramètres ultérieurement.
               </p>
-              <p className="text-sm text-muted-foreground italic">
-                Version open-source: Vous pouvez utiliser une base de données simulée pour tester l'application sans 
-                configurer un serveur de base de données.
-              </p>
-              <button
-                onClick={handleSkip}
-                className="text-sm underline hover:text-primary"
-              >
-                Passer la configuration (utiliser une base de données simulée)
-              </button>
             </div>
             
             <ConfigurationForm {...configState} />

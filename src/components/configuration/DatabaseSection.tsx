@@ -63,13 +63,6 @@ export const DatabaseSection = ({
       setPort("3306");
     } else if (value === "postgres" && (!port || port === "3306")) {
       setPort("5432");
-    } else if (value === "mock") {
-      // Pour la simulation, ces valeurs ne sont pas importantes
-      setHost('localhost');
-      setPort('');
-      setUsername('');
-      setPassword('');
-      setDatabase('mock');
     }
   };
 
@@ -95,7 +88,7 @@ export const DatabaseSection = ({
         setDatabase={setDatabase}
         tablePrefix={tablePrefix}
         setTablePrefix={setTablePrefix}
-        disabled={dbType === "mock"}
+        disabled={false}
       />
       
       <ConnectionActions

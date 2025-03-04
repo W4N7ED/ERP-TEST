@@ -34,7 +34,7 @@ export const ConnectionFields = ({
   disabled
 }: ConnectionFieldsProps) => {
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${disabled ? "opacity-50" : ""}`}>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
         <Label htmlFor="host">Hôte</Label>
         <Input
@@ -42,7 +42,6 @@ export const ConnectionFields = ({
           value={host}
           onChange={(e) => setHost(e.target.value)}
           placeholder="localhost ou adresse IP"
-          disabled={disabled}
         />
       </div>
       <div className="space-y-2">
@@ -51,8 +50,7 @@ export const ConnectionFields = ({
           id="port"
           value={port}
           onChange={(e) => setPort(e.target.value)}
-          placeholder={disabled ? "" : port || "3306"}
-          disabled={disabled}
+          placeholder={port || "3306"}
         />
       </div>
       <div className="space-y-2">
@@ -62,7 +60,6 @@ export const ConnectionFields = ({
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Nom d'utilisateur de la base de données"
-          disabled={disabled}
         />
       </div>
       <div className="space-y-2">
@@ -73,7 +70,6 @@ export const ConnectionFields = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Mot de passe de la base de données"
-          disabled={disabled}
         />
       </div>
       <div className="space-y-2 md:col-span-2">
@@ -83,7 +79,6 @@ export const ConnectionFields = ({
           value={database}
           onChange={(e) => setDatabase(e.target.value)}
           placeholder="Nom de la base de données"
-          disabled={disabled}
         />
       </div>
       <div className="space-y-2 md:col-span-2">
@@ -93,7 +88,6 @@ export const ConnectionFields = ({
           value={tablePrefix}
           onChange={(e) => setTablePrefix(e.target.value)}
           placeholder="ex: edr_"
-          disabled={disabled}
         />
         <p className="text-xs text-muted-foreground mt-1">
           Les tables seront créées avec ce préfixe (ex: edr_users, edr_inventory)

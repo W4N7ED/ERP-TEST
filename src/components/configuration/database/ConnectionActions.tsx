@@ -47,31 +47,29 @@ export const ConnectionActions = ({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
-        {dbType !== "mock" && (
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={handleTestConnection}
-            className="flex items-center gap-2"
-            disabled={isTesting || !host || !port || !username || !database}
-          >
-            {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
-            {isTesting ? "Test en cours..." : "Tester la connexion"}
-          </Button>
-        )}
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={handleTestConnection}
+          className="flex items-center gap-2"
+          disabled={isTesting || !host || !port || !username || !database}
+        >
+          {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+          {isTesting ? "Test en cours..." : "Tester la connexion"}
+        </Button>
         
         <Button 
           type="button" 
           onClick={handleInitializeDatabase}
           className="flex items-center gap-2"
-          disabled={isInitializing || (dbType !== "mock" && !connectionResult?.success)}
+          disabled={isInitializing || !connectionResult?.success}
         >
           {isInitializing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {isInitializing ? "Initialisation en cours..." : "Initialiser les tables"}
         </Button>
       </div>
       
-      {connectionResult && dbType !== "mock" && (
+      {connectionResult && (
         <Alert variant={connectionResult.success ? "default" : "destructive"} className="mt-3">
           <AlertTitle>{connectionResult.success ? "Connexion réussie" : "Échec de connexion"}</AlertTitle>
           <AlertDescription>{connectionResult.message}</AlertDescription>

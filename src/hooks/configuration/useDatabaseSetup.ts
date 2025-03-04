@@ -5,14 +5,6 @@ import { ConfigurationState, DatabaseInitResult } from "@/types/configuration";
 
 export const useDatabaseSetup = (state: ConfigurationState, toast: any) => {
   const initializeDatabase = useCallback(async (): Promise<DatabaseInitResult> => {
-    if (state.dbType === "mock") {
-      return { 
-        success: true, 
-        message: "Base de données simulée configurée", 
-        tables: ['users', 'inventory', 'suppliers', 'projects', 'interventions', 'movements', 'clients', 'quotes', 'quote_items']
-      };
-    }
-    
     try {
       const result = await initDatabase(
         state.host, 

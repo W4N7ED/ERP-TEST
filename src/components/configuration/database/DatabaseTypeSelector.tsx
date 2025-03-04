@@ -19,14 +19,8 @@ export const DatabaseTypeSelector = ({ dbType, onChange }: DatabaseTypeSelectorP
           <SelectItem value="mysql">MySQL</SelectItem>
           <SelectItem value="postgres">PostgreSQL</SelectItem>
           <SelectItem value="sqlite">SQLite</SelectItem>
-          <SelectItem value="mock">Base de données simulée (pour test)</SelectItem>
         </SelectContent>
       </Select>
-      {dbType === "mock" && (
-        <p className="text-xs text-muted-foreground mt-1">
-          La base de données simulée utilise le stockage local du navigateur. Parfait pour tester l'application.
-        </p>
-      )}
     </div>
   );
 };
