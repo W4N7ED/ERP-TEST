@@ -1,3 +1,4 @@
+
 import { storageService } from "../storageService";
 import { v4 as uuidv4 } from "uuid";
 import { Intervention } from "@/types/intervention";
@@ -68,9 +69,15 @@ class Collection {
     const items = this.getAll();
     return items.filter(filterFn);
   }
+  
+  // Clear all items
+  clear() {
+    storageService.saveData(this.name, []);
+    return true;
+  }
 }
 
-// MockOnlyDatabaseService class that will replace the Supabase database services
+// MockOnlyDatabaseService class for local storage database service
 export class MockOnlyDatabaseService implements DatabaseService {
   private collections: { [key: string]: Collection } = {};
   private connected: boolean = false;
@@ -94,15 +101,22 @@ export class MockOnlyDatabaseService implements DatabaseService {
     return this.collections[name];
   }
 
-  // Initialize the database with empty collections - removed sample data
+  // Initialize empty collections
   initializeWithSampleData() {
-    // Don't add any sample data, just return
+    // Ne rien faire, toutes les collections sont déjà vides
     console.log('Base de données initialisée sans données d\'exemple');
     return;
   }
 
-  // DatabaseService interface implementation
+  // Reset all collections (for testing purposes)
+  reset() {
+    Object.values(this.collections).forEach(collection => {
+      collection.clear();
+    });
+    console.log('Toutes les collections ont été vidées');
+  }
 
+  // DatabaseService interface implementation
   async connect(): Promise<{ success: boolean; message: string }> {
     this.connected = true;
     return {
@@ -137,8 +151,8 @@ export class MockOnlyDatabaseService implements DatabaseService {
   }
 
   async getTechnicians(): Promise<string[]> {
-    // For simplicity, return some mock technicians
-    return ["Technicien 1", "Technicien 2", "Technicien 3"];
+    const technicians = this.collection('users').getAll();
+    return technicians.filter((user: any) => user.role === 'Technicien').map((tech: any) => tech.name);
   }
 
   async getClients(): Promise<string[]> {

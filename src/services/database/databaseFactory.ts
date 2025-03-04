@@ -1,13 +1,22 @@
 
 import { MockDatabaseService } from "./MockDatabaseService";
-import { MySQLDatabaseService } from "./MySQLDatabaseService";
+import { MockOnlyDatabaseService, mockOnlyDbService } from "./MockOnlyDatabaseService";
 import { DatabaseConfig, DatabaseService } from "./types";
-import { mockOnlyDbService } from "./MockOnlyDatabaseService";
 
 export function createDatabaseService(config: DatabaseConfig): DatabaseService;
 export function createDatabaseService(type: string): DatabaseService;
 export function createDatabaseService(configOrType: DatabaseConfig | string): DatabaseService {
-  // Always return the MockOnlyDatabaseService for the open-source version
+  // Version open-source : toujours retourner le MockOnlyDatabaseService
+  if (typeof configOrType === 'string' && configOrType === 'mock') {
+    return mockOnlyDbService;
+  }
+  
+  if (typeof configOrType === 'object' && configOrType.type === 'mock') {
+    return mockOnlyDbService;
+  }
+  
+  // Pour les autres types, on renvoie quand même le mock pour la version open-source
+  console.log('Note: Utilisation de la base de données simulée (version open-source)');
   return mockOnlyDbService;
 }
 

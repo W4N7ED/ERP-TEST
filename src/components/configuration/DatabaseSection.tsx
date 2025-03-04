@@ -58,18 +58,32 @@ export const DatabaseSection = ({
       setPort("3306");
     } else if (value === "postgres" && (!port || port === "3306")) {
       setPort("5432");
+    } else if (value === "mock") {
+      // Pour la simulation, ces valeurs ne sont pas importantes
+      setHost('localhost');
+      setPort('');
+      setUsername('');
+      setPassword('');
+      setDatabase('mock');
     }
   };
 
-  const testConnection = async () => {
-    if (!host || !port || !username || !password || !database) {
+  const validateInputs = () => {
+    if (dbType === "mock") return true;
+    
+    if (!host || !port || !username || !database) {
       toast({
         variant: "destructive",
-        title: "Erreur de test",
-        description: "Tous les champs de connexion sont requis pour tester la connexion",
+        title: "Champs incomplets",
+        description: "Veuillez remplir tous les champs obligatoires (hôte, port, nom d'utilisateur, base de données)",
       });
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const testConnection = async () => {
+    if (!validateInputs()) return;
 
     // Set testing state to true
     setIsTesting(true);
@@ -122,10 +136,11 @@ export const DatabaseSection = ({
   };
 
   const initializeDatabase = async () => {
-    if (!connectionResult?.success) {
+    if (!validateInputs()) return;
+    
+    if (dbType !== "mock" && !connectionResult?.success) {
       toast({
-        variant: "destructive",
-        title: "Erreur d'initialisation",
+        title: "Test requis",
         description: "Veuillez d'abord tester la connexion à la base de données avec succès",
       });
       return;
@@ -198,9 +213,14 @@ export const DatabaseSection = ({
             <SelectItem value="mock">Base de données simulée (pour test)</SelectItem>
           </SelectContent>
         </Select>
+        {dbType === "mock" && (
+          <p className="text-xs text-muted-foreground mt-1">
+            La base de données simulée utilise le stockage local du navigateur. Parfait pour tester l'application.
+          </p>
+        )}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${dbType === "mock" ? "opacity-50" : ""}`}>
         <div className="space-y-2">
           <Label htmlFor="host">Hôte</Label>
           <Input
@@ -208,6 +228,7 @@ export const DatabaseSection = ({
             value={host}
             onChange={(e) => setHost(e.target.value)}
             placeholder="localhost ou adresse IP"
+            disabled={dbType === "mock"}
           />
         </div>
         <div className="space-y-2">
@@ -217,6 +238,7 @@ export const DatabaseSection = ({
             value={port}
             onChange={(e) => setPort(e.target.value)}
             placeholder={dbType === "mysql" ? "3306" : "5432"}
+            disabled={dbType === "mock"}
           />
         </div>
         <div className="space-y-2">
@@ -226,6 +248,7 @@ export const DatabaseSection = ({
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Nom d'utilisateur de la base de données"
+            disabled={dbType === "mock"}
           />
         </div>
         <div className="space-y-2">
@@ -236,6 +259,7 @@ export const DatabaseSection = ({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Mot de passe de la base de données"
+            disabled={dbType === "mock"}
           />
         </div>
         <div className="space-y-2 md:col-span-2">
@@ -245,6 +269,7 @@ export const DatabaseSection = ({
             value={database}
             onChange={(e) => setDatabase(e.target.value)}
             placeholder="Nom de la base de données"
+            disabled={dbType === "mock"}
           />
         </div>
         <div className="space-y-2 md:col-span-2">
@@ -254,6 +279,7 @@ export const DatabaseSection = ({
             value={tablePrefix}
             onChange={(e) => setTablePrefix(e.target.value)}
             placeholder="ex: edr_"
+            disabled={dbType === "mock"}
           />
           <p className="text-xs text-muted-foreground mt-1">
             Les tables seront créées avec ce préfixe (ex: edr_users, edr_inventory)
@@ -263,31 +289,31 @@ export const DatabaseSection = ({
       
       <div className="space-y-3">
         <div className="flex flex-wrap gap-3">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={testConnection}
-            className="flex items-center gap-2"
-            disabled={isTesting}
-          >
-            {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
-            {isTesting ? "Test en cours..." : "Tester la connexion"}
-          </Button>
-          
-          {connectionResult?.success && (
+          {dbType !== "mock" && (
             <Button 
               type="button" 
-              onClick={initializeDatabase}
+              variant="outline" 
+              onClick={testConnection}
               className="flex items-center gap-2"
-              disabled={isInitializing}
+              disabled={isTesting || !host || !port || !username || !database}
             >
-              {isInitializing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {isInitializing ? "Initialisation en cours..." : "Initialiser les tables"}
+              {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+              {isTesting ? "Test en cours..." : "Tester la connexion"}
             </Button>
           )}
+          
+          <Button 
+            type="button" 
+            onClick={initializeDatabase}
+            className="flex items-center gap-2"
+            disabled={isInitializing || (dbType !== "mock" && !connectionResult?.success)}
+          >
+            {isInitializing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {isInitializing ? "Initialisation en cours..." : "Initialiser les tables"}
+          </Button>
         </div>
         
-        {connectionResult && (
+        {connectionResult && dbType !== "mock" && (
           <Alert variant={connectionResult.success ? "default" : "destructive"} className="mt-3">
             <AlertTitle>{connectionResult.success ? "Connexion réussie" : "Échec de connexion"}</AlertTitle>
             <AlertDescription>{connectionResult.message}</AlertDescription>
