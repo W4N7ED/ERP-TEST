@@ -2,6 +2,7 @@
 import { DatabaseConfig, DatabaseService } from "./types";
 import { toast } from "sonner";
 import { MySQLDatabaseService } from "./MySQLDatabaseService";
+import { PostgreSQLDatabaseService } from "./PostgreSQLDatabaseService";
 
 // Cache singleton instance
 let databaseInstance: DatabaseService | null = null;
@@ -19,8 +20,7 @@ export function createDatabaseService(configOrType: DatabaseConfig | string): Da
         case "mysql":
           return new MySQLDatabaseService(configOrType);
         case "postgres":
-          // Here we would create a PostgreSQL service
-          throw new Error("PostgreSQL database service not implemented yet");
+          return new PostgreSQLDatabaseService(configOrType);
         case "sqlite":
           // Here we would create a SQLite service
           throw new Error("SQLite database service not implemented yet");
