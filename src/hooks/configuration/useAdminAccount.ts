@@ -1,51 +1,58 @@
 
 import { useCallback } from "react";
-import { usePermissions } from "@/hooks/usePermissions";
 import { ConfigurationState, AdminSetupResult } from "@/types/configuration";
+import { mockOnlyDbService } from "@/services/database/MockOnlyDatabaseService";
 
 export const useAdminAccount = (state: ConfigurationState, toast: any) => {
-  const { addUser } = usePermissions();
-
   const setupAdminAccount = useCallback(async (): Promise<AdminSetupResult> => {
+    if (!state.createAdmin) {
+      return { success: true };
+    }
+
     try {
-      addUser({
+      // In the open-source version, we simulate admin account creation
+      // by storing the credentials in localStorage
+      
+      // Store admin credentials for later authentication
+      const adminCredentials = {
+        email: state.adminEmail,
+        password: state.adminPassword
+      };
+      
+      localStorage.setItem("admin_credentials", JSON.stringify(adminCredentials));
+      
+      // Create an admin user in the mock database
+      const adminUser = {
+        id: "admin_user_id",
+        email: state.adminEmail,
         name: state.adminName,
         role: "Administrateur",
         permissions: [
-          'inventory.view', 'inventory.add', 'inventory.edit', 'inventory.delete', 'inventory.export', 'inventory.import',
-          'suppliers.view', 'suppliers.add', 'suppliers.edit', 'suppliers.delete',
-          'movements.view', 'movements.add', 'movements.approve',
-          'projects.view', 'projects.add', 'projects.edit', 'projects.delete', 'projects.archive',
-          'interventions.view', 'interventions.add', 'interventions.edit', 'interventions.delete', 'interventions.archive',
-          'users.view', 'users.add', 'users.edit', 'users.delete',
-          'quotes.view', 'quotes.add', 'quotes.edit', 'quotes.delete', 'quotes.approve',
-          'clients.view', 'clients.add', 'clients.edit', 'clients.delete'
-        ]
-      });
+          "inventory.all", "suppliers.all", "projects.all", 
+          "interventions.all", "quotes.all", "users.all"
+        ],
+        created_at: new Date().toISOString()
+      };
       
-      localStorage.setItem("admin_credentials", JSON.stringify({
-        email: state.adminEmail,
-        password: state.adminPassword
-      }));
+      // Add the admin user to the mock database
+      mockOnlyDbService.collection('users').add(adminUser);
       
       toast({
         title: "Compte administrateur créé",
-        description: `Administrateur '${state.adminName}' créé avec succès`
+        description: `${state.adminName} (${state.adminEmail}) a été créé avec succès`,
       });
       
       return { success: true };
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Erreur inconnue";
       toast({
         variant: "destructive",
-        title: "Erreur de création",
-        description: "Impossible de créer le compte administrateur"
+        title: "Erreur de création du compte administrateur",
+        description: message,
       });
-      return { 
-        success: false,
-        message: error instanceof Error ? error.message : "Erreur inconnue"
-      };
+      return { success: false, message };
     }
-  }, [state, addUser, toast]);
+  }, [state, toast]);
 
   return { setupAdminAccount };
 };

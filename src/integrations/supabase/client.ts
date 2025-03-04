@@ -17,14 +17,16 @@ class MockSupabaseClient {
     admin: {
       createUser: async () => ({ data: {}, error: new Error("Admin functions are not available in open-source version") })
     }
-  },
-  storage: {
+  };
+  
+  storage = {
     from: (bucket: string) => ({
       upload: async () => ({ data: null, error: new Error("Storage is not available in open-source version") }),
       getPublicUrl: () => ({ data: { publicUrl: '' } })
     })
-  },
-  from: (table: string) => ({
+  };
+  
+  from = (table: string) => ({
     select: () => ({
       eq: () => ({
         single: async () => ({ data: null, error: null }),
@@ -35,13 +37,14 @@ class MockSupabaseClient {
       eq: async () => ({ error: null })
     }),
     insert: async () => ({ error: null })
-  }),
-  functions: {
+  });
+  
+  functions = {
     invoke: async (name: string, options?: any) => {
       console.log(`Mock function invocation: ${name}`, options);
       return { data: null, error: new Error("Edge functions are not available in open-source version") };
     }
-  }
-};
+  };
+}
 
 export const supabase = new MockSupabaseClient() as any;

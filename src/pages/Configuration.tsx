@@ -1,29 +1,102 @@
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { ConfigurationForm } from "@/components/configuration/ConfigurationForm";
-import { useConfigurationState } from "@/hooks/useConfigurationState";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ConfigurationForm } from '@/components/configuration/ConfigurationForm';
+import { useConfigurationState } from '@/hooks/useConfigurationState';
 
 const Configuration = () => {
+  const navigate = useNavigate();
   const configState = useConfigurationState();
+  const [isAlreadyConfigured, setIsAlreadyConfigured] = useState(false);
+
+  useEffect(() => {
+    // Check if app is already configured
+    const config = localStorage.getItem("app_config");
+    if (config) {
+      try {
+        const parsedConfig = JSON.parse(config);
+        if (parsedConfig.isConfigured) {
+          setIsAlreadyConfigured(true);
+        }
+      } catch (error) {
+        console.error("Error parsing app configuration:", error);
+      }
+    }
+  }, []);
+
+  const handleSkip = () => {
+    // Set minimal configuration
+    const minimalConfig = {
+      appName: "EDR Solution",
+      dbType: "mock",
+      isConfigured: true,
+      configuredAt: new Date().toISOString(),
+    };
+    localStorage.setItem("app_config", JSON.stringify(minimalConfig));
+    navigate('/login');
+  };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-3xl">
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Configuration de l'application</CardTitle>
-            <CardDescription className="text-center">
-              Configurez les paramètres de votre application pour commencer
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="border-b bg-background py-4">
+        <div className="container mx-auto px-4">
+          <h1 className="text-2xl font-bold">Configuration de l'application</h1>
+        </div>
+      </header>
+      
+      <main className="flex-1 container mx-auto px-4 py-8">
+        {isAlreadyConfigured ? (
+          <div className="text-center space-y-4 max-w-lg mx-auto my-10 p-6 border rounded-lg shadow">
+            <h2 className="text-xl font-semibold">Application déjà configurée</h2>
+            <p>L'application a déjà été configurée. Vous pouvez vous connecter ou réinitialiser la configuration.</p>
+            <div className="flex flex-col space-y-2">
+              <button 
+                onClick={() => navigate('/login')} 
+                className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+              >
+                Connexion
+              </button>
+              <button 
+                onClick={() => {
+                  if (window.confirm("Êtes-vous sûr de vouloir réinitialiser la configuration? Toutes les données locales seront perdues.")) {
+                    localStorage.removeItem("app_config");
+                    setIsAlreadyConfigured(false);
+                  }
+                }} 
+                className="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90"
+              >
+                Réinitialiser la configuration
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-6 space-y-2">
+              <h2 className="text-xl font-semibold">Configuration initiale</h2>
+              <p className="text-muted-foreground">
+                Configurez votre application pour qu'elle fonctionne selon vos besoins.
+                Vous pourrez modifier ces paramètres ultérieurement.
+              </p>
+              <p className="text-sm text-muted-foreground italic">
+                Version open-source: Vous pouvez utiliser une base de données simulée pour tester l'application sans 
+                configurer un serveur de base de données.
+              </p>
+              <button
+                onClick={handleSkip}
+                className="text-sm underline hover:text-primary"
+              >
+                Passer la configuration (utiliser une base de données simulée)
+              </button>
+            </div>
+            
             <ConfigurationForm {...configState} />
-          </CardContent>
-          <CardFooter className="flex justify-center text-sm text-muted-foreground">
-            <p>Cette configuration sera stockée localement sur votre appareil Linux</p>
-          </CardFooter>
-        </Card>
-      </div>
+          </div>
+        )}
+      </main>
+      
+      <footer className="border-t py-4 text-center text-sm text-muted-foreground">
+        <p>Version open-source - {new Date().getFullYear()}</p>
+      </footer>
     </div>
   );
 };

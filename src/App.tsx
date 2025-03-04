@@ -49,10 +49,10 @@ const ConfiguredRoute = ({ element }: { element: React.ReactNode }) => {
         setIsConfigured(parsedConfig.isConfigured);
       } catch (error) {
         console.error("Error parsing app configuration:", error);
-        setIsConfigured(true);
+        setIsConfigured(false);
       }
     } else {
-      setIsConfigured(true);
+      setIsConfigured(false);
     }
   }, []);
   
