@@ -1,64 +1,67 @@
 
-/**
- * Service pour gérer les opérations liées au stockage de fichiers
- */
+import { User } from "@/types/permissions";
+
+// Define localStorage keys
+const USER_KEY = "current_user";
+const ADMIN_CREDENTIALS_KEY = "admin_credentials";
+const USER_AVATAR_KEY = "user_avatar";
+
+// Service for managing data in localStorage
 export const storageService = {
-  /**
-   * Télécharge un avatar dans le stockage local
-   */
-  uploadAvatar: async (file: File): Promise<{ url: string | null; error: Error | null }> => {
-    try {
-      if (!file) {
-        return { url: null, error: new Error("Aucun fichier fourni") };
-      }
-
-      // Vérifier le type de fichier
-      if (!file.type.startsWith("image/")) {
-        return { url: null, error: new Error("Le fichier doit être une image") };
-      }
-
-      // Limiter la taille du fichier à 2MB
-      if (file.size > 2 * 1024 * 1024) {
-        return { url: null, error: new Error("La taille de l'image ne doit pas dépasser 2MB") };
-      }
-
-      // Convertir l'image en base64 pour stockage local
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          // Stocker l'URL de l'image dans le localStorage
-          const avatarUrl = reader.result as string;
-          localStorage.setItem("user_avatar", avatarUrl);
-          resolve({ url: avatarUrl, error: null });
-        };
-        reader.onerror = () => {
-          resolve({ url: null, error: new Error("Erreur lors de la lecture du fichier") });
-        };
-        reader.readAsDataURL(file);
-      });
-    } catch (error) {
-      console.error("Erreur lors du téléchargement de l'avatar:", error);
-      return { url: null, error: error instanceof Error ? error : new Error("Erreur inconnue") };
-    }
+  // User operations
+  getUser: (): User | null => {
+    const data = localStorage.getItem(USER_KEY);
+    return data ? JSON.parse(data) : null;
   },
 
-  /**
-   * Met à jour l'URL de l'avatar pour l'utilisateur actuel
-   */
-  updateUserAvatarUrl: async (avatarUrl: string): Promise<{ success: boolean; error: Error | null }> => {
-    try {
-      localStorage.setItem("user_avatar", avatarUrl);
-      return { success: true, error: null };
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'URL de l'avatar:", error);
-      return { success: false, error: error instanceof Error ? error : new Error("Erreur inconnue") };
-    }
+  saveUser: (user: User): void => {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
 
-  /**
-   * Récupère l'URL de l'avatar pour l'utilisateur actuel
-   */
+  removeUser: (): void => {
+    localStorage.removeItem(USER_KEY);
+  },
+
+  // Admin credentials operations
+  getAdminCredentials: (): { email: string; password: string } | null => {
+    const data = localStorage.getItem(ADMIN_CREDENTIALS_KEY);
+    return data ? JSON.parse(data) : null;
+  },
+
+  saveAdminCredentials: (credentials: { email: string; password: string }): void => {
+    localStorage.setItem(ADMIN_CREDENTIALS_KEY, JSON.stringify(credentials));
+  },
+
+  // Avatar operations
   getUserAvatar: (): string | null => {
-    return localStorage.getItem("user_avatar");
+    return localStorage.getItem(USER_AVATAR_KEY);
+  },
+
+  saveUserAvatar: (avatarUrl: string): void => {
+    localStorage.setItem(USER_AVATAR_KEY, avatarUrl);
+  },
+
+  // App configuration operations
+  getAppConfiguration: (): any | null => {
+    const data = localStorage.getItem("app_config");
+    return data ? JSON.parse(data) : null;
+  },
+
+  saveAppConfiguration: (config: any): void => {
+    localStorage.setItem("app_config", JSON.stringify(config));
+  },
+
+  // Generic data operations
+  getData: (key: string): any | null => {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  },
+
+  saveData: (key: string, data: any): void => {
+    localStorage.setItem(key, JSON.stringify(data));
+  },
+
+  removeData: (key: string): void => {
+    localStorage.removeItem(key);
   }
 };

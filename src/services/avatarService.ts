@@ -1,5 +1,4 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -7,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
  */
 export const avatarService = {
   /**
-   * Télécharge un avatar dans le bucket Supabase
+   * Stocke un avatar dans le localStorage
    */
   uploadAvatar: async (file: File): Promise<{ url: string | null; error: Error | null }> => {
     try {
@@ -25,30 +24,18 @@ export const avatarService = {
         return { url: null, error: new Error("La taille de l'image ne doit pas dépasser 2MB") };
       }
 
-      // Créer un nom de fichier unique
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      // Télécharger le fichier
-      const { error: uploadError, data } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false
-        });
-
-      if (uploadError) {
-        console.error("Erreur lors du téléchargement de l'avatar:", uploadError);
-        return { url: null, error: uploadError };
-      }
-
-      // Récupérer l'URL publique
-      const { data: { publicUrl } } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      return { url: publicUrl, error: null };
+      // Convertir le fichier en Data URL
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          // Sauvegarder l'image dans le localStorage
+          const avatarId = uuidv4();
+          localStorage.setItem(`avatar_${avatarId}`, dataUrl);
+          resolve({ url: dataUrl, error: null });
+        };
+        reader.readAsDataURL(file);
+      });
     } catch (error) {
       console.error("Erreur lors du téléchargement de l'avatar:", error);
       return { url: null, error: error instanceof Error ? error : new Error("Erreur inconnue") };
@@ -56,26 +43,12 @@ export const avatarService = {
   },
 
   /**
-   * Met à jour l'URL de l'avatar dans le profil utilisateur
+   * Met à jour l'URL de l'avatar pour l'utilisateur actuel
    */
   updateUserAvatarUrl: async (avatarUrl: string): Promise<{ success: boolean; error: Error | null }> => {
     try {
-      const user = await supabase.auth.getUser();
-      
-      if (!user || !user.data || !user.data.user) {
-        return { success: false, error: new Error("Utilisateur non connecté") };
-      }
-      
-      const { error } = await supabase
-        .from("profiles")
-        .update({ avatar_url: avatarUrl })
-        .eq("id", user.data.user.id);
-
-      if (error) {
-        console.error("Erreur lors de la mise à jour de l'URL de l'avatar:", error);
-        return { success: false, error };
-      }
-
+      // Sauvegarder l'URL de l'avatar dans le localStorage
+      localStorage.setItem("current_user_avatar", avatarUrl);
       return { success: true, error: null };
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'URL de l'avatar:", error);
