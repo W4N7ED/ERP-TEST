@@ -1,168 +1,74 @@
+import type { User } from '@/hooks/permissions/types';
 
-import { User, Permission } from '@/hooks/permissions/types';
-import { defaultUser } from '@/data/mockUsers';
-
-// Simple in-memory user store
-let currentSession: {
-  user: User | null;
-  token: string | null;
-} = {
-  user: null,
-  token: null
-};
-
+/**
+ * Service d'authentification pour gérer les utilisateurs dans l'application
+ */
 export const authService = {
   /**
-   * Get the current session
+   * Connexion avec email et mot de passe
    */
-  getSession: async () => {
-    return {
-      data: {
-        session: currentSession.token ? {
-          user: currentSession.user,
-          token: currentSession.token
-        } : null
-      },
-      error: null
-    };
-  },
+  login: async (email: string, password: string): Promise<{ user: User | null; error: Error | null }> => {
+    try {
+      // Chercher l'utilisateur dans le stockage local
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const user = users.find((u: any) => u.email === email);
 
-  /**
-   * Sign in with email and password
-   */
-  signInWithPassword: async (email: string, password: string) => {
-    // This is a mock implementation
-    // In a real app, you would validate credentials against your database
-    
-    // Simple mock validation - accept any credentials matching basic format
-    if (email && password && password.length >= 6) {
-      // Create a mock token
-      const token = `token_${Math.random().toString(36).slice(2)}_${Date.now()}`;
-      
-      // Create a mock user based on email
-      const user = {
-        id: Date.now(),
-        email,
-        name: email.split('@')[0],
+      if (!user) {
+        return { user: null, error: new Error("Utilisateur non trouvé") };
+      }
+
+      // Vérification du mot de passe (simplifiée)
+      if (user.password !== password) {
+        return { user: null, error: new Error("Mot de passe incorrect") };
+      }
+
+      // Utilisateur authentifié
+      const authenticatedUser: User = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role || "Utilisateur",
+        permissions: user.permissions || []
       };
+
+      // Stocker la session en cours
+      localStorage.setItem("current_user", JSON.stringify(authenticatedUser));
       
-      currentSession = {
-        user,
-        token
-      };
-      
-      return {
-        data: {
-          session: {
-            user,
-            token
-          }
-        },
-        error: null
-      };
+      return { user: authenticatedUser, error: null };
+    } catch (error) {
+      console.error("Erreur de connexion:", error);
+      return { user: null, error: error instanceof Error ? error : new Error("Erreur inconnue") };
     }
-    
-    return {
-      data: { session: null },
-      error: {
-        message: "Identifiants invalides"
-      }
-    };
   },
 
   /**
-   * Sign out the current user
+   * Déconnexion de l'utilisateur actuel
    */
-  signOut: async () => {
-    currentSession = { user: null, token: null };
-    return { error: null };
+  logout: async (): Promise<void> => {
+    try {
+      localStorage.removeItem("current_user");
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+    }
   },
 
   /**
-   * Subscribe to auth state changes
+   * Vérifie si un utilisateur est connecté
    */
-  onAuthStateChange: (callback: (event: string, session: any) => void) => {
-    // In a real implementation, this would set up event listeners
-    // For the mock, we return a dummy subscription object
-    return {
-      data: {
-        subscription: {
-          unsubscribe: () => {
-            // Do nothing in the mock
-          }
-        }
-      }
-    };
+  isLoggedIn: (): boolean => {
+    return !!localStorage.getItem("current_user");
   },
 
   /**
-   * Get user profile
+   * Récupère l'utilisateur actuellement connecté
    */
-  getUserProfile: async (userId: string) => {
-    // Mock implementation
-    return {
-      data: {
-        name: currentSession.user?.name || 'Unknown User',
-        id: userId
-      },
-      error: null
-    };
-  },
-
-  /**
-   * Get user role
-   */
-  getUserRole: async (userId: string) => {
-    // Mock implementation
-    return {
-      data: {
-        role: 'Administrateur',
-        permissions: [
-          'inventory.view', 'inventory.add', 'inventory.edit', 'inventory.delete',
-          'projects.view', 'projects.add', 'projects.edit',
-          'interventions.view', 'interventions.add', 'interventions.edit'
-        ] as Permission[]
-      },
-      error: null
-    };
-  },
-
-  /**
-   * Create a new user (admin only)
-   */
-  createUser: async (email: string, password: string, metadata: any) => {
-    // Mock implementation
-    return {
-      data: {
-        user: {
-          id: Date.now().toString(),
-          email,
-          ...metadata
-        }
-      },
-      error: null
-    };
-  },
-
-  /**
-   * Transform user data to application User model
-   */
-  transformToUser: (session: any, profile: any, userRole: any): User => {
-    return {
-      id: typeof session.user.id === 'string' 
-          ? parseInt(session.user.id, 10) 
-          : session.user.id,
-      name: profile.name,
-      role: userRole.role,
-      permissions: userRole.permissions as Permission[],
-      isAuthenticated: true
-    };
-  },
-
-  /**
-   * Get anonymous user
-   */
-  getAnonymousUser: (): User => {
-    return { ...defaultUser, isAuthenticated: false };
+  getCurrentUser: (): User | null => {
+    try {
+      const userJson = localStorage.getItem("current_user");
+      return userJson ? JSON.parse(userJson) as User : null;
+    } catch (error) {
+      console.error("Erreur lors de la récupération de l'utilisateur actuel:", error);
+      return null;
+    }
   }
 };

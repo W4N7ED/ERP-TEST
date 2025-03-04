@@ -1,69 +1,103 @@
-# Welcome to your Lovable project
 
-## Project info
+# Application de Gestion d'Inventaire
 
-**URL**: https://lovable.dev/projects/b383c9eb-bd0e-4b7b-bec9-b7a7b1198476
+Une application de gestion d'inventaire, de projets et d'interventions conçue pour fonctionner sur les systèmes Linux.
 
-## How can I edit this code?
+## Fonctionnalités
 
-There are several ways of editing your application.
+- Gestion d'inventaire
+- Gestion des projets
+- Suivi des interventions
+- Gestion des clients et fournisseurs
+- Création de devis
+- Système de permissions et rôles
 
-**Use Lovable**
+## Prérequis
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b383c9eb-bd0e-4b7b-bec9-b7a7b1198476) and start prompting.
+- Node.js (v18 ou supérieure)
+- Une base de données (PostgreSQL, MySQL ou SQLite)
+- Serveur Linux (Ubuntu, Debian, CentOS, RHEL, Fedora)
 
-Changes made via Lovable will be committed automatically to this repo.
+## Installation rapide
 
-**Use your preferred IDE**
+### Méthode 1 : Script d'installation automatique
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```bash
+# Télécharger le script d'installation
+wget -O install.sh https://raw.githubusercontent.com/votre-utilisateur/votre-repo/main/install.sh
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# Rendre le script exécutable
+chmod +x install.sh
 
-Follow these steps:
+# Exécuter le script en tant que root
+sudo ./install.sh
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Méthode 2 : Installation manuelle
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+1. Cloner le dépôt :
+```bash
+git clone https://github.com/votre-utilisateur/votre-repo.git
+cd votre-repo
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+2. Installer les dépendances :
+```bash
+npm install
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Démarrer l'application en mode développement :
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. Construire l'application pour la production :
+```bash
+npm run build
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Configuration de la base de données
 
-**Use GitHub Codespaces**
+L'application supporte les types de bases de données suivants :
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- PostgreSQL (recommandé)
+- MySQL
+- SQLite
+- Base de données simulée (pour test uniquement)
 
-## What technologies are used for this project?
+Vous pouvez configurer votre base de données directement depuis l'interface de l'application lors de la première exécution.
 
-This project is built with .
+## Déploiement avec Nginx
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Pour déployer l'application avec Nginx, utilisez la configuration suivante :
 
-## How can I deploy this project?
+```nginx
+server {
+    listen 80;
+    server_name votre-domaine.com;
+    
+    root /chemin/vers/votre-app/dist;
+    index index.html;
+    
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    location ~* \.(js|jsx|ts|tsx)$ {
+        add_header Content-Type "text/javascript" always;
+    }
+}
+```
 
-Simply open [Lovable](https://lovable.dev/projects/b383c9eb-bd0e-4b7b-bec9-b7a7b1198476) and click on Share -> Publish.
+## Sécurité
 
-## I want to use a custom domain - is that possible?
+Pour une utilisation en production, veillez à :
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+1. Configurer un pare-feu
+2. Mettre en place HTTPS avec Let's Encrypt
+3. Changer les mots de passe par défaut
+4. Restreindre les accès à la base de données
+
+## Licence
+
+Cette application est distribuée sous licence MIT.

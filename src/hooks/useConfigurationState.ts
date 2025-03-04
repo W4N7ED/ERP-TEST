@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -83,7 +82,6 @@ export const useConfigurationState = () => {
       return false;
     }
 
-    // For mock database, we don't need to validate database connection fields
     if (state.dbType !== "mock") {
       if (!state.host || !state.port || !state.username || !state.password || !state.database) {
         toast({
@@ -119,9 +117,8 @@ export const useConfigurationState = () => {
     try {
       let initResult = { success: true, message: "Configuration réussie", tables: [] as string[] };
       
-      // Skip database initialization for mock database
       if (state.dbType !== "mock") {
-        initResult = await initDatabase(
+        const result = await initDatabase(
           state.host, 
           state.port, 
           state.username, 
@@ -130,18 +127,23 @@ export const useConfigurationState = () => {
           state.dbType as any
         );
         
-        if (!initResult.success) {
+        if (!result.success) {
           toast({
             variant: "destructive",
             title: "Erreur d'initialisation",
-            description: initResult.message,
+            description: result.message,
           });
           updateField('isInitializing', false);
           return;
         }
+        
+        initResult = {
+          success: result.success,
+          message: result.message,
+          tables: result.tables || []
+        };
       }
 
-      // Afficher les tables créées si disponibles
       if (initResult.tables && initResult.tables.length > 0) {
         console.log("Tables créées:", initResult.tables);
       }
