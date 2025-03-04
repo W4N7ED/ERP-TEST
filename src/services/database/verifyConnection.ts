@@ -13,15 +13,7 @@ export const verifyDatabaseConnection = async (
   tablePrefix?: string
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    // For the simulated database, return immediate success
-    if (type === "mock") {
-      return {
-        success: true,
-        message: "Connection to simulated database established successfully"
-      };
-    }
-    
-    // Use the database service for actual connection attempts
+    // Use the database service for connection attempts
     const dbService = createDatabaseService({
       host,
       port,
