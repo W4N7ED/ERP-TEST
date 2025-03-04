@@ -4,44 +4,21 @@ import { Intervention } from "@/types/intervention";
 import { Project } from "@/types/project";
 import { toast } from "sonner";
 
-// Importing directly would cause issues on browser
-let Database: any = null;
-
-// SQLite-specific implementation
+// SQLite-specific implementation using localStorage for the browser environment
 export class SQLiteDatabaseService implements DatabaseService {
   private connected: boolean = false;
   private config: DatabaseConfig;
-  private db: any = null;
   private projects: Project[] = [];
   private interventions: Intervention[] = [];
 
   constructor(config: DatabaseConfig) {
     this.config = config;
-    
-    // Try to load better-sqlite3 only on Node.js environment
-    if (typeof window === 'undefined') {
-      try {
-        // Dynamic import for Node.js environment only
-        Database = require('better-sqlite3');
-      } catch (error) {
-        console.warn("SQLite module couldn't be loaded, using in-memory fallback", error);
-      }
-    }
   }
 
   async connect(): Promise<{ success: boolean; message: string }> {
     try {
-      if (Database) {
-        // Node.js environment - use actual SQLite
-        const dbPath = this.config.database || ':memory:';
-        this.db = new Database(dbPath);
-        
-        // Initialize tables if they don't exist
-        this.initTables();
-      } else {
-        // Browser environment - use localStorage as fallback
-        this.loadFromLocalStorage();
-      }
+      // In browser environment - use localStorage
+      this.loadFromLocalStorage();
       
       this.connected = true;
       return { 
@@ -55,33 +32,6 @@ export class SQLiteDatabaseService implements DatabaseService {
         message: `Failed to connect to SQLite database: ${error instanceof Error ? error.message : 'Unknown error'}` 
       };
     }
-  }
-
-  private initTables() {
-    if (!this.db) return;
-    
-    // Projects table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS projects (
-        id INTEGER PRIMARY KEY,
-        data TEXT NOT NULL
-      )
-    `);
-    
-    // Interventions table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS interventions (
-        id INTEGER PRIMARY KEY,
-        data TEXT NOT NULL
-      )
-    `);
-    
-    // Load data from tables
-    const projectRows = this.db.prepare("SELECT * FROM projects").all();
-    this.projects = projectRows.map(row => JSON.parse(row.data));
-    
-    const interventionRows = this.db.prepare("SELECT * FROM interventions").all();
-    this.interventions = interventionRows.map(row => JSON.parse(row.data));
   }
 
   private loadFromLocalStorage() {
@@ -102,45 +52,18 @@ export class SQLiteDatabaseService implements DatabaseService {
   }
 
   private saveToStorage() {
-    if (this.db) {
-      // Save to SQLite
-      try {
-        // Clear existing data
-        this.db.prepare("DELETE FROM projects").run();
-        this.db.prepare("DELETE FROM interventions").run();
-        
-        // Insert projects
-        const insertProject = this.db.prepare("INSERT INTO projects (id, data) VALUES (?, ?)");
-        for (const project of this.projects) {
-          insertProject.run(project.id, JSON.stringify(project));
-        }
-        
-        // Insert interventions
-        const insertIntervention = this.db.prepare("INSERT INTO interventions (id, data) VALUES (?, ?)");
-        for (const intervention of this.interventions) {
-          insertIntervention.run(intervention.id, JSON.stringify(intervention));
-        }
-      } catch (error) {
-        console.error("Error saving to SQLite:", error);
-        toast.error("Error saving data to database");
-      }
-    } else {
-      // Save to localStorage as fallback
-      try {
-        localStorage.setItem('projects', JSON.stringify(this.projects));
-        localStorage.setItem('interventions', JSON.stringify(this.interventions));
-      } catch (error) {
-        console.error("Error saving to localStorage:", error);
-        toast.error("Error saving data");
-      }
+    // Save to localStorage
+    try {
+      localStorage.setItem('projects', JSON.stringify(this.projects));
+      localStorage.setItem('interventions', JSON.stringify(this.interventions));
+    } catch (error) {
+      console.error("Error saving to localStorage:", error);
+      toast.error("Error saving data");
     }
   }
 
   async disconnect(): Promise<void> {
-    if (this.db) {
-      this.saveToStorage();
-      this.db.close();
-    }
+    this.saveToStorage();
     this.connected = false;
   }
 
