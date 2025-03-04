@@ -1,7 +1,6 @@
 
 import { useCallback } from "react";
 import { ConfigurationState, AdminSetupResult } from "@/types/configuration";
-import { mockOnlyDbService } from "@/services/database/MockOnlyDatabaseService";
 
 export const useAdminAccount = (state: ConfigurationState, toast: any) => {
   const setupAdminAccount = useCallback(async (): Promise<AdminSetupResult> => {
@@ -10,9 +9,6 @@ export const useAdminAccount = (state: ConfigurationState, toast: any) => {
     }
 
     try {
-      // In the open-source version, we simulate admin account creation
-      // by storing the credentials in localStorage
-      
       // Store admin credentials for later authentication
       const adminCredentials = {
         email: state.adminEmail,
@@ -20,22 +16,6 @@ export const useAdminAccount = (state: ConfigurationState, toast: any) => {
       };
       
       localStorage.setItem("admin_credentials", JSON.stringify(adminCredentials));
-      
-      // Create an admin user in the mock database
-      const adminUser = {
-        id: "admin_user_id",
-        email: state.adminEmail,
-        name: state.adminName,
-        role: "Administrateur",
-        permissions: [
-          "inventory.all", "suppliers.all", "projects.all", 
-          "interventions.all", "quotes.all", "users.all"
-        ],
-        created_at: new Date().toISOString()
-      };
-      
-      // Add the admin user to the mock database
-      mockOnlyDbService.collection('users').add(adminUser);
       
       toast({
         title: "Compte administrateur créé",

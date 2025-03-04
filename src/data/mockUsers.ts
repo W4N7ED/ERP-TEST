@@ -1,6 +1,7 @@
+
 import { Permission, User } from '@/types/permissions';
 
-// Mock users with their respective permissions - emptied for clean start
+// Empty mock users array
 const mockUsers: User[] = [
   {
     id: 1,

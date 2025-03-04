@@ -1,7 +1,6 @@
 
 import { DatabaseConfig, DatabaseService } from "./types";
 import { toast } from "sonner";
-import { MockOnlyDatabaseService } from "./MockOnlyDatabaseService";
 
 // Cache singleton instance
 let databaseInstance: DatabaseService | null = null;
@@ -14,16 +13,7 @@ export function createDatabaseService(configOrType: DatabaseConfig | string): Da
       // Handle string type parameter (legacy support)
       throw new Error("Configuration insuffisante - veuillez fournir les paramètres complets de connexion");
     } else {
-      // For development/testing, return mock service
-      // In production, this should be replaced with real implementations
-      if (process.env.NODE_ENV === 'development') {
-        console.warn("Using MockOnlyDatabaseService - FOR DEVELOPMENT ONLY");
-        const mockService = new MockOnlyDatabaseService(configOrType);
-        setDatabaseInstance(mockService);
-        return mockService;
-      }
-      
-      // In production environment
+      // We need a real database implementation
       throw new Error("Méthode non implémentée - Veuillez configurer une base de données réelle");
     }
   } catch (error) {

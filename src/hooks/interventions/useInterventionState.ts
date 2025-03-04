@@ -2,11 +2,11 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Intervention, InterventionFilters } from "@/types/intervention";
-import { interventionsMock } from "@/data/interventionsMock";
 
 export const useInterventionState = () => {
+  const [interventions, setInterventions] = useState<Intervention[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredInterventions, setFilteredInterventions] = useState<Intervention[]>(interventionsMock);
+  const [filteredInterventions, setFilteredInterventions] = useState<Intervention[]>([]);
   const [isNewInterventionDialogOpen, setIsNewInterventionDialogOpen] = useState(false);
   const [isEditInterventionDialogOpen, setIsEditInterventionDialogOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
@@ -29,12 +29,18 @@ export const useInterventionState = () => {
   });
   const { toast } = useToast();
   
+  // Load interventions from an API in a real implementation
+  useEffect(() => {
+    // This would be replaced with an API call in production
+    setInterventions([]);
+  }, []);
+  
   useEffect(() => {
     applyFilters();
-  }, [filters, searchTerm, showArchived]);
+  }, [filters, searchTerm, showArchived, interventions]);
 
   const applyFilters = () => {
-    let filtered = [...interventionsMock];
+    let filtered = [...interventions];
     
     if (!showArchived) {
       filtered = filtered.filter(i => i.status !== "Archivée");
@@ -134,15 +140,18 @@ export const useInterventionState = () => {
       return;
     }
 
+    // In a real app, this would call an API to create the intervention
     const newIntervention: Intervention = {
       ...(currentIntervention as Intervention),
-      id: Math.max(...interventionsMock.map(i => i.id)) + 1,
+      id: interventions.length ? Math.max(...interventions.map(i => i.id)) + 1 : 1,
       dateCreated: new Date().toISOString().split('T')[0],
       deadline: currentIntervention.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     };
 
-    interventionsMock.push(newIntervention);
-    setFilteredInterventions(showArchived ? [...interventionsMock] : interventionsMock.filter(i => i.status !== "Archivée"));
+    setInterventions(prev => [...prev, newIntervention]);
+    setFilteredInterventions(prev => showArchived ? [...prev, newIntervention] : 
+      newIntervention.status !== "Archivée" ? [...prev, newIntervention] : prev);
+    
     setCurrentIntervention({
       priority: "Moyenne",
       status: "À planifier",
@@ -172,7 +181,7 @@ export const useInterventionState = () => {
       return;
     }
 
-    const index = interventionsMock.findIndex(i => i.id === currentIntervention.id);
+    const index = interventions.findIndex(i => i.id === currentIntervention.id);
     if (index === -1) {
       toast({
         title: "Erreur",
@@ -182,9 +191,15 @@ export const useInterventionState = () => {
       return;
     }
 
-    interventionsMock[index] = { ...interventionsMock[index], ...currentIntervention as Intervention };
+    // In a real app, this would call an API to update the intervention
+    const updatedInterventions = [...interventions];
+    updatedInterventions[index] = { ...updatedInterventions[index], ...currentIntervention as Intervention };
+    setInterventions(updatedInterventions);
     
-    setFilteredInterventions(showArchived ? [...interventionsMock] : interventionsMock.filter(i => i.status !== "Archivée"));
+    setFilteredInterventions(showArchived ? 
+      updatedInterventions : 
+      updatedInterventions.filter(i => i.status !== "Archivée"));
+    
     setIsEditInterventionDialogOpen(false);
 
     toast({
@@ -195,11 +210,20 @@ export const useInterventionState = () => {
 
   const handleArchiveIntervention = (intervention: Intervention) => {
     if (window.confirm(`Êtes-vous sûr de vouloir archiver l'intervention "${intervention.title}" ?`)) {
-      const index = interventionsMock.findIndex(i => i.id === intervention.id);
+      const index = interventions.findIndex(i => i.id === intervention.id);
       if (index !== -1) {
-        interventionsMock[index].status = "Archivée";
-        interventionsMock[index].archived = true;
-        setFilteredInterventions(showArchived ? [...interventionsMock] : interventionsMock.filter(i => i.status !== "Archivée"));
+        // In a real app, this would call an API to archive the intervention
+        const updatedInterventions = [...interventions];
+        updatedInterventions[index] = {
+          ...updatedInterventions[index],
+          status: "Archivée",
+          archived: true
+        };
+        
+        setInterventions(updatedInterventions);
+        setFilteredInterventions(showArchived ? 
+          updatedInterventions : 
+          updatedInterventions.filter(i => i.status !== "Archivée"));
         
         toast({
           title: "Intervention archivée",

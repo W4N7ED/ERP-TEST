@@ -4,10 +4,8 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
-import { mockOnlyDbService } from './services/database/MockOnlyDatabaseService';
 
-// Initialize the mock database with sample data
-mockOnlyDbService.initializeWithSampleData();
+// Removed mock database initialization
 
 // Utiliser une méthode plus robuste pour obtenir l'élément racine
 const rootElement = document.getElementById("root");
