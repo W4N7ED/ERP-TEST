@@ -1,3 +1,4 @@
+
 import type { User } from '@/hooks/permissions/types';
 
 /**
@@ -11,7 +12,11 @@ export const authService = {
     try {
       // Chercher l'utilisateur dans le stockage local
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const user = users.find((u: any) => u.email === email);
+      const user = users.find((u: any) => {
+        // Generate email from username for comparison since User type doesn't have email
+        const generatedEmail = `${u.name.toLowerCase().replace(/\s+/g, '.')}@example.com`;
+        return generatedEmail === email;
+      });
 
       if (!user) {
         return { user: null, error: new Error("Utilisateur non trouvé") };
@@ -26,7 +31,6 @@ export const authService = {
       const authenticatedUser: User = {
         id: user.id,
         name: user.name,
-        email: user.email,
         role: user.role || "Utilisateur",
         permissions: user.permissions || []
       };
