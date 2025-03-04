@@ -53,7 +53,8 @@ export const useProjectCreation = (
         setProjects(updatedProjects);
         
         if (statusFilter === "Tous" || statusFilter === "En attente") {
-          setFilteredProjects(prev => [...prev, savedProject]);
+          // Fix the TypeScript error by creating a new array directly
+          setFilteredProjects([...state.filteredProjects, savedProject]);
         }
         
         return savedProject;
@@ -64,7 +65,8 @@ export const useProjectCreation = (
         setProjects(updatedProjects);
         
         if (statusFilter === "Tous" || statusFilter === "En attente") {
-          setFilteredProjects(prev => [...prev, newProject]);
+          // Fix the TypeScript error by creating a new array directly
+          setFilteredProjects([...state.filteredProjects, newProject]);
         }
         
         return newProject;
