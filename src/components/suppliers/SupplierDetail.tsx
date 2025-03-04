@@ -46,13 +46,8 @@ const SupplierDetail: React.FC<SupplierDetailProps> = ({ supplier, onBack }) => 
         
         <TabsContent value="info" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Contact card */}
             <ContactCard supplier={supplier} />
-            
-            {/* Stats card */}
             <StatsCard productCount={supplierProducts.length} />
-            
-            {/* Additional info card */}
             <NotesCard />
           </div>
         </TabsContent>

@@ -17,14 +17,12 @@ const ItemFormFields: React.FC<ItemFormFieldsProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-      {/* First column - Basic Information */}
       <BasicInfoFields 
         newItem={newItem}
         onInputChange={onInputChange}
         onSelectChange={onSelectChange}
       />
       
-      {/* Second column - Inventory Details */}
       <InventoryDetailsFields
         newItem={newItem}
         onInputChange={onInputChange}

@@ -111,22 +111,7 @@ export const AddQuoteItemDialog: React.FC<AddQuoteItemDialogProps> = ({
   };
 
   const onSubmit = async (data: QuoteItemFormData) => {
-    onAddItem({
-      type: data.type,
-      name: data.name,
-      description: data.description,
-      unitPrice: data.unitPrice,
-      quantity: data.quantity,
-      discount: data.discount,
-      taxRate: data.taxRate,
-      inventoryItemId: data.inventoryItemId,
-      brand: data.brand,
-      model: data.model,
-      application: data.application,
-      license: data.license,
-      priceHT: data.priceHT,
-    });
-    
+    onAddItem(data);
     reset();
     setSelectedInventoryItem("");
     onOpenChange(false);

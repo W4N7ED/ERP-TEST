@@ -27,4 +27,3 @@ export const productDetailSchema = z.object({
 
 export type QuoteFormData = z.infer<typeof quoteFormSchema>;
 export type ProductDetailData = z.infer<typeof productDetailSchema>;
-
