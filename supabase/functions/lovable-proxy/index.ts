@@ -5,7 +5,12 @@ Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
-      headers: corsHeaders 
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, origin, x-requested-with',
+        'Access-Control-Max-Age': '86400'
+      }
     });
   }
   
@@ -26,17 +31,25 @@ Deno.serve(async (req) => {
     // Add CORS headers to all outgoing requests
     headers.set('Origin', req.headers.get('origin') || 'http://localhost:8080');
     
+    // Create a new request object with properly formatted headers and body
     const response = await fetch(targetUrl, {
       method: req.method,
       headers: headers,
       body: req.method !== 'GET' && req.method !== 'HEAD' ? await req.blob() : undefined,
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+      mode: 'cors',
     });
     
-    // Create a new response with the CORS headers
+    // Create a new response with enhanced CORS headers
     const responseHeaders = new Headers(response.headers);
     Object.keys(corsHeaders).forEach(key => {
       responseHeaders.set(key, corsHeaders[key]);
     });
+    
+    // Add additional CORS headers to handle more complex scenarios
+    responseHeaders.set('Access-Control-Allow-Origin', req.headers.get('origin') || '*');
+    responseHeaders.set('Access-Control-Allow-Credentials', 'true');
     
     // Return the proxied response with CORS headers
     return new Response(response.body, {
@@ -54,6 +67,8 @@ Deno.serve(async (req) => {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': req.headers.get('origin') || '*',
+        'Access-Control-Allow-Credentials': 'true',
       },
     });
   }
