@@ -6,11 +6,11 @@ export const useConfigurationFields = () => {
   const [state, setState] = useState<ConfigurationState>({
     appName: "",
     host: "localhost",
-    port: "3306",
-    username: "",
+    port: "5432", // PostgreSQL port par défaut
+    username: "postgres", // Utilisateur PostgreSQL par défaut
     password: "",
     database: "",
-    dbType: "mysql",
+    dbType: "postgres", // PostgreSQL par défaut
     tablePrefix: "",
     isConfigured: false,
     isInitializing: false,
@@ -34,11 +34,11 @@ export const useConfigurationFields = () => {
           ...prev,
           appName: parsedConfig.appName || "",
           host: parsedConfig.host || "localhost",
-          port: parsedConfig.port || "3306",
-          username: parsedConfig.username || "",
+          port: parsedConfig.port || "5432", // PostgreSQL port
+          username: parsedConfig.username || "postgres", // PostgreSQL user
           password: parsedConfig.password || "",
           database: parsedConfig.database || "",
-          dbType: parsedConfig.dbType || "mysql",
+          dbType: parsedConfig.dbType || "postgres", // PostgreSQL par défaut
           tablePrefix: parsedConfig.tablePrefix || "",
           isConfigured: parsedConfig.isConfigured || false,
           

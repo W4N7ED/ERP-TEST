@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { Check } from "lucide-react";
 import { DatabaseTypeSelector } from "./database/DatabaseTypeSelector";
 import { ConnectionFields } from "./database/ConnectionFields";
 import { ConnectionActions } from "./database/ConnectionActions";
@@ -64,6 +63,16 @@ export const DatabaseSection = ({
       setPort("3306");
     } else if (value === "postgres" && (!port || port === "3306")) {
       setPort("5432");
+    }
+    
+    // Définir les valeurs par défaut pour PostgreSQL
+    if (value === "postgres" && (!username || username === "root")) {
+      setUsername("postgres");
+    }
+    
+    // Valeurs par défaut pour MySQL
+    if (value === "mysql" && username === "postgres") {
+      setUsername("root");
     }
   };
 

@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { storageService } from "@/services/storageService";
+import { verifyDatabaseConnection } from "@/services/database/verifyConnection";
+import { initDatabase } from "@/services/database/initDatabase";
 
 export const useDatabaseConnection = (
   host: string,
@@ -30,20 +32,25 @@ export const useDatabaseConnection = (
     });
 
     try {
-      // Simulation d'un succès pour SQLite
       let result;
       
       if (dbType === "sqlite") {
+        // Simulation d'un succès pour SQLite (toujours en mode navigateur)
         result = {
           success: true,
           message: "Connexion réussie à la base de données SQLite (mode navigateur avec localStorage)"
         };
       } else {
-        // Pour les autres types de base de données, afficher un message d'information
-        result = {
-          success: true,
-          message: `Mode compatible navigateur activé. Les données seront stockées localement avec SQLite/localStorage. Configuration ${dbType} sera utilisée en production.`
-        };
+        // Pour PostgreSQL et MySQL, essayer une vraie connexion
+        result = await verifyDatabaseConnection(
+          host, 
+          port, 
+          username, 
+          password, 
+          database, 
+          dbType as any, 
+          tablePrefix
+        );
       }
       
       setConnectionResult(result);
@@ -97,28 +104,42 @@ export const useDatabaseConnection = (
     });
 
     try {
-      // Initialisation des données par défaut
-      if (!storageService.getData(database || "app_db")) {
-        // Initialiser des tableaux vides pour les projets et interventions
-        storageService.saveData(database || "app_db", {
-          projects: [],
-          interventions: []
-        });
-      }
+      // Pour PostgreSQL et MySQL, essayer une vraie initialisation
+      const result = await initDatabase(
+        host, 
+        port, 
+        username, 
+        password, 
+        database, 
+        dbType as any, 
+        tablePrefix
+      );
       
-      const tables = ["projets", "interventions", "utilisateurs", "configurations"];
-      const result = {
-        success: true,
-        message: "Tables initialisées avec succès dans localStorage",
-        tables: tables.map(t => `${tablePrefix || ""}${t}`)
-      };
+      // Pour le mode navigateur, initialiser des données locales
+      if (typeof window !== 'undefined') {
+        if (!storageService.getData(database || "app_db")) {
+          // Initialiser des tableaux vides pour les projets et interventions
+          storageService.saveData(database || "app_db", {
+            projects: [],
+            interventions: []
+          });
+        }
+      }
       
       setInitResult(result);
       
-      toast({
-        title: "Initialisation réussie",
-        description: "Les tables ont été créées avec succès",
-      });
+      if (result.success) {
+        toast({
+          title: "Initialisation réussie",
+          description: "Les tables ont été créées avec succès",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Échec de l'initialisation",
+          description: result.message,
+        });
+      }
     } catch (error) {
       console.error("Error initializing database:", error);
       setInitResult({

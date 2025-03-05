@@ -16,11 +16,23 @@ export const DatabaseTypeSelector = ({ dbType, onChange }: DatabaseTypeSelectorP
           <SelectValue placeholder="Sélectionner un type de base de données" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="mysql">MySQL</SelectItem>
           <SelectItem value="postgres">PostgreSQL</SelectItem>
-          <SelectItem value="sqlite">SQLite</SelectItem>
+          <SelectItem value="mysql">MySQL</SelectItem>
+          <SelectItem value="sqlite">SQLite (Local)</SelectItem>
         </SelectContent>
       </Select>
+      
+      {dbType === "postgres" && (
+        <p className="text-xs text-muted-foreground mt-1">
+          PostgreSQL fournit la meilleure performance et évolutivité pour les applications en production.
+        </p>
+      )}
+      
+      {dbType === "sqlite" && (
+        <p className="text-xs text-muted-foreground mt-1">
+          SQLite est recommandé pour le mode démo ou pour un usage personnel sans installation supplémentaire.
+        </p>
+      )}
     </div>
   );
 };
