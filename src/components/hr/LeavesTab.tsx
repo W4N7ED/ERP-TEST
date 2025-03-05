@@ -6,9 +6,16 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { CalendarOff, CalendarCheck, BadgeCheck } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { LeaveRequest } from '@/types/hr';
+
+// Define types to match the LeaveRequest interface from types/hr.ts
+type LeaveRequestWithName = LeaveRequest & {
+  employeeName: string;
+  approvedBy?: string;
+};
 
 // Mock leave requests data
-const mockLeaveRequests = [
+const mockLeaveRequests: LeaveRequestWithName[] = [
   {
     id: 1,
     employeeId: 1,
@@ -64,7 +71,7 @@ const mockLeaveRequests = [
   }
 ];
 
-const typeLabels = {
+const typeLabels: Record<string, string> = {
   annual: 'Congés annuels',
   sick: 'Maladie',
   family: 'Familial',
@@ -72,7 +79,7 @@ const typeLabels = {
   other: 'Autre'
 };
 
-const statusBadgeVariants = {
+const statusBadgeVariants: Record<string, string> = {
   approved: 'default',
   pending: 'secondary',
   rejected: 'destructive'
@@ -80,7 +87,7 @@ const statusBadgeVariants = {
 
 const LeavesTab = () => {
   const { hasPermission } = usePermissions();
-  const [leaveRequests, setLeaveRequests] = useState(mockLeaveRequests);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequestWithName[]>(mockLeaveRequests);
   
   const canAddLeave = hasPermission('hr.leaves.add');
   const canApproveLeave = hasPermission('hr.leaves.approve');
