@@ -33,11 +33,7 @@ export function createDatabaseService(configOrType: DatabaseConfig | string): Da
     return service;
   } catch (error) {
     console.error("Erreur lors de la création du service de base de données:", error);
-    toast({
-      variant: "destructive",
-      title: "Erreur de connexion à la base de données",
-      description: "Utilisation du stockage local comme solution de secours."
-    });
+    toast.error("Erreur de connexion à la base de données. Utilisation du stockage local comme solution de secours.");
     
     // Utiliser SQLite avec localStorage comme solution de secours en cas d'erreur
     const fallbackService = new SQLiteDatabaseService({ 
