@@ -25,12 +25,21 @@ export const DatabaseTypeSelector = ({ dbType, onChange }: DatabaseTypeSelectorP
       {dbType === "postgres" && (
         <p className="text-xs text-muted-foreground mt-1">
           PostgreSQL fournit la meilleure performance et évolutivité pour les applications en production.
+          En mode navigateur, les données seront stockées localement.
+        </p>
+      )}
+      
+      {dbType === "mysql" && (
+        <p className="text-xs text-muted-foreground mt-1">
+          MySQL est recommandé pour les applications avec besoins modérés.
+          En mode navigateur, les données seront stockées localement.
         </p>
       )}
       
       {dbType === "sqlite" && (
         <p className="text-xs text-muted-foreground mt-1">
           SQLite est recommandé pour le mode démo ou pour un usage personnel sans installation supplémentaire.
+          Les données seront stockées dans le navigateur.
         </p>
       )}
     </div>

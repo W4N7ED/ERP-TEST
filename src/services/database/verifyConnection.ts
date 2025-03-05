@@ -17,6 +17,8 @@ export const verifyDatabaseConnection = async (
     
     // Browser mode check - fallback to mock connection
     if (typeof window !== 'undefined') {
+      console.log("Browser environment detected, using compatible mode");
+      
       if (type === 'postgres') {
         // Try to reach Supabase Edge function for PostgreSQL verification
         try {
@@ -54,6 +56,12 @@ export const verifyDatabaseConnection = async (
           };
         }
       }
+      
+      // For MySQL or SQLite in browser mode
+      return {
+        success: true,
+        message: `Mode compatible navigateur activé. Les données seront stockées localement. La configuration ${type} sera utilisée en production.`
+      };
     }
     
     // Use the database service for connection attempts

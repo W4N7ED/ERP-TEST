@@ -19,12 +19,13 @@ echo Les modules natifs seront ignorés, l'application utilisera uniquement le s
 set npm_config_build_from_source=false
 set npm_config_sqlite=0
 set npm_config_sqlite3_binary_host_mirror=https://mapbox-node-binary.s3.amazonaws.com/
-set npm_config_runtime=electron
-set npm_config_target=87
+set npm_config_runtime=node
+set npm_config_target=%NODE_VERSION%
 set npm_config_target_arch=x64
+set npm_config_nodedir=%APPDATA%\..\Roaming\npm\node_modules\node
 
 :: Installer les dépendances
-call npm install --no-optional --no-shrinkwrap
+call npm install --no-optional --only=prod --ignore-scripts
 
 echo.
 echo === Installation terminée ===
