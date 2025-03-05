@@ -10,14 +10,11 @@ type MobileMenuProps = {
 
 const MobileMenu = ({ isAdmin, isAuthenticated }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { hasPermission, currentUser } = usePermissions();
+  const { currentUser } = usePermissions();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-
-  // Determine user access to modules based on role and permissions
-  const canAccessHR = hasPermission('hr.view');
 
   return (
     <>

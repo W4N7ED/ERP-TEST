@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -50,6 +49,11 @@ const NavItems = ({ isAdmin, isMobile, isAuthenticated, closeMenu }: NavItemsPro
   const filteredNavItems = navItems.filter(item => {
     if (!isAuthenticated) return false;
     if (item.adminOnly && !isAdmin) return false;
+    
+    // If it's an admin, always show items regardless of specific permissions
+    if (isAdmin) return true;
+    
+    // Otherwise, check for specific permissions
     if (item.permissions && !item.permissions.some(permission => hasPermission(permission as any))) return false;
     return true;
   });
