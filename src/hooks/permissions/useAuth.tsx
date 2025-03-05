@@ -42,10 +42,10 @@ export const useAuth = () => {
             password === adminCredentials.password) {
           console.log("Admin credentials match");
           
-          // Create admin user
+          // Create admin user with a default name if none is provided
           const adminUser: User = {
             id: 1,
-            name: adminCredentials.name || "Administrateur",
+            name: "Administrateur", // Use a default name instead of accessing it from adminCredentials
             role: "Administrateur",
             permissions: [
               // Include all permissions for admin
