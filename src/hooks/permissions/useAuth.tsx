@@ -4,6 +4,7 @@ import { User } from './types';
 import { defaultUser } from '@/data/mockUsers';
 import { storageService } from '@/services/storageService';
 import { mockUserService } from './services/mockUserService';
+import { shouldUseMockData } from '@/utils/databaseCheck';
 
 export const useAuth = () => {
   // Get initial user from localStorage on startup
@@ -23,13 +24,48 @@ export const useAuth = () => {
     console.log("Attempting login with:", username, password);
     setAuthError(null); // Clear any previous errors
     
-    // Try mock authentication
-    const mockUser = mockUserService.authenticateMockUser(username, password);
-    if (mockUser) {
-      console.log("User authenticated:", mockUser);
-      setCurrentUser({...mockUser, isAuthenticated: true});
-      storageService.saveUser({...mockUser, isAuthenticated: true});
-      return true;
+    // Try mock authentication if we should use mock data
+    if (shouldUseMockData()) {
+      const mockUser = mockUserService.authenticateMockUser(username, password);
+      if (mockUser) {
+        console.log("User authenticated with mock data:", mockUser);
+        setCurrentUser({...mockUser, isAuthenticated: true});
+        storageService.saveUser({...mockUser, isAuthenticated: true});
+        return true;
+      }
+    } else {
+      // If using real database, check admin credentials from configuration
+      const adminCredentials = storageService.getAdminCredentials();
+      if (adminCredentials) {
+        const adminUsername = adminCredentials.email.split('@')[0];
+        if ((username === adminUsername || username === adminCredentials.email) && 
+            password === adminCredentials.password) {
+          console.log("Admin credentials match");
+          
+          // Create admin user
+          const adminUser: User = {
+            id: 1,
+            name: adminCredentials.name || "Administrateur",
+            role: "Administrateur",
+            permissions: [
+              // Include all permissions for admin
+              'inventory.view', 'inventory.add', 'inventory.edit', 'inventory.delete',
+              'suppliers.view', 'suppliers.add', 'suppliers.edit', 'suppliers.delete',
+              'movements.view', 'movements.add', 'movements.approve',
+              'projects.view', 'projects.add', 'projects.edit', 'projects.delete',
+              'interventions.view', 'interventions.add', 'interventions.edit', 'interventions.delete',
+              'users.view', 'users.add', 'users.edit', 'users.delete',
+              'quotes.view', 'quotes.add', 'quotes.edit', 'quotes.delete',
+              'clients.view', 'clients.add', 'clients.edit', 'clients.delete',
+              'hr.view', 'hr.employees.view', 'hr.employees.add', 'hr.employees.edit'
+            ]
+          };
+          
+          setCurrentUser({...adminUser, isAuthenticated: true});
+          storageService.saveUser({...adminUser, isAuthenticated: true});
+          return true;
+        }
+      }
     }
     
     setAuthError('Identifiants incorrects');
@@ -46,6 +82,12 @@ export const useAuth = () => {
 
   // Switch user (for demo/development purposes)
   const switchUser = (userId: number) => {
+    // Only allow switching users in mock mode
+    if (!shouldUseMockData()) {
+      console.log("User switching is disabled when using real database");
+      return;
+    }
+    
     const user = allUsers.find(u => u.id === userId);
     if (user) {
       setCurrentUser({...user, isAuthenticated: true});

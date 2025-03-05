@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getDatabaseInstance } from "@/services/database/databaseFactory";
+import { shouldUseMockData } from "@/utils/databaseCheck";
+import { interventionsMock } from "@/data/interventionsMock";
 
 /**
  * Hook pour récupérer les interventions depuis la base de données
@@ -21,19 +23,37 @@ export const useFetchInterventions = (
       try {
         const dbService = getDatabaseInstance();
         const data = await dbService.getInterventions();
-        setInterventions(data);
-        setFilteredInterventions(data);
+        
+        // Use the data from the database or fallback to mock data if necessary
+        if (data.length > 0 || !shouldUseMockData()) {
+          setInterventions(data);
+          setFilteredInterventions(data);
+        } else {
+          // Only use mock data if we should be using it
+          console.log("No interventions found in database, using mock data");
+          setInterventions(interventionsMock);
+          setFilteredInterventions(interventionsMock);
+        }
       } catch (err) {
         console.error("Failed to fetch interventions:", err);
         setError(err instanceof Error ? err.message : "Failed to load interventions");
+        
         toast({
           title: "Erreur",
           description: "Impossible de charger les interventions. Veuillez réessayer.",
           variant: "destructive",
         });
-        // Fallback to empty array
-        setInterventions([]);
-        setFilteredInterventions([]);
+        
+        // Only use mock data as fallback if we're in mock mode
+        if (shouldUseMockData()) {
+          console.log("Using mock data as fallback");
+          setInterventions(interventionsMock);
+          setFilteredInterventions(interventionsMock);
+        } else {
+          // Otherwise use empty array
+          setInterventions([]);
+          setFilteredInterventions([]);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -44,7 +64,17 @@ export const useFetchInterventions = (
       fetchInterventions();
     } catch (err) {
       console.warn("Database not initialized yet:", err);
-      // Keep empty state until database is configured
+      
+      // Only use mock data if we should be using it
+      if (shouldUseMockData()) {
+        setInterventions(interventionsMock);
+        setFilteredInterventions(interventionsMock);
+      } else {
+        setInterventions([]);
+        setFilteredInterventions([]);
+      }
+      
+      setIsLoading(false);
     }
   }, [toast, setInterventions, setFilteredInterventions, setIsLoading, setError]);
 };

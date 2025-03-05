@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Project, projectsMock } from "@/types/project";
 import { getDatabaseInstance } from "@/services/database/databaseFactory";
 import { ProjectState, ProjectActions } from "./types";
+import { shouldUseMockData } from "@/utils/databaseCheck";
 
 export const useProjectsData = (): [ProjectState, ProjectActions] => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,13 +22,28 @@ export const useProjectsData = (): [ProjectState, ProjectActions] => {
       try {
         const dbService = getDatabaseInstance();
         const data = await dbService.getProjects();
-        setProjects(data.length > 0 ? data : projectsMock);
-        setFilteredProjects(data.length > 0 ? data : projectsMock);
+        
+        // Only use mock data if we should be using it and no real data was returned
+        if (shouldUseMockData() && data.length === 0) {
+          setProjects(projectsMock);
+          setFilteredProjects(projectsMock);
+        } else {
+          setProjects(data);
+          setFilteredProjects(data);
+        }
       } catch (err) {
         console.error("Failed to load projects:", err);
-        toast.error("Échec du chargement des projets. Utilisation des données de démonstration.");
-        setProjects(projectsMock);
-        setFilteredProjects(projectsMock);
+        
+        // Only use mock data as fallback if we're in mock mode
+        if (shouldUseMockData()) {
+          toast.error("Échec du chargement des projets. Utilisation des données de démonstration.");
+          setProjects(projectsMock);
+          setFilteredProjects(projectsMock);
+        } else {
+          toast.error("Échec du chargement des projets. Veuillez vérifier la connexion à la base de données.");
+          setProjects([]);
+          setFilteredProjects([]);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -36,9 +52,16 @@ export const useProjectsData = (): [ProjectState, ProjectActions] => {
     try {
       loadProjects();
     } catch (err) {
-      console.warn("Database not initialized yet, using mock data", err);
-      setProjects(projectsMock);
-      setFilteredProjects(projectsMock);
+      console.warn("Database not initialized yet:", err);
+      
+      // Only use mock data if we should be using it
+      if (shouldUseMockData()) {
+        setProjects(projectsMock);
+        setFilteredProjects(projectsMock);
+      } else {
+        setProjects([]);
+        setFilteredProjects([]);
+      }
       setIsLoading(false);
     }
   }, []);
