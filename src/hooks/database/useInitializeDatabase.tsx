@@ -31,6 +31,9 @@ export const useInitializeDatabase = () => {
     try {
       let result;
       
+      // Vérifier si le mode mock est déjà désactivé
+      const isMockMode = typeof supabase.isMockMode === 'function' ? supabase.isMockMode() : true;
+      
       if (dbType === "postgres") {
         // Pour PostgreSQL, utiliser la fonction Edge pour initialiser directement
         try {
@@ -43,7 +46,8 @@ export const useInitializeDatabase = () => {
               password,
               database,
               type: dbType,
-              tablePrefix
+              tablePrefix,
+              useDirect: !isMockMode // Indiquer si nous utilisons le mode direct
             },
           });
           
@@ -54,6 +58,18 @@ export const useInitializeDatabase = () => {
             };
           } else {
             result = data;
+            
+            // Désactiver le mode mock après une initialisation réussie
+            if (result.success && typeof supabase.disableMockMode === 'function') {
+              supabase.disableMockMode();
+              
+              // Mettre à jour la configuration pour indiquer que le mock est désactivé
+              const currentDbConfig = storageService.getData("db_config") || {};
+              storageService.saveData("db_config", {
+                ...currentDbConfig,
+                mockDisabled: true
+              });
+            }
           }
           
           console.log("Résultat initialisation PostgreSQL:", result);
@@ -90,6 +106,18 @@ export const useInitializeDatabase = () => {
           message: "Tables initialisées avec succès dans localStorage",
           tables: tables.map(t => `${tablePrefix || ""}${t}`)
         };
+        
+        // Désactiver le mode mock même pour SQLite
+        if (result.success && typeof supabase.disableMockMode === 'function') {
+          supabase.disableMockMode();
+          
+          // Mettre à jour la configuration
+          const currentDbConfig = storageService.getData("db_config") || {};
+          storageService.saveData("db_config", {
+            ...currentDbConfig,
+            mockDisabled: true
+          });
+        }
       }
       
       setInitResult(result);
