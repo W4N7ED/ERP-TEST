@@ -8,6 +8,7 @@ configure_apache() {
   # Activation du module rewrite pour le SPA routing
   if [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then
     a2enmod rewrite
+    a2enmod headers
   fi
   
   # Créer la configuration Apache
@@ -26,6 +27,16 @@ configure_apache() {
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
+        
+        # CORS Headers
+        Header set Access-Control-Allow-Origin "*"
+        Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE"
+        Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-client-info, apikey"
+        
+        # Handle OPTIONS preflight requests
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} OPTIONS
+        RewriteRule ^(.*)$ $1 [R=200,L]
     </Directory>
     
     # Journalisation des erreurs et des accès
