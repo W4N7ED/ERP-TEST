@@ -1,4 +1,3 @@
-
 import { DatabaseConfig } from "./types";
 import { ConnectionResult, getConnectionAdapter } from "../../hooks/database/adapters/connectionAdapters";
 
@@ -32,7 +31,7 @@ export const verifyDatabaseConnection = async (
     const forceDirect = mockDisabled;
     
     // Utiliser l'adaptateur approprié pour le type de base de données
-    const connectionAdapter = getConnectionAdapter(type, forceDirect);
+    const connectionAdapter = getConnectionAdapter(type);
     
     // Paramètres de connexion
     const params = {
