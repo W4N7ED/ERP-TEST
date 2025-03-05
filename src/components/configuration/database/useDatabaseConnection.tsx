@@ -13,7 +13,7 @@ export const useDatabaseConnection = (
   dbType: string,
   tablePrefix: string
 ) => {
-  const [connectionResult, setConnectionResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [connectionResult, setConnectionResult] = useState<{ success: boolean; message: string; usingDirect?: boolean } | null>(null);
   const [initResult, setInitResult] = useState<{ success: boolean; message: string; tables?: string[] } | null>(null);
   const [isLoading, setIsLoading] = useState<{ testing: boolean; initializing: boolean }>({
     testing: false,
@@ -40,8 +40,9 @@ export const useDatabaseConnection = (
           message: "Connexion réussie à la base de données SQLite (mode navigateur avec localStorage)"
         };
       } else if (dbType === "postgres") {
-        // For PostgreSQL, use Supabase Edge Function to test connection
+        // Pour PostgreSQL, utiliser la fonction Edge pour tester la connexion directe
         try {
+          console.log("Tentative de connexion directe à PostgreSQL");
           const { data, error } = await supabase.functions.invoke('verify-db-connection', {
             body: {
               host,
@@ -61,6 +62,8 @@ export const useDatabaseConnection = (
           } else {
             result = data;
           }
+          
+          console.log("Résultat connexion PostgreSQL:", result);
         } catch (postgresError) {
           result = {
             success: false,
@@ -91,7 +94,8 @@ export const useDatabaseConnection = (
           password,
           database,
           dbType,
-          tablePrefix
+          tablePrefix,
+          usingDirect: result.usingDirect || false
         });
       } else {
         toast({
@@ -129,8 +133,9 @@ export const useDatabaseConnection = (
       let result;
       
       if (dbType === "postgres") {
-        // For PostgreSQL, use Supabase Edge Function to initialize
+        // Pour PostgreSQL, utiliser la fonction Edge pour initialiser directement
         try {
+          console.log("Tentative d'initialisation directe de PostgreSQL");
           const { data, error } = await supabase.functions.invoke('init-database', {
             body: {
               host,
@@ -151,6 +156,8 @@ export const useDatabaseConnection = (
           } else {
             result = data;
           }
+          
+          console.log("Résultat initialisation PostgreSQL:", result);
         } catch (postgresError) {
           result = {
             success: false,

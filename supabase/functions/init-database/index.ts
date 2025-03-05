@@ -29,8 +29,9 @@ serve(async (req) => {
       );
     }
     
-    // PostgreSQL initialization
+    // Direct PostgreSQL initialization (not using Supabase)
     if (type === "postgres") {
+      console.log("Using direct PostgreSQL connection for initialization");
       const result = await initPostgresDatabase(host, port, username, password, database, tablePrefix);
       
       return new Response(

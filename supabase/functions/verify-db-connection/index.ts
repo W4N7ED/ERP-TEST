@@ -33,36 +33,51 @@ serve(async (req) => {
       );
     }
     
-    // PostgreSQL connection
+    // Direct PostgreSQL connection (not using Supabase)
     if (type === "postgres") {
-      // Test PostgreSQL database connection
-      const connectionString = `postgres://${username}:${password}@${host}:${port}/${database}`;
-      
-      console.log(`Attempting PostgreSQL connection with: ${host}:${port}, username: ${username}, database: ${database}`);
-      
-      const pool = new Pool(connectionString, 1);
-      const connection = await pool.connect();
-      
       try {
-        // Execute a simple query to check that the connection works
-        const result = await connection.queryObject`SELECT 1 as connection_test`;
+        // Test PostgreSQL database connection
+        const connectionString = `postgres://${username}:${password}@${host}:${port}/${database}`;
         
-        console.log('PostgreSQL database connection successful:', result.rows);
+        console.log(`Attempting direct PostgreSQL connection with: ${host}:${port}, username: ${username}, database: ${database}`);
         
+        const pool = new Pool(connectionString, 1);
+        const connection = await pool.connect();
+        
+        try {
+          // Execute a simple query to check that the connection works
+          const result = await connection.queryObject`SELECT 1 as connection_test`;
+          
+          console.log('PostgreSQL database connection successful:', result.rows);
+          
+          return new Response(
+            JSON.stringify({
+              success: true,
+              message: `Connection to ${database}@${host}:${port} verified successfully.`,
+              usingDirect: true
+            }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 200,
+            }
+          );
+        } finally {
+          // Release the connection back to the pool
+          connection.release();
+          await pool.end();
+        }
+      } catch (postgresError) {
+        console.error('PostgreSQL connection error:', postgresError);
         return new Response(
           JSON.stringify({
-            success: true,
-            message: `Connection to ${database}@${host}:${port} verified successfully.`
+            success: false,
+            message: `PostgreSQL connection error: ${postgresError.message}`
           }),
           {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
+            status: 500,
           }
         );
-      } finally {
-        // Release the connection back to the pool
-        connection.release();
-        await pool.end();
       }
     }
     
