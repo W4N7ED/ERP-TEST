@@ -1,8 +1,8 @@
 
-// This is a mock client that simulates Supabase functionality
-// It provides the same API structure but uses localStorage for persistence
+// This is a mock client that simulates functionality
+// It provides the same API structure but uses localStorage for persistence and direct API calls
 
-class MockSupabaseClient {
+class MockClient {
   auth = {
     getSession: async () => ({ data: { session: null } }),
     signInWithPassword: async () => ({ data: {}, error: new Error("Authentication is not available in offline mode") }),
@@ -52,12 +52,34 @@ class MockSupabaseClient {
     invoke: async (name: string, options?: any) => {
       console.log(`Mock function invocation: ${name}`, options);
       
+      // Proxy mode - directly call our own proxy endpoint
+      if (name === 'lovable-proxy') {
+        try {
+          const response = await fetch('/lovable-proxy', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(options?.body || {}),
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          return { data, error: null };
+        } catch (error) {
+          return { data: null, error };
+        }
+      }
+      
       // Special handling for database operations
       if (name === 'init-database') {
         return { 
           data: { 
             success: true, 
-            message: "Mock database initialized successfully", 
+            message: "Base de données initialisée avec succès", 
             tables: ['users', 'inventory', 'suppliers', 'projects', 'interventions', 'movements', 'clients', 'quotes', 'quote_items'] 
           }, 
           error: null 
@@ -68,7 +90,7 @@ class MockSupabaseClient {
         return { 
           data: { 
             success: true, 
-            message: "Mock database connection verified successfully" 
+            message: "Connexion à la base de données vérifiée avec succès" 
           }, 
           error: null 
         };
@@ -76,11 +98,11 @@ class MockSupabaseClient {
       
       return { 
         data: null, 
-        error: new Error("Edge functions are not available in offline mode") 
+        error: new Error("Cette fonctionnalité n'est pas disponible en mode hors ligne") 
       };
     }
   };
 }
 
-export const supabase = new MockSupabaseClient() as any;
+export const supabase = new MockClient() as any;
 export const supabaseClient = supabase; // Add this line for compatibility

@@ -21,6 +21,9 @@ Deno.serve(async (req) => {
     const headers = new Headers(req.headers);
     headers.delete('host'); // Remove the host header as it will be set by fetch
     
+    // Add CORS headers to all outgoing requests
+    headers.set('Origin', 'http://localhost:8080');
+    
     const response = await fetch(targetUrl, {
       method: req.method,
       headers: headers,
