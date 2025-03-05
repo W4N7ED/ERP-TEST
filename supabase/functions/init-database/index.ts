@@ -1,7 +1,10 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { corsHeaders } from "./constants.ts";
-import { initPostgresDatabase, initMockDatabase } from "./database.ts";
+import { 
+  corsHeaders, 
+  initPostgresDatabase, 
+  initMockDatabase 
+} from "./database.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -26,9 +29,8 @@ serve(async (req) => {
       );
     }
     
-    // Direct PostgreSQL initialization (not using Supabase)
+    // PostgreSQL initialization
     if (type === "postgres") {
-      console.log("Using direct PostgreSQL connection for initialization");
       const result = await initPostgresDatabase(host, port, username, password, database, tablePrefix);
       
       return new Response(

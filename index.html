@@ -7,25 +7,16 @@
     <title>agile-resource-dashboard</title>
     <meta name="description" content="Open Source Resource Dashboard" />
     <meta name="author" content="Developer" />
-    <meta property="og:image" content="./og-image.png" />
+    <meta property="og:image" content="/og-image.png" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <!-- Assurer la compatibilité avec les serveurs Linux -->
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <!-- Configurer correctement CORS -->
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
-    <meta http-equiv="Cross-Origin-Resource-Policy" content="cross-origin">
-    <!-- Base URL pour les chemins relatifs -->
-    <base href="./">
-    <!-- Désactiver les scripts externes problématiques -->
-    <meta name="posthog-disable" content="true">
-    <!-- Prevent external script loading -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.gpteng.co; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.gpteng.co; connect-src 'self' https://*.lovable-api.com https://*.supabase.co https://*.lovable.app">
+    <!-- Utiliser des chemins relatifs à la base -->
+    <base href="/">
   </head>
 
   <body>
     <div id="root"></div>
-    <!-- Script pour la fonctionnalité "Select" -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <!-- Utilisation d'un chemin relatif pour éviter les problèmes MIME type -->
     <script type="module" src="./src/main.tsx"></script>
   </body>

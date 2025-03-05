@@ -1,123 +1,91 @@
 
-/**
- * Service for handling storage operations (localStorage)
- */
+import { User } from "@/types/permissions";
+import { Intervention } from "@/types/intervention";
+import { Project } from "@/types/project";
+
+// Define localStorage keys
+const USER_KEY = "current_user";
+const ADMIN_CREDENTIALS_KEY = "admin_credentials";
+const USER_AVATAR_KEY = "user_avatar";
+const PROJECTS_KEY = "projects_data";
+const INTERVENTIONS_KEY = "interventions_data";
+
+// Service for managing data in localStorage
 export const storageService = {
-  /**
-   * Save data to localStorage
-   */
-  saveData: (key: string, data: any): void => {
-    try {
-      localStorage.setItem(key, JSON.stringify(data));
-    } catch (error) {
-      console.error(`Error saving data to localStorage with key ${key}:`, error);
-    }
+  // User operations
+  getUser: (): User | null => {
+    const data = localStorage.getItem(USER_KEY);
+    return data ? JSON.parse(data) : null;
   },
 
-  /**
-   * Get data from localStorage
-   */
-  getData: (key: string): any => {
-    try {
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : null;
-    } catch (error) {
-      console.error(`Error getting data from localStorage with key ${key}:`, error);
-      return null;
-    }
+  saveUser: (user: User): void => {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
 
-  /**
-   * Remove data from localStorage
-   */
-  removeData: (key: string): void => {
-    try {
-      localStorage.removeItem(key);
-    } catch (error) {
-      console.error(`Error removing data from localStorage with key ${key}:`, error);
-    }
-  },
-
-  /**
-   * Get user from localStorage
-   */
-  getUser: (): any | null => {
-    return storageService.getData('current_user');
-  },
-
-  /**
-   * Save user to localStorage
-   */
-  saveUser: (user: any): void => {
-    storageService.saveData('current_user', user);
-  },
-
-  /**
-   * Remove user from localStorage
-   */
   removeUser: (): void => {
-    storageService.removeData('current_user');
+    localStorage.removeItem(USER_KEY);
   },
 
-  /**
-   * Get admin credentials from localStorage
-   */
+  // Admin credentials operations
   getAdminCredentials: (): { email: string; password: string } | null => {
-    const credsString = localStorage.getItem('app_config');
-    if (credsString) {
-      try {
-        const config = JSON.parse(credsString);
-        if (config.adminConfig && config.adminConfig.email && config.adminConfig.password) {
-          return {
-            email: config.adminConfig.email,
-            password: config.adminConfig.password
-          };
-        }
-      } catch (error) {
-        console.error('Error parsing admin credentials from localStorage:', error);
-      }
-    }
-    return null;
+    const data = localStorage.getItem(ADMIN_CREDENTIALS_KEY);
+    return data ? JSON.parse(data) : null;
   },
 
-  /**
-   * Get user avatar from localStorage
-   */
+  saveAdminCredentials: (credentials: { email: string; password: string }): void => {
+    localStorage.setItem(ADMIN_CREDENTIALS_KEY, JSON.stringify(credentials));
+  },
+
+  // Avatar operations
   getUserAvatar: (): string | null => {
-    return localStorage.getItem('user_avatar');
+    return localStorage.getItem(USER_AVATAR_KEY);
   },
 
-  /**
-   * Save user avatar to localStorage
-   */
   saveUserAvatar: (avatarUrl: string): void => {
-    localStorage.setItem('user_avatar', avatarUrl);
+    localStorage.setItem(USER_AVATAR_KEY, avatarUrl);
   },
 
-  /**
-   * Get app configuration from localStorage
-   */
+  // App configuration operations
   getAppConfiguration: (): any | null => {
-    const config = localStorage.getItem('app_config');
-    if (config) {
-      try {
-        return JSON.parse(config);
-      } catch (error) {
-        console.error('Error parsing app configuration from localStorage:', error);
-        return null;
-      }
-    }
-    return null;
+    const data = localStorage.getItem("app_config");
+    return data ? JSON.parse(data) : null;
   },
 
-  /**
-   * Save app configuration to localStorage
-   */
   saveAppConfiguration: (config: any): void => {
-    try {
-      localStorage.setItem('app_config', JSON.stringify(config));
-    } catch (error) {
-      console.error('Error saving app configuration to localStorage:', error);
-    }
+    localStorage.setItem("app_config", JSON.stringify(config));
+  },
+
+  // Projects operations
+  getProjects: (): Project[] => {
+    const data = localStorage.getItem(PROJECTS_KEY);
+    return data ? JSON.parse(data) : [];
+  },
+
+  saveProjects: (projects: Project[]): void => {
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+  },
+
+  // Interventions operations
+  getInterventions: (): Intervention[] => {
+    const data = localStorage.getItem(INTERVENTIONS_KEY);
+    return data ? JSON.parse(data) : [];
+  },
+
+  saveInterventions: (interventions: Intervention[]): void => {
+    localStorage.setItem(INTERVENTIONS_KEY, JSON.stringify(interventions));
+  },
+
+  // Generic data operations
+  getData: (key: string): any | null => {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  },
+
+  saveData: (key: string, data: any): void => {
+    localStorage.setItem(key, JSON.stringify(data));
+  },
+
+  removeData: (key: string): void => {
+    localStorage.removeItem(key);
   }
 };

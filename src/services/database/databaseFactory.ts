@@ -11,17 +11,10 @@ export function createDatabaseService(type: string): DatabaseService;
 export function createDatabaseService(configOrType: DatabaseConfig | string): DatabaseService {
   try {
     console.log("Création du service de base de données en mode navigateur");
-    
-    // Vérifier si nous sommes dans un environnement Windows
-    const isWindows = typeof window !== 'undefined' && 
-                     navigator.platform && 
-                     (navigator.platform.indexOf('Win') > -1);
-    
-    // Toujours utiliser le mode localStorage pour le navigateur ou Windows sans modules natifs
+    // Toujours utiliser SQLite/localStorage pour le navigateur
     const defaultConfig: DatabaseConfig = {
       type: "sqlite",
-      database: typeof configOrType === 'string' ? "app.db" : (configOrType.database || "app.db"),
-      useLocalStorage: true // Forcer l'utilisation de localStorage
+      database: typeof configOrType === 'string' ? "app.db" : (configOrType.database || "app.db")
     };
     
     // Créer l'instance SQLite (qui utilise localStorage)
@@ -33,13 +26,12 @@ export function createDatabaseService(configOrType: DatabaseConfig | string): Da
     return service;
   } catch (error) {
     console.error("Erreur lors de la création du service de base de données:", error);
-    toast.error("Erreur de connexion à la base de données. Utilisation du stockage local comme solution de secours.");
+    toast.error("Erreur de connexion à la base de données");
     
-    // Utiliser SQLite avec localStorage comme solution de secours en cas d'erreur
+    // Utiliser SQLite comme solution de secours en cas d'erreur
     const fallbackService = new SQLiteDatabaseService({ 
       type: "sqlite", 
-      database: "fallback.db",
-      useLocalStorage: true
+      database: "fallback.db"
     });
     setDatabaseInstance(fallbackService);
     return fallbackService;
@@ -52,8 +44,7 @@ export function getDatabaseInstance(): DatabaseService {
     // Créer une instance SQLite par défaut si aucune n'existe
     databaseInstance = new SQLiteDatabaseService({
       type: "sqlite",
-      database: "app.db",
-      useLocalStorage: true
+      database: "app.db"
     });
   }
   return databaseInstance;

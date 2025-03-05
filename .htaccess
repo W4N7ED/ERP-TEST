@@ -3,8 +3,9 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   
-  # Redirection HTTP vers HTTPS (commenté pour le développement local)
+  # Redirection HTTP vers HTTPS (commentez cette section pour le développement local)
   # RewriteCond %{HTTPS} off
+  # Ne pas rediriger les requêtes pour les validations Let's Encrypt
   # RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
   # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   
@@ -16,24 +17,9 @@
   RewriteRule . /index.html [L]
 </IfModule>
 
-# Activer CORS - Extended configuration for all origins
+# Activer CORS
 <IfModule mod_headers.c>
   Header set Access-Control-Allow-Origin "*"
-  Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE"
-  Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-client-info, apikey"
-  Header set Access-Control-Max-Age "3600"
-  
-  # Handle OPTIONS method for CORS preflight
-  RewriteEngine On
-  RewriteRule ^(.*)$ $1 [E=HTTP_ORIGIN:%{HTTP:ORIGIN}]
-  RewriteRule ^(.*)$ $1 [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-  RewriteRule ^(.*)$ $1 [E=HTTP_ACCEPT:%{HTTP:ACCEPT}]
-  RewriteRule ^(.*)$ $1 [E=HTTP_X_REQUESTED_WITH:%{HTTP:X-Requested-With}]
-  
-  RewriteCond %{REQUEST_METHOD} OPTIONS
-  RewriteRule ^(.*)$ $1 [R=200,L,E=HTTP_CONTENT_TYPE:%{HTTP:Content-Type}]
-  
-  Header set Content-Type "text/html; charset=UTF-8"
 </IfModule>
 
 # Types MIME appropriés
@@ -77,7 +63,7 @@
 # Gestion des erreurs 404
 ErrorDocument 404 /index.html
 
-# En-têtes de sécurité (commenté pour le développement local)
+# En-têtes de sécurité (pour HTTPS uniquement - commentez pour le développement local)
 # <IfModule mod_headers.c>
 #   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 #   Header always set X-Content-Type-Options "nosniff"

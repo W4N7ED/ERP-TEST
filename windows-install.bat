@@ -23,8 +23,8 @@ set npm_config_runtime=electron
 set npm_config_target=87
 set npm_config_target_arch=x64
 
-:: Installer les dépendances en ignorant complètement better-sqlite3 et autres modules natifs
-call npm install --omit=optional --no-optional --ignore-scripts
+:: Installer les dépendances
+call npm install --no-optional --no-shrinkwrap
 
 echo.
 echo === Installation terminée ===
@@ -32,10 +32,6 @@ echo.
 echo Pour lancer l'application en mode développement, exécutez : npm run dev
 echo L'application sera accessible à l'adresse : http://localhost:8080
 echo.
-echo NOTE: L'application fonctionne en mode navigateur sans modules natifs.
-echo Les données seront stockées localement dans le navigateur.
-echo Pour une installation complète avec support de base de données native,
-echo veuillez installer Visual Studio avec le workload "Desktop development with C++".
 
 :: Demander à l'utilisateur s'il veut lancer l'application
 set /p run_dev="Voulez-vous lancer l'application maintenant ? (y/n) "

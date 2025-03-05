@@ -4,7 +4,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useAppName } from "@/components/AppNameProvider";
 import UserDropdown from "./navbar/UserDropdown";
-import { NavItems } from "./navbar/NavItems";
+import NavItems from "./navbar/NavItems";
 import LoginButton from "./navbar/LoginButton";
 import MobileMenu from "./navbar/MobileMenu";
 

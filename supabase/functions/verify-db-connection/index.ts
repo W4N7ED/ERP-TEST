@@ -17,14 +17,14 @@ serve(async (req) => {
     const body = await req.json();
     const { host, port, username, password, database, type } = body;
 
-    console.log(`Verifying connection to ${database}@${host}:${port} (type: ${type})`);
+    console.log(`Vérification de la connexion à ${database}@${host}:${port} (type: ${type})`);
     
     // Mock database - always return success
     if (type === "mock") {
       return new Response(
         JSON.stringify({
           success: true,
-          message: `Mock database connection verified successfully.`
+          message: `Connexion à la base de données simulée vérifiée avec succès.`
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -33,51 +33,36 @@ serve(async (req) => {
       );
     }
     
-    // Direct PostgreSQL connection (not using Supabase)
+    // PostgreSQL connection
     if (type === "postgres") {
+      // Test la connexion à la base de données PostgreSQL
+      const connectionString = `postgres://${username}:${password}@${host}:${port}/${database}`;
+      
+      console.log(`Tentative de connexion PostgreSQL avec: ${host}:${port}, username: ${username}, database: ${database}`);
+      
+      const pool = new Pool(connectionString, 1);
+      const connection = await pool.connect();
+      
       try {
-        // Test PostgreSQL database connection
-        const connectionString = `postgres://${username}:${password}@${host}:${port}/${database}`;
+        // Execute a simple query to check that the connection works
+        const result = await connection.queryObject`SELECT 1 as connection_test`;
         
-        console.log(`Attempting direct PostgreSQL connection with: ${host}:${port}, username: ${username}, database: ${database}`);
+        console.log('Connexion à la base de données PostgreSQL réussie:', result.rows);
         
-        const pool = new Pool(connectionString, 1);
-        const connection = await pool.connect();
-        
-        try {
-          // Execute a simple query to check that the connection works
-          const result = await connection.queryObject`SELECT 1 as connection_test`;
-          
-          console.log('PostgreSQL database connection successful:', result.rows);
-          
-          return new Response(
-            JSON.stringify({
-              success: true,
-              message: `Connection to ${database}@${host}:${port} verified successfully.`,
-              usingDirect: true
-            }),
-            {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-              status: 200,
-            }
-          );
-        } finally {
-          // Release the connection back to the pool
-          connection.release();
-          await pool.end();
-        }
-      } catch (postgresError) {
-        console.error('PostgreSQL connection error:', postgresError);
         return new Response(
           JSON.stringify({
-            success: false,
-            message: `PostgreSQL connection error: ${postgresError.message}`
+            success: true,
+            message: `Connexion à ${database}@${host}:${port} vérifiée avec succès.`
           }),
           {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 500,
+            status: 200,
           }
         );
+      } finally {
+        // Release the connection back to the pool
+        connection.release();
+        await pool.end();
       }
     }
     
@@ -85,7 +70,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        message: `Database type ${type} not supported by this Edge Function. Use the client-side implementation.`
+        message: `Type de base de données ${type} non supporté par cette fonction Edge. Utilisez l'implémentation côté client.`
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -93,12 +78,12 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Database connection error:', error);
+    console.error('Erreur de connexion à la base de données:', error);
     
     return new Response(
       JSON.stringify({
         success: false,
-        message: `Connection error: ${error.message}`
+        message: `Erreur de connexion: ${error.message}`
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

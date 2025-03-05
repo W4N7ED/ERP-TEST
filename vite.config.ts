@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: './', // Configure Vite to use relative paths
+  base: './', // Configurer Vite pour utiliser des chemins relatifs
   server: {
     host: "::",
     port: 8080,
@@ -25,8 +25,6 @@ export default defineConfig(({ mode }) => ({
     // Configurer les en-têtes MIME correctement
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
-      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-client-info, apikey',
       'Content-Type': 'application/javascript; charset=utf-8',
       'X-Content-Type-Options': 'nosniff',
     },
@@ -34,7 +32,7 @@ export default defineConfig(({ mode }) => ({
     cors: true,
   },
   build: {
-    // Ensure manifest is generated for deployment
+    // Assurer que le manifest est généré pour le déploiement
     manifest: true,
     outDir: 'dist',
     assetsDir: 'assets',
@@ -43,7 +41,7 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'vendor': ['react', 'react-dom', 'react-router-dom'],
         },
-        format: 'es', // Explicit ES modules format
+        format: 'es', // Format ES modules explicite
       },
     },
   },

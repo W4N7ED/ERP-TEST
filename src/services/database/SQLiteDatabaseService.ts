@@ -12,23 +12,17 @@ import { projectOperations } from "./operations/projectOperations";
 export class SQLiteDatabaseService implements DatabaseService {
   private connected: boolean = false;
   private config: DatabaseConfig;
-  private useLocalStorage: boolean = true;
 
   constructor(config: DatabaseConfig) {
     this.config = config;
-    this.useLocalStorage = config.useLocalStorage !== false;
   }
 
   async connect(): Promise<{ success: boolean; message: string }> {
     try {
-      // En mode localStorage, on est toujours connecté
       this.connected = true;
-      
       return { 
         success: true, 
-        message: this.useLocalStorage
-          ? `Connecté au stockage local (localStorage)`
-          : `Connecté à la base de données SQLite ${this.config.database || 'en mémoire'}`
+        message: `Connecté à la base de données SQLite ${this.config.database || 'en mémoire'}` 
       };
     } catch (error) {
       console.error("Erreur de connexion à la base de données SQLite:", error);
