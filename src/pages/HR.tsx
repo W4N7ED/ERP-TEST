@@ -41,7 +41,7 @@ const HR = () => {
 
       <Card>
         <CardContent className="p-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-3 md:grid-cols-6 mb-8">
               <TabsTrigger value="employees" disabled={!hasPermission('hr.employees.view')}>Employés</TabsTrigger>
               <TabsTrigger value="contracts" disabled={!hasPermission('hr.contracts.view')}>Contrats</TabsTrigger>

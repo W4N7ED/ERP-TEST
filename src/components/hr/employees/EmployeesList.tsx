@@ -1,19 +1,11 @@
 
-import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Employee } from '@/types/hr';
 import { usePermissions } from '@/hooks/usePermissions';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, FileText, Eye } from 'lucide-react';
+import { useState } from 'react';
 import EmployeeDetailDialog from './EmployeeDetailDialog';
+import { Pencil, Trash2, UserPlus, Eye } from 'lucide-react';
 
 interface EmployeesListProps {
   employees: Employee[];
@@ -23,119 +15,111 @@ interface EmployeesListProps {
 const EmployeesList = ({ employees, onDelete }: EmployeesListProps) => {
   const { hasPermission } = usePermissions();
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const canEditEmployee = hasPermission('hr.employees.edit');
   const canDeleteEmployee = hasPermission('hr.employees.delete');
 
   const handleViewDetails = (employee: Employee) => {
     setSelectedEmployee(employee);
-    setIsDetailOpen(true);
+    setDetailsOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet employé ?')) {
-      onDelete(id);
-    }
+  const handleCloseDetails = () => {
+    setDetailsOpen(false);
+    setSelectedEmployee(null);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fr-FR').format(date);
-  };
-
-  // Calculate seniority in years and months
-  const calculateSeniority = (hireDate: string) => {
-    const hire = new Date(hireDate);
-    const now = new Date();
-    
-    let years = now.getFullYear() - hire.getFullYear();
-    let months = now.getMonth() - hire.getMonth();
-    
-    if (months < 0) {
-      years--;
-      months += 12;
-    }
-    
-    if (years === 0) {
-      return `${months} mois`;
-    } else if (months === 0) {
-      return `${years} an${years > 1 ? 's' : ''}`;
-    } else {
-      return `${years} an${years > 1 ? 's' : ''} et ${months} mois`;
-    }
-  };
+  if (employees.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center border rounded-md">
+        <UserPlus className="w-12 h-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-medium">Aucun employé trouvé</h3>
+        <p className="text-muted-foreground mt-2 mb-4">
+          Aucun employé ne correspond à votre recherche ou aucun employé n'a été ajouté.
+        </p>
+        {hasPermission('hr.employees.add') && (
+          <Button>Ajouter un employé</Button>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {employees.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-8 text-center">
-          <p className="text-muted-foreground">Aucun employé trouvé</p>
-        </div>
-      ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employé</TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Département</TableHead>
-                <TableHead>Date d'embauche</TableHead>
-                <TableHead>Ancienneté</TableHead>
-                <TableHead>Rôle ERP</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {employees.map((employee) => (
-                <TableRow key={employee.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full overflow-hidden">
-                        <img 
-                          src={employee.avatar || "https://via.placeholder.com/40"} 
-                          alt={`${employee.firstName} ${employee.lastName}`}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <div className="font-medium">{employee.firstName} {employee.lastName}</div>
-                        <div className="text-sm text-muted-foreground">{employee.email}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{employee.position}</TableCell>
-                  <TableCell>{employee.department}</TableCell>
-                  <TableCell>{formatDate(employee.hireDate)}</TableCell>
-                  <TableCell>{calculateSeniority(employee.hireDate)}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{employee.role}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="icon" onClick={() => handleViewDetails(employee)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="icon" disabled={!canEditEmployee}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="icon" disabled={!canDeleteEmployee} onClick={() => handleDelete(employee.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {employees.map((employee) => (
+        <Card key={employee.id} className="overflow-hidden">
+          <CardContent className="p-0">
+            <div className="flex items-center p-4 border-b">
+              <div className="flex-shrink-0 mr-4">
+                {employee.avatar ? (
+                  <img
+                    src={employee.avatar}
+                    alt={`${employee.firstName} ${employee.lastName}`}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                    {employee.firstName.charAt(0)}{employee.lastName.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="font-medium">{employee.firstName} {employee.lastName}</h3>
+                <p className="text-sm text-muted-foreground">{employee.position}</p>
+              </div>
+            </div>
+            <div className="px-4 py-3">
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Département</p>
+                  <p>{employee.department}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Date d'embauche</p>
+                  <p>{new Date(employee.hireDate).toLocaleDateString()}</p>
+                </div>
+                <div className="col-span-2 mt-2">
+                  <p className="text-muted-foreground">Email</p>
+                  <p className="truncate">{employee.email}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 p-3 bg-gray-50">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handleViewDetails(employee)}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                Détails
+              </Button>
+              {canEditEmployee && (
+                <Button variant="outline" size="sm">
+                  <Pencil className="h-4 w-4 mr-1" />
+                  Modifier
+                </Button>
+              )}
+              {canDeleteEmployee && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => onDelete(employee.id)}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Supprimer
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+      
       {selectedEmployee && (
         <EmployeeDetailDialog 
+          isOpen={detailsOpen}
+          onOpenChange={setDetailsOpen}
           employee={selectedEmployee}
-          isOpen={isDetailOpen}
-          onOpenChange={setIsDetailOpen}
         />
       )}
     </div>
