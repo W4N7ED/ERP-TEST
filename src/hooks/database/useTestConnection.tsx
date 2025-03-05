@@ -1,13 +1,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { ConnectionResult, ConnectionParams, getConnectionAdapter } from "./adapters/connectionAdapters";
 
-interface ConnectionResult {
-  success: boolean;
-  message: string;
-  usingDirect?: boolean;
-}
+export { type ConnectionResult } from "./adapters/connectionAdapters";
 
 export const useTestConnection = () => {
   const [connectionResult, setConnectionResult] = useState<ConnectionResult | null>(null);
@@ -27,52 +23,22 @@ export const useTestConnection = () => {
     toast("Test de connexion: Tentative de connexion à la base de données...");
 
     try {
-      let result;
+      // Get the appropriate adapter for the database type
+      const connectionAdapter = getConnectionAdapter(dbType);
       
-      if (dbType === "sqlite") {
-        // Simulation d'un succès pour SQLite (mode navigateur)
-        result = {
-          success: true,
-          message: "Connexion réussie à la base de données SQLite (mode navigateur avec localStorage)"
-        };
-      } else if (dbType === "postgres") {
-        // Pour PostgreSQL, utiliser la fonction Edge pour tester la connexion directe
-        try {
-          console.log("Tentative de connexion directe à PostgreSQL");
-          const { data, error } = await supabase.functions.invoke('verify-db-connection', {
-            body: {
-              host,
-              port,
-              username,
-              password,
-              database,
-              type: dbType
-            },
-          });
-          
-          if (error) {
-            result = {
-              success: false,
-              message: `Erreur de connexion à PostgreSQL: ${error.message}`
-            };
-          } else {
-            result = data;
-          }
-          
-          console.log("Résultat connexion PostgreSQL:", result);
-        } catch (postgresError) {
-          result = {
-            success: false,
-            message: `Erreur lors de la vérification PostgreSQL: ${postgresError instanceof Error ? postgresError.message : 'Erreur inconnue'}`
-          };
-        }
-      } else {
-        // Pour les autres types de base de données, afficher un message d'information
-        result = {
-          success: true,
-          message: `Mode compatible navigateur activé. Les données seront stockées localement avec SQLite/localStorage. Configuration ${dbType} sera utilisée en production.`
-        };
-      }
+      // Prepare connection parameters
+      const params: ConnectionParams = {
+        host,
+        port,
+        username,
+        password,
+        database
+      };
+      
+      // Use the adapter to test the connection
+      const result = await connectionAdapter(params);
+      
+      console.log(`Résultat connexion ${dbType}:`, result);
       
       setConnectionResult(result);
       
