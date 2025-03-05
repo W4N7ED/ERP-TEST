@@ -11,8 +11,11 @@ import PerformanceTab from '@/components/hr/PerformanceTab';
 import ReportsTab from '@/components/hr/ReportsTab';
 
 const HR = () => {
-  const { hasPermission } = usePermissions();
+  const { hasPermission, currentUser } = usePermissions();
   const [activeTab, setActiveTab] = useState('employees');
+  
+  console.log("HR Page - Current User:", currentUser);
+  console.log("HR Page - Has HR View Permission:", hasPermission('hr.view'));
 
   // Check for HR access permission
   if (!hasPermission('hr.view')) {

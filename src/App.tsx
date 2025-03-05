@@ -83,6 +83,7 @@ function App() {
   useEffect(() => {
     console.log("État d'authentification:", currentUser.isAuthenticated);
     console.log("Utilisateur:", currentUser);
+    console.log("Permissions:", currentUser.permissions);
   }, [currentUser]);
 
   return (
