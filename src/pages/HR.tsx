@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Download, FileText, HelpCircle, Upload } from 'lucide-react';
+import { CustomButton } from '@/components/ui/custom-button';
 import EmployeesTab from '@/components/hr/EmployeesTab';
 import ContractsTab from '@/components/hr/ContractsTab';
 import PlanningTab from '@/components/hr/PlanningTab';
@@ -36,6 +38,40 @@ const HR = () => {
         <div>
           <h1 className="text-3xl font-bold">Ressources Humaines</h1>
           <p className="text-muted-foreground mt-1">Gestion des employés, contrats, plannings et congés</p>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-3 mt-4 md:mt-0">
+          <CustomButton 
+            variant="outline" 
+            size="sm"
+            icon={<Upload size={18} />}
+          >
+            Importer
+          </CustomButton>
+          
+          <CustomButton 
+            variant="outline" 
+            size="sm"
+            icon={<Download size={18} />}
+          >
+            Exporter
+          </CustomButton>
+          
+          <CustomButton 
+            variant="outline" 
+            size="sm"
+            icon={<FileText size={18} />}
+          >
+            Rapports
+          </CustomButton>
+          
+          <CustomButton 
+            variant="outline" 
+            size="sm"
+            icon={<HelpCircle size={18} />}
+          >
+            Aide
+          </CustomButton>
         </div>
       </div>
 
