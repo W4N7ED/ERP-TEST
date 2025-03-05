@@ -17,14 +17,14 @@ serve(async (req) => {
     const body = await req.json();
     const { host, port, username, password, database, type } = body;
 
-    console.log(`Vérification de la connexion à ${database}@${host}:${port} (type: ${type})`);
+    console.log(`Verifying connection to ${database}@${host}:${port} (type: ${type})`);
     
     // Mock database - always return success
     if (type === "mock") {
       return new Response(
         JSON.stringify({
           success: true,
-          message: `Connexion à la base de données simulée vérifiée avec succès.`
+          message: `Mock database connection verified successfully.`
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -35,10 +35,10 @@ serve(async (req) => {
     
     // PostgreSQL connection
     if (type === "postgres") {
-      // Test la connexion à la base de données PostgreSQL
+      // Test PostgreSQL database connection
       const connectionString = `postgres://${username}:${password}@${host}:${port}/${database}`;
       
-      console.log(`Tentative de connexion PostgreSQL avec: ${host}:${port}, username: ${username}, database: ${database}`);
+      console.log(`Attempting PostgreSQL connection with: ${host}:${port}, username: ${username}, database: ${database}`);
       
       const pool = new Pool(connectionString, 1);
       const connection = await pool.connect();
@@ -47,12 +47,12 @@ serve(async (req) => {
         // Execute a simple query to check that the connection works
         const result = await connection.queryObject`SELECT 1 as connection_test`;
         
-        console.log('Connexion à la base de données PostgreSQL réussie:', result.rows);
+        console.log('PostgreSQL database connection successful:', result.rows);
         
         return new Response(
           JSON.stringify({
             success: true,
-            message: `Connexion à ${database}@${host}:${port} vérifiée avec succès.`
+            message: `Connection to ${database}@${host}:${port} verified successfully.`
           }),
           {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -70,7 +70,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        message: `Type de base de données ${type} non supporté par cette fonction Edge. Utilisez l'implémentation côté client.`
+        message: `Database type ${type} not supported by this Edge Function. Use the client-side implementation.`
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -78,12 +78,12 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Erreur de connexion à la base de données:', error);
+    console.error('Database connection error:', error);
     
     return new Response(
       JSON.stringify({
         success: false,
-        message: `Erreur de connexion: ${error.message}`
+        message: `Connection error: ${error.message}`
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

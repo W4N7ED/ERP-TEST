@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { storageService } from "@/services/storageService";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useDatabaseConnection = (
   host: string,
@@ -30,14 +31,42 @@ export const useDatabaseConnection = (
     });
 
     try {
-      // Simulation d'un succès pour SQLite
       let result;
       
       if (dbType === "sqlite") {
+        // Simulation d'un succès pour SQLite (mode navigateur)
         result = {
           success: true,
           message: "Connexion réussie à la base de données SQLite (mode navigateur avec localStorage)"
         };
+      } else if (dbType === "postgres") {
+        // For PostgreSQL, use Supabase Edge Function to test connection
+        try {
+          const { data, error } = await supabase.functions.invoke('verify-db-connection', {
+            body: {
+              host,
+              port,
+              username,
+              password,
+              database,
+              type: dbType
+            },
+          });
+          
+          if (error) {
+            result = {
+              success: false,
+              message: `Erreur de connexion à PostgreSQL: ${error.message}`
+            };
+          } else {
+            result = data;
+          }
+        } catch (postgresError) {
+          result = {
+            success: false,
+            message: `Erreur lors de la vérification PostgreSQL: ${postgresError instanceof Error ? postgresError.message : 'Erreur inconnue'}`
+          };
+        }
       } else {
         // Pour les autres types de base de données, afficher un message d'information
         result = {
@@ -97,28 +126,80 @@ export const useDatabaseConnection = (
     });
 
     try {
-      // Initialisation des données par défaut
-      if (!storageService.getData(database || "app_db")) {
-        // Initialiser des tableaux vides pour les projets et interventions
-        storageService.saveData(database || "app_db", {
-          projects: [],
-          interventions: []
-        });
-      }
+      let result;
       
-      const tables = ["projets", "interventions", "utilisateurs", "configurations"];
-      const result = {
-        success: true,
-        message: "Tables initialisées avec succès dans localStorage",
-        tables: tables.map(t => `${tablePrefix || ""}${t}`)
-      };
+      if (dbType === "postgres") {
+        // For PostgreSQL, use Supabase Edge Function to initialize
+        try {
+          const { data, error } = await supabase.functions.invoke('init-database', {
+            body: {
+              host,
+              port,
+              username,
+              password,
+              database,
+              type: dbType,
+              tablePrefix
+            },
+          });
+          
+          if (error) {
+            result = {
+              success: false,
+              message: `Erreur d'initialisation PostgreSQL: ${error.message}`
+            };
+          } else {
+            result = data;
+          }
+        } catch (postgresError) {
+          result = {
+            success: false,
+            message: `Erreur lors de l'initialisation PostgreSQL: ${postgresError instanceof Error ? postgresError.message : 'Erreur inconnue'}`
+          };
+        }
+      } else {
+        // Initialisation des données par défaut (SQLite/localStorage)
+        if (!storageService.getData(database || "app_db")) {
+          // Initialiser des tableaux vides pour les projets et interventions
+          storageService.saveData(database || "app_db", {
+            projects: [],
+            interventions: [],
+            inventory: [],
+            suppliers: [],
+            quotes: [],
+            clients: [],
+            users: [],
+            employees: []
+          });
+        }
+        
+        const tables = [
+          "projects", "interventions", "inventory", "suppliers", 
+          "quotes", "clients", "users", "employees", "leave_requests", 
+          "contracts", "schedules", "performance_reviews"
+        ];
+        
+        result = {
+          success: true,
+          message: "Tables initialisées avec succès dans localStorage",
+          tables: tables.map(t => `${tablePrefix || ""}${t}`)
+        };
+      }
       
       setInitResult(result);
       
-      toast({
-        title: "Initialisation réussie",
-        description: "Les tables ont été créées avec succès",
-      });
+      if (result.success) {
+        toast({
+          title: "Initialisation réussie",
+          description: "Les tables ont été créées avec succès",
+        });
+      } else {
+        toast({
+          variant: "destructive", 
+          title: "Échec d'initialisation",
+          description: result.message,
+        });
+      }
     } catch (error) {
       console.error("Error initializing database:", error);
       setInitResult({
