@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import NavItems from "./NavItems";
+import { NavItems } from "./NavItems";
 
 type MobileMenuProps = {
   isAdmin: boolean;

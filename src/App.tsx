@@ -21,7 +21,7 @@ import { AppNameProvider } from './components/AppNameProvider';
 function App() {
   return (
     <AppNameProvider>
-      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <ThemeProvider>
         <Router>
           <Navbar />
           <main className="min-h-screen pb-8 pt-[60px]">
