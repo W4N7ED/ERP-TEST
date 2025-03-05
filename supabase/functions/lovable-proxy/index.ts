@@ -4,7 +4,9 @@ import { corsHeaders } from "../init-database/constants";
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: corsHeaders 
+    });
   }
   
   try {
@@ -22,7 +24,7 @@ Deno.serve(async (req) => {
     headers.delete('host'); // Remove the host header as it will be set by fetch
     
     // Add CORS headers to all outgoing requests
-    headers.set('Origin', 'http://localhost:8080');
+    headers.set('Origin', req.headers.get('origin') || 'http://localhost:8080');
     
     const response = await fetch(targetUrl, {
       method: req.method,
@@ -44,7 +46,10 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("Proxy error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      success: false 
+    }), {
       status: 500,
       headers: {
         ...corsHeaders,

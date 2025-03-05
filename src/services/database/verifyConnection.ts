@@ -83,11 +83,19 @@ export const verifyExternalConnection = async (params: any) => {
       console.log("Utilisation d'une connexion API réelle (mode mock désactivé)");
     }
     
+    // Construire l'URL complète pour éviter les problèmes CORS
+    let proxyUrl = '/lovable-proxy';
+    // S'assurer que l'URL est correcte si on est dans un environnement de développement
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      proxyUrl = `${window.location.protocol}//${window.location.host}${proxyUrl}`;
+    }
+    
     // Utiliser un proxy pour éviter les problèmes CORS
-    const response = await fetch('/lovable-proxy', {
+    const response = await fetch(proxyUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Origin': window.location.origin,
       },
       body: JSON.stringify({
         ...params,
