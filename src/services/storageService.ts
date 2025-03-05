@@ -78,5 +78,46 @@ export const storageService = {
       }
     }
     return null;
+  },
+
+  /**
+   * Get user avatar from localStorage
+   */
+  getUserAvatar: (): string | null => {
+    return localStorage.getItem('user_avatar');
+  },
+
+  /**
+   * Save user avatar to localStorage
+   */
+  saveUserAvatar: (avatarUrl: string): void => {
+    localStorage.setItem('user_avatar', avatarUrl);
+  },
+
+  /**
+   * Get app configuration from localStorage
+   */
+  getAppConfiguration: (): any | null => {
+    const config = localStorage.getItem('app_config');
+    if (config) {
+      try {
+        return JSON.parse(config);
+      } catch (error) {
+        console.error('Error parsing app configuration from localStorage:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  /**
+   * Save app configuration to localStorage
+   */
+  saveAppConfiguration: (config: any): void => {
+    try {
+      localStorage.setItem('app_config', JSON.stringify(config));
+    } catch (error) {
+      console.error('Error saving app configuration to localStorage:', error);
+    }
   }
 };
