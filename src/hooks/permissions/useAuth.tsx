@@ -55,9 +55,14 @@ export const useAuth = () => {
               'projects.view', 'projects.add', 'projects.edit', 'projects.delete',
               'interventions.view', 'interventions.add', 'interventions.edit', 'interventions.delete',
               'users.view', 'users.add', 'users.edit', 'users.delete',
-              'quotes.view', 'quotes.add', 'quotes.edit', 'quotes.delete',
+              'quotes.view', 'quotes.add', 'quotes.edit', 'quotes.delete', 'quotes.approve',
               'clients.view', 'clients.add', 'clients.edit', 'clients.delete',
-              'hr.view', 'hr.employees.view', 'hr.employees.add', 'hr.employees.edit'
+              'hr.view', 'hr.employees.view', 'hr.employees.add', 'hr.employees.edit', 'hr.employees.delete',
+              'hr.contracts.view', 'hr.contracts.add', 'hr.contracts.edit',
+              'hr.planning.view', 'hr.planning.edit',
+              'hr.leaves.view', 'hr.leaves.add', 'hr.leaves.approve',
+              'hr.performance.view', 'hr.performance.edit',
+              'hr.reports.view'
             ]
           };
           
