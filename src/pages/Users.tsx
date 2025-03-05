@@ -1,11 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { UserTable, UserTableItem } from '@/components/users/UserTable';
 import { AddUserDialog } from '@/components/users/AddUserDialog';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { UserPlus } from 'lucide-react';
 
 const UsersPage = () => {
   const { 
@@ -90,6 +91,7 @@ const UsersPage = () => {
               className="flex items-center gap-2"
               onClick={() => setIsAddUserDialogOpen(true)}
             >
+              <UserPlus size={16} />
               Add New User
             </Button>
           </div>
