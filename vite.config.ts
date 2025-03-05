@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: './', // Configurer Vite pour utiliser des chemins relatifs
+  base: './', // Configure Vite to use relative paths
   server: {
     host: "::",
     port: 8080,
@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => ({
     cors: true,
   },
   build: {
-    // Assurer que le manifest est généré pour le déploiement
+    // Ensure manifest is generated for deployment
     manifest: true,
     outDir: 'dist',
     assetsDir: 'assets',
@@ -41,7 +41,7 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'vendor': ['react', 'react-dom', 'react-router-dom'],
         },
-        format: 'es', // Format ES modules explicite
+        format: 'es', // Explicit ES modules format
       },
     },
   },

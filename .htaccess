@@ -3,9 +3,8 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   
-  # Redirection HTTP vers HTTPS (commentez cette section pour le développement local)
+  # Redirection HTTP vers HTTPS (commenté pour le développement local)
   # RewriteCond %{HTTPS} off
-  # Ne pas rediriger les requêtes pour les validations Let's Encrypt
   # RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
   # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   
@@ -20,6 +19,7 @@
 # Activer CORS
 <IfModule mod_headers.c>
   Header set Access-Control-Allow-Origin "*"
+  Header set Content-Type "text/html; charset=UTF-8"
 </IfModule>
 
 # Types MIME appropriés
@@ -63,7 +63,7 @@
 # Gestion des erreurs 404
 ErrorDocument 404 /index.html
 
-# En-têtes de sécurité (pour HTTPS uniquement - commentez pour le développement local)
+# En-têtes de sécurité (commenté pour le développement local)
 # <IfModule mod_headers.c>
 #   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 #   Header always set X-Content-Type-Options "nosniff"

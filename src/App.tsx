@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Index from './pages/Index';
 import Inventory from './pages/Inventory';
@@ -22,27 +22,25 @@ function App() {
   return (
     <AppNameProvider>
       <ThemeProvider>
-        <Router>
-          <Navbar />
-          <main className="min-h-screen pb-8 pt-[60px]">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/inventory" element={<Inventory />} />
-              <Route path="/interventions" element={<Interventions />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/quotes" element={<Quotes />} />
-              <Route path="/suppliers" element={<Suppliers />} />
-              <Route path="/users" element={<Users />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/configuration" element={<Configuration />} />
-              <Route path="/hr" element={<HR />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-          <Toaster position="bottom-right" />
-        </Router>
+        <Navbar />
+        <main className="min-h-screen pb-8 pt-[60px]">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/interventions" element={<Interventions />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/quotes" element={<Quotes />} />
+            <Route path="/suppliers" element={<Suppliers />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/configuration" element={<Configuration />} />
+            <Route path="/hr" element={<HR />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+        <Toaster position="bottom-right" />
       </ThemeProvider>
     </AppNameProvider>
   );
