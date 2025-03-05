@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { storageService } from "@/services/storageService";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,16 +19,12 @@ export const useDatabaseConnection = (
     testing: false,
     initializing: false
   });
-  const { toast } = useToast();
 
   const testConnection = async () => {
     setConnectionResult(null);
     setIsLoading(prev => ({ ...prev, testing: true }));
 
-    toast({
-      title: "Test de connexion",
-      description: "Tentative de connexion à la base de données...",
-    });
+    toast("Test de connexion: Tentative de connexion à la base de données...");
 
     try {
       let result;
@@ -81,10 +77,7 @@ export const useDatabaseConnection = (
       setConnectionResult(result);
       
       if (result.success) {
-        toast({
-          title: "Connexion réussie",
-          description: result.message,
-        });
+        toast.success("Connexion réussie: " + result.message);
         
         // Sauvegarder la configuration de la base de données
         storageService.saveData("db_config", {
@@ -98,11 +91,7 @@ export const useDatabaseConnection = (
           usingDirect: result.usingDirect || false
         });
       } else {
-        toast({
-          variant: "destructive",
-          title: "Échec de connexion",
-          description: result.message,
-        });
+        toast.error("Échec de connexion: " + result.message);
       }
     } catch (error) {
       setConnectionResult({
@@ -110,11 +99,7 @@ export const useDatabaseConnection = (
         message: `Une erreur s'est produite: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
       });
       
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: `Une erreur s'est produite: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
-      });
+      toast.error(`Une erreur s'est produite: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     } finally {
       setIsLoading(prev => ({ ...prev, testing: false }));
     }
@@ -124,10 +109,7 @@ export const useDatabaseConnection = (
     setInitResult(null);
     setIsLoading(prev => ({ ...prev, initializing: true }));
 
-    toast({
-      title: "Initialisation en cours",
-      description: "Création des tables dans la base de données...",
-    });
+    toast("Initialisation en cours: Création des tables dans la base de données...");
 
     try {
       let result;
@@ -196,16 +178,9 @@ export const useDatabaseConnection = (
       setInitResult(result);
       
       if (result.success) {
-        toast({
-          title: "Initialisation réussie",
-          description: "Les tables ont été créées avec succès",
-        });
+        toast.success("Initialisation réussie: Les tables ont été créées avec succès");
       } else {
-        toast({
-          variant: "destructive", 
-          title: "Échec d'initialisation",
-          description: result.message,
-        });
+        toast.error("Échec d'initialisation: " + result.message);
       }
     } catch (error) {
       console.error("Error initializing database:", error);
@@ -214,11 +189,7 @@ export const useDatabaseConnection = (
         message: `Une erreur s'est produite: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
       });
       
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: `Une erreur s'est produite: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
-      });
+      toast.error(`Une erreur s'est produite: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     } finally {
       setIsLoading(prev => ({ ...prev, initializing: false }));
     }
