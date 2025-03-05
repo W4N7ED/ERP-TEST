@@ -65,7 +65,24 @@ export const getPermissionLabel = (permission: Permission): string => {
     'clients.view': 'Consulter les clients',
     'clients.add': 'Ajouter des clients',
     'clients.edit': 'Modifier les clients',
-    'clients.delete': 'Supprimer des clients'
+    'clients.delete': 'Supprimer des clients',
+    // HR permissions
+    'hr.view': 'Accéder au module RH',
+    'hr.employees.view': 'Consulter les employés',
+    'hr.employees.add': 'Ajouter des employés',
+    'hr.employees.edit': 'Modifier les employés',
+    'hr.employees.delete': 'Supprimer des employés',
+    'hr.contracts.view': 'Consulter les contrats',
+    'hr.contracts.add': 'Ajouter des contrats',
+    'hr.contracts.edit': 'Modifier les contrats',
+    'hr.planning.view': 'Consulter les plannings',
+    'hr.planning.edit': 'Modifier les plannings',
+    'hr.leaves.view': 'Consulter les congés',
+    'hr.leaves.add': 'Demander des congés',
+    'hr.leaves.approve': 'Approuver des congés',
+    'hr.performance.view': 'Consulter les évaluations',
+    'hr.performance.edit': 'Modifier les évaluations',
+    'hr.reports.view': 'Consulter les rapports RH'
   };
   
   return labels[permission] || permission;
@@ -117,7 +134,24 @@ export const getPermissionDescription = (permission: Permission): string => {
     'clients.view': 'Permet de consulter la liste des clients',
     'clients.add': 'Permet d\'ajouter de nouveaux clients',
     'clients.edit': 'Permet de modifier les informations des clients',
-    'clients.delete': 'Permet de supprimer des clients'
+    'clients.delete': 'Permet de supprimer des clients',
+    // HR permissions
+    'hr.view': 'Permet d\'accéder au module RH',
+    'hr.employees.view': 'Permet de consulter les fiches des employés',
+    'hr.employees.add': 'Permet d\'ajouter de nouveaux employés',
+    'hr.employees.edit': 'Permet de modifier les informations des employés',
+    'hr.employees.delete': 'Permet de supprimer des employés',
+    'hr.contracts.view': 'Permet de consulter les contrats et fiches de paie',
+    'hr.contracts.add': 'Permet de créer des contrats',
+    'hr.contracts.edit': 'Permet de modifier les contrats et fiches de paie',
+    'hr.planning.view': 'Permet de consulter les plannings',
+    'hr.planning.edit': 'Permet de modifier les plannings et présences',
+    'hr.leaves.view': 'Permet de consulter les demandes de congés',
+    'hr.leaves.add': 'Permet de créer des demandes de congés',
+    'hr.leaves.approve': 'Permet d\'approuver les demandes de congés',
+    'hr.performance.view': 'Permet de consulter les évaluations',
+    'hr.performance.edit': 'Permet de créer et modifier les évaluations',
+    'hr.reports.view': 'Permet de consulter les rapports et statistiques RH'
   };
   
   return descriptions[permission] || '';

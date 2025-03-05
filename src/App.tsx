@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { useEffect, useState } from 'react';
@@ -13,6 +14,7 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Configuration from './pages/Configuration';
+import HR from './pages/HR';
 import { usePermissions } from './hooks/usePermissions';
 import { ThemeProvider } from './components/ThemeProvider';
 import { AppNameProvider } from './components/AppNameProvider';
@@ -36,6 +38,18 @@ const PrivateRoute = ({ element }: { element: React.ReactNode }) => {
   const isAuthenticated = currentUser.isAuthenticated;
   
   return isAuthenticated ? <>{element}</> : <Navigate to="/login" state={{ from: location }} replace />;
+};
+
+const PermissionRoute = ({ element, permission }: { element: React.ReactNode, permission: string }) => {
+  const { currentUser, hasPermission } = usePermissions();
+  const location = useLocation();
+  const isAuthenticated = currentUser.isAuthenticated;
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  return hasPermission(permission as any) ? <>{element}</> : <Navigate to="/" replace />;
 };
 
 const ConfiguredRoute = ({ element }: { element: React.ReactNode }) => {
@@ -87,6 +101,7 @@ function App() {
           <Route path="/settings" element={<AdminRoute element={<Settings />} />} />
           <Route path="/profile" element={<PrivateRoute element={<Profile />} />} />
           <Route path="/profile/notifications" element={<PrivateRoute element={<Profile />} />} />
+          <Route path="/hr" element={<PermissionRoute element={<HR />} permission="hr.view" />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

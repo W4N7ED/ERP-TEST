@@ -46,7 +46,24 @@ export type Permission =
   | 'clients.view'
   | 'clients.add'
   | 'clients.edit'
-  | 'clients.delete';
+  | 'clients.delete'
+  // HR permissions
+  | 'hr.view'
+  | 'hr.employees.view'
+  | 'hr.employees.add'
+  | 'hr.employees.edit'
+  | 'hr.employees.delete'
+  | 'hr.contracts.view'
+  | 'hr.contracts.add'
+  | 'hr.contracts.edit'
+  | 'hr.planning.view'
+  | 'hr.planning.edit'
+  | 'hr.leaves.view'
+  | 'hr.leaves.add'
+  | 'hr.leaves.approve'
+  | 'hr.performance.view'
+  | 'hr.performance.edit'
+  | 'hr.reports.view';
 
 // User role definition
 export type UserRole = string;

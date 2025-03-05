@@ -54,6 +54,10 @@ export const useRoleSettings = () => {
     {
       name: "Clients",
       permissions: availablePermissions.filter(p => p.startsWith("clients."))
+    },
+    {
+      name: "Ressources Humaines",
+      permissions: availablePermissions.filter(p => p.startsWith("hr."))
     }
   ];
   

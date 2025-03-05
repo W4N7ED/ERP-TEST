@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -5,15 +6,18 @@ import {
   Package, 
   FolderKanban, 
   FileText, 
-  Settings
+  Settings,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export type NavItem = {
   label: string;
   icon: React.ReactNode;
   href: string;
   adminOnly?: boolean;
+  permissions?: string[];
 };
 
 export const getNavItems = (): NavItem[] => [
@@ -22,6 +26,12 @@ export const getNavItems = (): NavItem[] => [
   { label: "Inventaire", icon: <Package size={20} />, href: "/inventory" },
   { label: "Projets", icon: <FolderKanban size={20} />, href: "/projects" },
   { label: "Devis", icon: <FileText size={20} />, href: "/quotes" },
+  { 
+    label: "Ressources Humaines", 
+    icon: <Users size={20} />, 
+    href: "/hr",
+    permissions: ["hr.view"] 
+  },
   { label: "Paramètres", icon: <Settings size={20} />, href: "/settings", adminOnly: true },
 ];
 
@@ -35,8 +45,14 @@ type NavItemsProps = {
 const NavItems = ({ isAdmin, isMobile, isAuthenticated, closeMenu }: NavItemsProps) => {
   const location = useLocation();
   const navItems = getNavItems();
+  const { hasPermission } = usePermissions();
   
-  const filteredNavItems = navItems.filter(item => (!item.adminOnly || isAdmin) && isAuthenticated);
+  const filteredNavItems = navItems.filter(item => {
+    if (!isAuthenticated) return false;
+    if (item.adminOnly && !isAdmin) return false;
+    if (item.permissions && !item.permissions.some(permission => hasPermission(permission as any))) return false;
+    return true;
+  });
 
   if (!isAuthenticated) {
     return null;
