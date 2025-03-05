@@ -19,6 +19,13 @@ interface NavItem {
   icon: JSX.Element;
 }
 
+interface NavItemsProps {
+  isAdmin: boolean;
+  isMobile: boolean;
+  isAuthenticated: boolean;
+  closeMenu?: () => void;
+}
+
 const navItems: NavItem[] = [
   {
     href: '/',
@@ -67,8 +74,14 @@ const navItems: NavItem[] = [
   },
 ];
 
-export function NavItems() {
+export function NavItems({ isAdmin, isMobile, isAuthenticated, closeMenu }: NavItemsProps) {
   const location = useLocation();
+  
+  const handleClick = () => {
+    if (isMobile && closeMenu) {
+      closeMenu();
+    }
+  };
   
   return (
     <div className="flex items-center gap-3 md:gap-5">
@@ -76,13 +89,14 @@ export function NavItems() {
         <Link
           key={item.href}
           to={item.href}
+          onClick={handleClick}
           className={cn(
             'flex items-center gap-1 text-sm font-medium text-foreground/60 hover:text-foreground',
             location.pathname === item.href && 'text-foreground'
           )}
         >
           {item.icon}
-          <span className="hidden md:inline">{item.label}</span>
+          <span className={cn(isMobile ? 'inline' : 'hidden md:inline')}>{item.label}</span>
         </Link>
       ))}
     </div>
