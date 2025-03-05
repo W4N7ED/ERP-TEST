@@ -1,6 +1,6 @@
 
 // Mock contracts data
-export const mockContracts = [
+export const mockContracts: Contract[] = [
   {
     id: 1,
     employeeId: 1,
