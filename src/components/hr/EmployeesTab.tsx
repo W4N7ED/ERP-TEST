@@ -67,11 +67,11 @@ const EmployeesTab = () => {
            employee.department.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  const handleAddEmployee = (employee: Omit<Employee, 'id'>) => {
-    const newEmployee = {
+  const handleAddEmployee = (employee: Omit<Employee, 'id' | 'status'>) => {
+    const newEmployee: Employee = {
       ...employee,
       id: employees.length + 1,
-      status: 'active'
+      status: 'active' // Explicitly use 'active' as the literal type
     };
     setEmployees([...employees, newEmployee]);
     setIsAddDialogOpen(false);

@@ -10,13 +10,15 @@ interface RoleListProps {
   selectedRole: UserRole | null;
   onSelectRole: (role: UserRole) => void;
   onDeleteRole: (role: UserRole) => void;
+  getRoleDescription: (role: string) => string;
 }
 
 const RoleList: React.FC<RoleListProps> = ({ 
   roles, 
   selectedRole, 
   onSelectRole, 
-  onDeleteRole 
+  onDeleteRole,
+  getRoleDescription
 }) => {
   return (
     <Card>
@@ -27,6 +29,7 @@ const RoleList: React.FC<RoleListProps> = ({
             <RoleItem 
               key={role} 
               role={role}
+              description={getRoleDescription(role)}
               isSelected={selectedRole === role}
               onSelectRole={onSelectRole}
               onDeleteRole={onDeleteRole}

@@ -10,11 +10,14 @@ type MobileMenuProps = {
 
 const MobileMenu = ({ isAdmin, isAuthenticated }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { hasPermission } = usePermissions();
+  const { hasPermission, currentUser } = usePermissions();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  // Determine user access to modules based on role and permissions
+  const canAccessHR = hasPermission('hr.view');
 
   return (
     <>
@@ -31,6 +34,9 @@ const MobileMenu = ({ isAdmin, isAuthenticated }: MobileMenuProps) => {
         <div className="fixed inset-0 z-50 bg-white animate-fade-in">
           <div className="flex justify-between items-center p-4 border-b">
             <h3 className="font-medium">Menu</h3>
+            <span className="text-sm text-muted-foreground ml-2">
+              ({currentUser.role})
+            </span>
             <button
               className="text-gray-600 hover:text-gray-800 focus:outline-none"
               onClick={() => setIsMenuOpen(false)}

@@ -3,7 +3,7 @@ import React from 'react';
 import RoleList from './RoleList';
 import PermissionsPanel from './PermissionsPanel';
 import NewRoleDialog from './NewRoleDialog';
-import { UserRole, Permission } from '@/types/permissions';
+import { UserRole, Permission, StandardRole, defaultRolePermissions } from '@/types/permissions';
 
 interface RolesTabProps {
   roles: UserRole[];
@@ -29,6 +29,23 @@ const RolesTab: React.FC<RolesTabProps> = ({
   onCreateRole,
   onTogglePermission
 }) => {
+  // Get role descriptions based on module focus
+  const getRoleDescription = (role: string): string => {
+    switch(role) {
+      case 'Administrateur': return 'Accès complet à tous les modules';
+      case 'RH': return 'Gestion des ressources humaines';
+      case 'Technicien': return 'Interventions et maintenance';
+      case 'Commerçant': return 'Gestion des clients et devis';
+      case 'Comptable': return 'Gestion financière et validation';
+      case 'Gestion Stock': return 'Inventaire et fournisseurs';
+      case 'Chef de Projet': return 'Coordination des projets';
+      case 'Support Client': return 'Assistance aux clients';
+      case 'Gestion Fournisseurs': return 'Relations fournisseurs';
+      case 'Utilisateur': return 'Accès limité en lecture seule';
+      default: return 'Rôle personnalisé';
+    }
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between mb-4">
@@ -46,6 +63,7 @@ const RolesTab: React.FC<RolesTabProps> = ({
             selectedRole={selectedRole}
             onSelectRole={onSelectRole}
             onDeleteRole={onDeleteRole}
+            getRoleDescription={getRoleDescription}
           />
         </div>
         <div className="md:col-span-2">

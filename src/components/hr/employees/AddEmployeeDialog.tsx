@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -48,10 +47,14 @@ const departments = [
 
 const roles = [
   'Administrateur',
+  'RH',
   'Technicien',
   'Commerçant',
-  'RH',
   'Comptable',
+  'Gestion Stock',
+  'Chef de Projet',
+  'Support Client',
+  'Gestion Fournisseurs',
   'Utilisateur',
 ];
 
@@ -71,7 +74,17 @@ const AddEmployeeDialog = ({ isOpen, onOpenChange, onAdd }: AddEmployeeDialogPro
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    onAdd(data);
+    onAdd({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone,
+      position: data.position,
+      department: data.department,
+      hireDate: format(data.hireDate, 'yyyy-MM-dd'),
+      role: data.role,
+      avatar: data.avatar,
+    });
     form.reset(); // Reset form after submit
   };
 

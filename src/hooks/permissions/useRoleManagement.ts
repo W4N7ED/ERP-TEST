@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { UserRole, Permission, User } from './types';
+import { UserRole, Permission, User, StandardRole, defaultRolePermissions } from '@/types/permissions';
 
 export const useRoleManagement = (
   allUsers: User[], 
@@ -19,6 +19,11 @@ export const useRoleManagement = (
   
   // Obtenir les permissions d'un rôle spécifique
   const getRolePermissions = (role: UserRole): Permission[] => {
+    // Check if it's a standard role with default permissions
+    if (role in defaultRolePermissions) {
+      return defaultRolePermissions[role as StandardRole];
+    }
+    
     // Recherchez un utilisateur avec ce rôle et retournez ses permissions
     const userWithRole = allUsers.find(user => user.role === role);
     return userWithRole?.permissions || [];
