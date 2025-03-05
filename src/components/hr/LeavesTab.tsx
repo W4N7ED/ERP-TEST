@@ -8,10 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { LeaveRequest } from '@/types/hr';
 
-// Define types to match the LeaveRequest interface from types/hr.ts
-type LeaveRequestWithName = LeaveRequest & {
+// Extend the LeaveRequest interface to include employee name
+type LeaveRequestWithName = Omit<LeaveRequest, 'approvedBy'> & {
   employeeName: string;
-  approvedBy?: string;
+  approvedBy?: string | number;
 };
 
 // Mock leave requests data
@@ -79,7 +79,8 @@ const typeLabels: Record<string, string> = {
   other: 'Autre'
 };
 
-const statusBadgeVariants: Record<string, string> = {
+// Define allowed badge variants to match the UI component
+const statusBadgeVariants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   approved: 'default',
   pending: 'secondary',
   rejected: 'destructive'
@@ -95,7 +96,7 @@ const LeavesTab = () => {
   const handleApproveLeave = (id: number) => {
     setLeaveRequests(leaveRequests.map(request => 
       request.id === id 
-        ? { ...request, status: 'approved', approvedBy: 'Admin' } 
+        ? { ...request, status: 'approved', approvedBy: 'Admin' } as LeaveRequestWithName
         : request
     ));
   };
@@ -103,7 +104,7 @@ const LeavesTab = () => {
   const handleRejectLeave = (id: number) => {
     setLeaveRequests(leaveRequests.map(request => 
       request.id === id 
-        ? { ...request, status: 'rejected' } 
+        ? { ...request, status: 'rejected' } as LeaveRequestWithName
         : request
     ));
   };
@@ -195,7 +196,7 @@ const LeavesTab = () => {
                 <TableCell>{new Date(request.endDate).toLocaleDateString()}</TableCell>
                 <TableCell>{request.reason}</TableCell>
                 <TableCell>
-                  <Badge variant={statusBadgeVariants[request.status] || 'secondary'}>
+                  <Badge variant={statusBadgeVariants[request.status]}>
                     {request.status === 'approved' ? 'Approuvé' : 
                      request.status === 'pending' ? 'En attente' : 'Refusé'}
                   </Badge>
