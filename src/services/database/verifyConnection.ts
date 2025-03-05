@@ -83,12 +83,21 @@ export const verifyExternalConnection = async (params: any) => {
       console.log("Utilisation d'une connexion API réelle (mode mock désactivé)");
     }
     
-    // Construire l'URL complète pour éviter les problèmes CORS
-    let proxyUrl = '/lovable-proxy';
-    // S'assurer que l'URL est correcte si on est dans un environnement de développement
+    // Determine the correct proxy URL based on the environment
+    let proxyUrl;
+    
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      proxyUrl = `${window.location.protocol}//${window.location.host}${proxyUrl}`;
+      // Local development
+      proxyUrl = `${window.location.protocol}//${window.location.host}/api/lovable-proxy`;
+    } else if (window.location.hostname.includes('lovable.app')) {
+      // Lovable preview environment
+      proxyUrl = `${window.location.origin}/lovable-proxy`;
+    } else {
+      // Production or other environments
+      proxyUrl = '/lovable-proxy';
     }
+    
+    console.log(`Using proxy URL: ${proxyUrl}`);
     
     // Utiliser un proxy pour éviter les problèmes CORS
     const response = await fetch(proxyUrl, {
@@ -97,6 +106,7 @@ export const verifyExternalConnection = async (params: any) => {
         'Content-Type': 'application/json',
         'Origin': window.location.origin,
       },
+      credentials: 'include',
       body: JSON.stringify({
         ...params,
         useDirect: mockDisabled // Indiquer si nous souhaitons une connexion directe

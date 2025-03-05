@@ -18,6 +18,8 @@
     <base href="./">
     <!-- Désactiver les scripts externes problématiques -->
     <meta name="posthog-disable" content="true">
+    <!-- Prevent external script loading -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.gpteng.co; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.gpteng.co; connect-src 'self' https://*.lovable-api.com https://*.supabase.co https://*.lovable.app">
   </head>
 
   <body>

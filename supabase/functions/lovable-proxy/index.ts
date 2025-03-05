@@ -1,5 +1,6 @@
 
-import { corsHeaders } from "../init-database/constants";
+// Fixed import path with correct extension
+import { corsHeaders } from "../init-database/constants.ts";
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests

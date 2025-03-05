@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { corsHeaders, initPostgresDatabase, initMockDatabase } from "./database.ts";
+import { corsHeaders } from "./constants.ts";
+import { initPostgresDatabase, initMockDatabase } from "./database.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
