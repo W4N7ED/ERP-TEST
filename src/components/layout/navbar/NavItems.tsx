@@ -1,89 +1,90 @@
-import { Link, useLocation } from "react-router-dom";
+
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
+  Shapes, 
   Wrench, 
-  Package, 
-  FolderKanban, 
-  FileText, 
-  Settings
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  FileStack, 
+  Users, 
+  Settings, 
+  Building, 
+  GanttChart,
+  UserRound
+} from 'lucide-react';
 
-export type NavItem = {
-  label: string;
-  icon: React.ReactNode;
+interface NavItem {
   href: string;
-  adminOnly?: boolean;
-};
+  label: string;
+  icon: JSX.Element;
+}
 
-export const getNavItems = (): NavItem[] => [
-  { label: "Tableau de bord", icon: <LayoutDashboard size={20} />, href: "/" },
-  { label: "Interventions", icon: <Wrench size={20} />, href: "/interventions" },
-  { label: "Inventaire", icon: <Package size={20} />, href: "/inventory" },
-  { label: "Projets", icon: <FolderKanban size={20} />, href: "/projects" },
-  { label: "Devis", icon: <FileText size={20} />, href: "/quotes" },
-  { label: "Paramètres", icon: <Settings size={20} />, href: "/settings", adminOnly: true },
+const navItems: NavItem[] = [
+  {
+    href: '/',
+    label: 'Dashboard',
+    icon: <LayoutDashboard className="mr-2 h-5 w-5" />,
+  },
+  {
+    href: '/inventory',
+    label: 'Inventory',
+    icon: <Shapes className="mr-2 h-5 w-5" />,
+  },
+  {
+    href: '/interventions',
+    label: 'Interventions',
+    icon: <Wrench className="mr-2 h-5 w-5" />,
+  },
+  {
+    href: '/projects',
+    label: 'Projects',
+    icon: <GanttChart className="mr-2 h-5 w-5" />,
+  },
+  {
+    href: '/quotes',
+    label: 'Quotes',
+    icon: <FileStack className="mr-2 h-5 w-5" />,
+  },
+  {
+    href: '/suppliers',
+    label: 'Suppliers',
+    icon: <Building className="mr-2 h-5 w-5" />,
+  },
+  {
+    href: '/users',
+    label: 'Users',
+    icon: <Users className="mr-2 h-5 w-5" />,
+  },
+  {
+    href: '/hr',
+    label: 'HR',
+    icon: <UserRound className="mr-2 h-5 w-5" />,
+  },
+  {
+    href: '/settings',
+    label: 'Settings',
+    icon: <Settings className="mr-2 h-5 w-5" />,
+  },
 ];
 
-type NavItemsProps = {
-  isAdmin: boolean;
-  isMobile: boolean;
-  isAuthenticated: boolean;
-  closeMenu?: () => void;
-};
-
-const NavItems = ({ isAdmin, isMobile, isAuthenticated, closeMenu }: NavItemsProps) => {
+export function NavItems() {
   const location = useLocation();
-  const navItems = getNavItems();
   
-  const filteredNavItems = navItems.filter(item => (!item.adminOnly || isAdmin) && isAuthenticated);
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
   return (
-    <>
-      {!isMobile ? (
-        <nav className="flex items-center space-x-1 overflow-x-auto hide-scrollbar">
-          {filteredNavItems.map((item) => (
-            <Link
-              key={item.label}
-              to={item.href}
-              className={cn(
-                "flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                location.pathname === item.href
-                  ? "bg-primary/10 text-primary"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              )}
-            >
-              <span>{item.icon}</span>
-              <span className="hidden md:inline">{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-      ) : (
-        <nav className="flex flex-col px-4 py-2">
-          {filteredNavItems.map((item) => (
-            <Link
-              key={item.label}
-              to={item.href}
-              className={cn(
-                "flex items-center space-x-2 px-2 py-3 text-sm border-b border-gray-100 last:border-0",
-                location.pathname === item.href
-                  ? "text-primary font-medium"
-                  : "text-gray-700"
-              )}
-              onClick={closeMenu}
-            >
-              <span className="text-gray-500">{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-      )}
-    </>
+    <div className="flex items-center gap-3 md:gap-5">
+      {navItems.map((item) => (
+        <Link
+          key={item.href}
+          to={item.href}
+          className={cn(
+            'flex items-center gap-1 text-sm font-medium text-foreground/60 hover:text-foreground',
+            location.pathname === item.href && 'text-foreground'
+          )}
+        >
+          {item.icon}
+          <span className="hidden md:inline">{item.label}</span>
+        </Link>
+      ))}
+    </div>
   );
-};
-
-export default NavItems;
+}
