@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
 import { UserTable } from '@/components/users/UserTable';
 import { AddUserDialog } from '@/components/users/AddUserDialog';
 import { UserRole } from '@/types/permissions';
@@ -30,13 +28,6 @@ const UsersTab: React.FC<UsersTabProps> = ({
     <div>
       <div className="flex justify-between mb-4">
         <h2 className="text-xl font-semibold">Liste des utilisateurs</h2>
-        <Button 
-          onClick={() => setIsAddUserDialogOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <UserPlus size={16} />
-          Ajouter un utilisateur
-        </Button>
       </div>
       
       <UserTable 
